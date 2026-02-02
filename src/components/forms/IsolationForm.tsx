@@ -21,7 +21,21 @@ import { dropdownCategories } from "@/data/schema"
 import { useDropdownStore } from "@/store/dropdown"
 import { api } from "@/lib/api"
 
-export default function IsolationForm() {
+type ClinicEmployeeDetails = {
+  empNo: string
+  employeeName: string
+  emiratesId: string
+  insuranceId?: string
+  mobileNumber?: string
+  trLocation?: string
+}
+
+type IsolationFormProps = {
+  clinicVisitId?: string
+  employee?: ClinicEmployeeDetails | null
+}
+
+export default function IsolationForm({ clinicVisitId, employee }: IsolationFormProps) {
   const router = useRouter()
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
@@ -29,6 +43,7 @@ export default function IsolationForm() {
   const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
   const [form, setForm] = useState({
     locationId: "",
+    clinicVisitId: clinicVisitId ?? "",
     siNo: "",
     empNo: "",
     type: "",
@@ -50,15 +65,41 @@ export default function IsolationForm() {
 
   const [submitting, setSubmitting] = useState(false)
 
+  const trLocationDisplayOptions = useMemo(() => {
+    const current = form.trLocation?.trim()
+    const items = current ? [...trLocationOptions, current] : trLocationOptions
+    return Array.from(new Set(items)).filter(Boolean)
+  }, [trLocationOptions, form.trLocation])
+
+  useEffect(() => {
+    if (clinicVisitId) {
+      setForm((prev) => ({ ...prev, clinicVisitId }))
+    }
+  }, [clinicVisitId])
+
+  useEffect(() => {
+    if (!employee) return
+    setForm((prev) => ({
+      ...prev,
+      empNo: employee.empNo || prev.empNo,
+      employeeName: employee.employeeName || prev.employeeName,
+      emiratesId: employee.emiratesId || prev.emiratesId,
+      insuranceId: employee.insuranceId || prev.insuranceId,
+      mobileNumber: employee.mobileNumber || prev.mobileNumber,
+      trLocation: employee.trLocation || prev.trLocation,
+    }))
+  }, [employee])
+
   const canSubmit = useMemo(() => {
     return (
+      (clinicVisitId || form.clinicVisitId) &&
       form.siNo &&
       form.empNo &&
       form.employeeName &&
       form.emiratesId &&
       form.createdBy
     )
-  }, [form])
+  }, [clinicVisitId, form])
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -87,6 +128,7 @@ export default function IsolationForm() {
   const buildPayload = () => {
     return {
       locationId: form.locationId || undefined,
+      clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
       siNo: Number(form.siNo),
       empNo: form.empNo,
       type: form.type || undefined,
@@ -109,6 +151,11 @@ export default function IsolationForm() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (!clinicVisitId && !form.clinicVisitId) {
+      toast.error("Clinic visit is required. Please save clinic visit first.")
+      return
+    }
 
     if (!canSubmit) {
       toast.error("Please fill all required fields.")
@@ -235,7 +282,7 @@ export default function IsolationForm() {
                   <SelectValue placeholder="Select TR location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationOptions.map((option) => (
+                  {trLocationDisplayOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -310,6 +357,7 @@ export default function IsolationForm() {
                 id="dateFrom"
                 name="dateFrom"
                 type="date"
+                className="mt-2"
                 value={form.dateFrom}
                 onChange={(e) => updateForm("dateFrom", e.target.value)}
               />
@@ -322,6 +370,7 @@ export default function IsolationForm() {
                 id="dateTo"
                 name="dateTo"
                 type="date"
+                className="mt-2"
                 value={form.dateTo}
                 onChange={(e) => updateForm("dateTo", e.target.value)}
               />

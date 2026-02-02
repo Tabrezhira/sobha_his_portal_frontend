@@ -37,6 +37,20 @@ type DropdownApiResponse = {
 
 const DEFAULT_DROPDOWN_LIMIT = 5
 
+type ClinicEmployeeDetails = {
+  empNo: string
+  employeeName: string
+  emiratesId: string
+  insuranceId?: string
+  mobileNumber?: string
+  trLocation?: string
+}
+
+type HospitalFormProps = {
+  clinicVisitId?: string
+  employee?: ClinicEmployeeDetails | null
+}
+
 const useDropdownSearch = (
   baseUrl: string | undefined,
   category: string,
@@ -177,7 +191,7 @@ const SuggestionInput = ({
   )
 }
 
-export default function HospitalForm() {
+export default function HospitalForm({ clinicVisitId, employee }: HospitalFormProps) {
   const router = useRouter()
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
@@ -188,6 +202,7 @@ export default function HospitalForm() {
   const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
   const [form, setForm] = useState({
     locationId: "",
+    clinicVisitId: clinicVisitId ?? "",
     sno: "",
     empNo: "",
     employeeName: "",
@@ -216,13 +231,39 @@ export default function HospitalForm() {
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const trLocationDisplayOptions = useMemo(() => {
+    const current = form.trLocation?.trim()
+    const items = current ? [...trLocationOptions, current] : trLocationOptions
+    return Array.from(new Set(items)).filter(Boolean)
+  }, [trLocationOptions, form.trLocation])
+
+  useEffect(() => {
+    if (clinicVisitId) {
+      setForm((prev) => ({ ...prev, clinicVisitId }))
+    }
+  }, [clinicVisitId])
+
+  useEffect(() => {
+    if (!employee) return
+    setForm((prev) => ({
+      ...prev,
+      empNo: employee.empNo || prev.empNo,
+      employeeName: employee.employeeName || prev.employeeName,
+      emiratesId: employee.emiratesId || prev.emiratesId,
+      insuranceId: employee.insuranceId || prev.insuranceId,
+      mobileNumber: employee.mobileNumber || prev.mobileNumber,
+      trLocation: employee.trLocation || prev.trLocation,
+    }))
+  }, [employee])
+
   const canSubmit = useMemo(() => {
     return (
+      (clinicVisitId || form.clinicVisitId) &&
       form.empNo &&
       form.employeeName &&
       form.emiratesId
     )
-  }, [form])
+  }, [clinicVisitId, form])
 
   const updateForm = (key: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -273,6 +314,7 @@ export default function HospitalForm() {
 
     return {
       locationId: form.locationId || undefined,
+      clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
       sno: Number(form.sno),
       empNo: form.empNo,
       employeeName: form.employeeName,
@@ -304,6 +346,11 @@ export default function HospitalForm() {
     event.preventDefault()
     setError(null)
     setMessage(null)
+
+    if (!clinicVisitId && !form.clinicVisitId) {
+      toast.error("Clinic visit is required. Please save clinic visit first.")
+      return
+    }
 
     if (!canSubmit) {
       toast.error("Please fill all required fields.")
@@ -482,7 +529,7 @@ export default function HospitalForm() {
                   <SelectValue placeholder="Select TR location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationOptions.map((option) => (
+                  {trLocationDisplayOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -540,7 +587,7 @@ export default function HospitalForm() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 lg:col-span-3">
               <SuggestionInput
                 id="primaryDiagnosis"
                 label="Primary Diagnosis"

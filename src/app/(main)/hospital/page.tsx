@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 import { Button } from "@/components/Button"
+import { Card } from "@/components/Card"
 import { columns } from "@/app/(main)/hospital/_components/data-table/columns"
 import { DataTable } from "@/app/(main)/hospital/_components/data-table/DataTable"
 import { api } from "@/lib/api"
@@ -57,7 +58,7 @@ export default function Example() {
           <Link href="/hospital/new">New hospital record</Link>
         </Button>
       </div>
-      <div className="mt-4 sm:mt-6 lg:mt-10">
+      <Card className="mt-4 sm:mt-6 lg:mt-10">
         {error ? (
           <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
             {error}
@@ -77,7 +78,7 @@ export default function Example() {
             }}
           />
         )}
-      </div>
+      </Card>
     </>
   )
 }

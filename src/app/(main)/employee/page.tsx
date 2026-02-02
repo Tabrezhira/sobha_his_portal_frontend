@@ -2,6 +2,7 @@
 
 import { columns } from "@/app/(main)/employee/_components/data-table/columns"
 import { DataTable } from "@/app/(main)/employee/_components/data-table/DataTable"
+import { Card } from "@/components/Card"
 import { Patient } from "@/data/schema"
 import { dropdownApi } from "@/lib/api"
 import { useEffect, useState } from "react"
@@ -56,7 +57,7 @@ export default function Example() {
       <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
         Employee Details
       </h1>
-      <div className="mt-4 sm:mt-6 lg:mt-10">
+      <Card className="mt-4 sm:mt-6 lg:mt-10">
         {isLoading && (
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Loading employees...
@@ -84,7 +85,7 @@ export default function Example() {
             },
           }}
         />
-      </div>
+      </Card>
     </>
   )
 }

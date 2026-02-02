@@ -212,7 +212,17 @@ const SuggestionInput = ({
 interface ClinicVisitFormProps {
   onIpAdmissionChange?: (value: boolean) => void
   onCaseCategoryChange?: (value: string) => void
-  onClinicSaved?: (id: string) => void
+  onClinicSaved?: (payload: {
+    id: string
+    employee: {
+      empNo: string
+      employeeName: string
+      emiratesId: string
+      insuranceId?: string
+      mobileNumber?: string
+      trLocation?: string
+    }
+  }) => void
   onReset?: () => void
   conditionMet?: boolean
 }
@@ -631,12 +641,33 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
     setSubmitting(true)
     try {
       const response = await api.post("/clinic", buildPayload())
-      const tokenValue = response?.data?.data?.tokenNo
-      const clinicId = response?.data?.data?._id
+      const clinic = response?.data?.data
+      const tokenValue = clinic?.tokenNo
+      const clinicId = clinic?._id
       
       // Call parent callback if conditions are met
       if (conditionMet && clinicId && onClinicSaved) {
-        onClinicSaved(clinicId)
+        onClinicSaved({
+          id: clinicId,
+          employee: {
+            empNo: clinic?.empNo ? String(clinic.empNo) : form.empNo,
+            employeeName: clinic?.employeeName
+              ? String(clinic.employeeName)
+              : form.employeeName,
+            emiratesId: clinic?.emiratesId
+              ? String(clinic.emiratesId)
+              : form.emiratesId,
+            insuranceId: clinic?.insuranceId
+              ? String(clinic.insuranceId)
+              : form.insuranceId || undefined,
+            mobileNumber: clinic?.mobileNumber
+              ? String(clinic.mobileNumber)
+              : form.mobileNumber || undefined,
+            trLocation: clinic?.trLocation
+              ? String(clinic.trLocation)
+              : form.trLocation || undefined,
+          },
+        })
         setCreatedTokenNo(
           tokenValue !== undefined && tokenValue !== null
             ? String(tokenValue)
@@ -949,7 +980,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                 </SelectContent>
               </Select>
             </div>
-                   <Card className="space-y-2 col-span-2">
+                   <Card className="space-y-2 col-span-2 lg:col-span-3">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
               Nurse Assessment
@@ -1057,7 +1088,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
               />
             </div>
 
-            <div className="sm:col-span-2">
+            <div className="">
               <Label htmlFor="others" className="font-medium">
                 Others
               </Label>
@@ -1129,7 +1160,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                 category={dropdownCategories.primaryDiagnosis}
               />
             </div>
-                    <Card className="space-y-2 col-span-2">
+                    <Card className="space-y-2 col-span-2 lg:col-span-3">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
               Secondary Diagnosis
@@ -1327,7 +1358,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                 }
               />
             </div>
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div className="sm:col-span-2 lg:col-span-2">
               <Label htmlFor="remarks" className="font-medium">
                 Remarks
               </Label>
@@ -1469,7 +1500,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                       }
                     />
                   </div>
-                  <div className="sm:col-span-2">
+                  <div className="sm:col-span-2 lg:col-span-3">
                     <SuggestionInput
                       id={`primaryDiagnosisReferral-${index}`}
                       label="Primary Diagnosis"
@@ -1484,7 +1515,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                       category={dropdownCategories.primaryDiagnosis}
                     />
                   </div>
-                  <div className="sm:col-span-3 space-y-3">
+                  <Card className="sm:col-span-3 lg:col-span-3 space-y-1">
                     <div className="flex items-center justify-between">
                       <Label className="font-medium">Secondary Diagnosis</Label>
                       <Button
@@ -1512,7 +1543,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                     <div className="space-y-3">
                       {referral.secondaryDiagnosisReferral.map(
                         (diagnosis, diagnosisIndex) => (
-                          <div
+                          <div details
                             key={`secondary-diagnosis-referral-${index}-${diagnosisIndex}`}
                             className="flex gap-2 items-end"
                           >
@@ -1571,8 +1602,8 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                         ),
                       )}
                     </div>
-                  </div>
-                  <div className="sm:col-span-2">
+                  </Card>
+                  <div className="sm:col-span-2 lg:col-span-3">
                     <Label className="font-medium">Nurse Remarks</Label>
                     <Input
                       className="mt-2"
@@ -1619,7 +1650,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
 
                 <Divider />
 
-                <div className="space-y-4">
+                <Card className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
                       Follow up visits
@@ -1651,7 +1682,7 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                     {referral.followUpVisits.map((visit, followIndex) => (
                       <div
                         key={`follow-${index}-${followIndex}`}
-                        className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                        className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
                       >
                         <div>
                           <Label className="font-medium">Visit Date</Label>
@@ -1684,10 +1715,36 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
                             }
                           />
                         </div>
+                        {referral.followUpVisits.length > 1 && (
+                          <div className="sm:justify-self-end">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() =>
+                                setReferrals((prev) =>
+                                  prev.map((item, i) =>
+                                    i === index
+                                      ? {
+                                          ...item,
+                                          followUpVisits:
+                                            item.followUpVisits.filter(
+                                              (_, vIndex) =>
+                                                vIndex !== followIndex,
+                                            ),
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            >
+                              Remove follow up
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
 
                 {referrals.length > 1 && (
                   <Button
