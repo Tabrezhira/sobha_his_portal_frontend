@@ -1,0 +1,797 @@
+"use client"
+
+import { useEffect, useMemo, useRef, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+
+import { Button } from "@/components/Button"
+import { Card } from "@/components/Card"
+import { Divider } from "@/components/Divider"
+import { Input } from "@/components/Input"
+import { Label } from "@/components/Label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/Select"
+import { dropdownCategories } from "@/data/schema"
+import { useDropdownStore } from "@/store/dropdown"
+import { api } from "@/lib/api"
+
+const emptyFollowUp = { date: "", remarks: "" }
+
+type DropdownApiItem = {
+  _id: string
+  name: string
+  category: string
+}
+
+type DropdownApiResponse = {
+  success: boolean
+  count?: number
+  data: DropdownApiItem[]
+}
+
+const DEFAULT_DROPDOWN_LIMIT = 5
+
+const useDropdownSearch = (
+  baseUrl: string | undefined,
+  category: string,
+  query: string,
+) => {
+  const [items, setItems] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const trimmedQuery = query.trim()
+
+    if (!trimmedQuery || !baseUrl) {
+      setItems([])
+      return
+    }
+
+    const controller = new AbortController()
+    const handle = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const url = new URL(`${baseUrl}/professions`)
+        url.searchParams.set("category", category)
+        url.searchParams.set("search", trimmedQuery)
+        url.searchParams.set("limit", String(DEFAULT_DROPDOWN_LIMIT))
+
+        const response = await fetch(url.toString(), {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          setItems([])
+          return
+        }
+
+        const payload = (await response.json()) as DropdownApiResponse
+        const names = Array.isArray(payload?.data)
+          ? payload.data
+              .map((item) => item?.name)
+              .filter((name): name is string => Boolean(name))
+          : []
+        setItems(names)
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setItems([])
+        }
+      } finally {
+        setLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      clearTimeout(handle)
+      controller.abort()
+    }
+  }, [query, category, baseUrl])
+
+  return { items, loading }
+}
+
+type SuggestionInputProps = {
+  id: string
+  label: string
+  value: string
+  onChange: (value: string) => void
+  category: string
+  required?: boolean
+  type?: string
+}
+
+const SuggestionInput = ({
+  id,
+  label,
+  value,
+  onChange,
+  category,
+  required,
+  type = "text",
+}: SuggestionInputProps) => {
+  const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+  const { items, loading } = useDropdownSearch(baseUrl, category, value)
+  const [open, setOpen] = useState(false)
+  const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const closeWithDelay = () => {
+    if (blurTimeout.current) {
+      clearTimeout(blurTimeout.current)
+    }
+    blurTimeout.current = setTimeout(() => setOpen(false), 150)
+  }
+
+  const handleSelect = (item: string) => {
+    onChange(item)
+    setOpen(false)
+  }
+
+  const showMenu = open && (loading || items.length > 0)
+
+  return (
+    <div className="relative">
+      <Label htmlFor={id} className="font-medium">
+        {label}
+        {required ? " *" : ""}
+      </Label>
+      <Input
+        id={id}
+        type={type}
+        className="mt-2"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={closeWithDelay}
+        required={required}
+        autoComplete="off"
+      />
+      {showMenu && (
+        <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+          {loading && (
+            <div className="px-3 py-2 text-xs text-gray-500">
+              Loading suggestions...
+            </div>
+          )}
+          {items.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+              onMouseDown={(event) => {
+                event.preventDefault()
+                handleSelect(item)
+              }}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function HospitalForm() {
+  const router = useRouter()
+  const fetchCategories = useDropdownStore((state) => state.fetchCategories)
+  const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
+
+  const [natureOfCaseOptions, setNatureOfCaseOptions] = useState<string[]>([])
+  const [caseCategoryOptions, setCaseCategoryOptions] = useState<string[]>([])
+  const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
+  const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
+  const [form, setForm] = useState({
+    locationId: "",
+    sno: "",
+    empNo: "",
+    employeeName: "",
+    emiratesId: "",
+    insuranceId: "",
+    trLocation: "",
+    mobileNumber: "",
+    hospitalName: "",
+    dateOfAdmission: "",
+    natureOfCase: "",
+    caseCategory: "",
+    primaryDiagnosis: "",
+    secondaryDiagnosis: "",
+    status: "Admit",
+    dischargeSummaryReceived: false,
+    dateOfDischarge: "",
+    daysHospitalized: "",
+    fitnessStatus: "",
+    isolationRequired: false,
+    finalRemarks: "",
+    createdBy: "",
+  })
+
+  const [followUp, setFollowUp] = useState([emptyFollowUp])
+  const [submitting, setSubmitting] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const canSubmit = useMemo(() => {
+    return (
+      form.empNo &&
+      form.employeeName &&
+      form.emiratesId
+    )
+  }, [form])
+
+  const updateForm = (key: keyof typeof form, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  useEffect(() => {
+    fetchCategories(process.env.NEXT_PUBLIC_DROPDOWN_API_URL)
+  }, [fetchCategories])
+
+  useEffect(() => {
+    const loadDropdownOptions = async () => {
+      const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+      if (!baseUrl) return
+
+      const [natureOfCase, caseCategory, trLocation] = await Promise.all([
+        fetchDropdownData(dropdownCategories.natureOfCase, baseUrl),
+        fetchDropdownData(dropdownCategories.caseCategory, baseUrl),
+        fetchDropdownData(dropdownCategories.trLocation, baseUrl),
+      ])
+
+      setNatureOfCaseOptions(natureOfCase)
+      setCaseCategoryOptions(caseCategory)
+      setTrLocationOptions(trLocation)
+    }
+
+    loadDropdownOptions()
+  }, [fetchDropdownData])
+
+  const handleFollowUpChange = (
+    index: number,
+    key: keyof typeof emptyFollowUp,
+    value: string,
+  ) => {
+    setFollowUp((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
+    )
+  }
+
+  const buildPayload = () => {
+    const toNumber = (value: string) => (value ? Number(value) : undefined)
+
+    const filteredFollowUp = followUp
+      .filter((item) => item.date || item.remarks)
+      .map((item) => ({
+        date: item.date || undefined,
+        remarks: item.remarks || undefined,
+      }))
+
+    return {
+      locationId: form.locationId || undefined,
+      sno: Number(form.sno),
+      empNo: form.empNo,
+      employeeName: form.employeeName,
+      emiratesId: form.emiratesId,
+      insuranceId: form.insuranceId || undefined,
+      trLocation: form.trLocation || undefined,
+      mobileNumber: form.mobileNumber || undefined,
+      hospitalName: form.hospitalName || undefined,
+      dateOfAdmission: form.dateOfAdmission || undefined,
+      natureOfCase: form.natureOfCase || undefined,
+      caseCategory: form.caseCategory || undefined,
+      primaryDiagnosis: form.primaryDiagnosis || undefined,
+      secondaryDiagnosis: secondaryDiagnoses.filter(Boolean).length
+        ? secondaryDiagnoses.filter(Boolean)
+        : undefined,
+      status: form.status || undefined,
+      dischargeSummaryReceived: form.dischargeSummaryReceived,
+      dateOfDischarge: form.dateOfDischarge || undefined,
+      daysHospitalized: toNumber(form.daysHospitalized),
+      followUp: filteredFollowUp.length ? filteredFollowUp : undefined,
+      fitnessStatus: form.fitnessStatus || undefined,
+      isolationRequired: form.isolationRequired,
+      finalRemarks: form.finalRemarks || undefined,
+      createdBy: form.createdBy,
+    }
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+    setMessage(null)
+
+    if (!canSubmit) {
+      toast.error("Please fill all required fields.")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      await api.post("/hospital", buildPayload())
+      toast.success("Hospital record saved successfully.")
+      setTimeout(() => {
+        router.push("/hospital")
+      }, 1000)
+    } catch {
+      toast.error("Failed to save hospital record.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
+            New Hospital Record
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Enter hospital details and submit.
+          </p>
+        </div>
+        <Button asChild variant="secondary">
+          <Link href="/hospital">Back to hospital</Link>
+        </Button>
+      </div>
+
+      {message && (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-200">
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Admission details
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Required fields are marked.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label htmlFor="dateOfAdmission" className="font-medium">
+                Date of Admission
+              </Label>
+              <Input
+                id="dateOfAdmission"
+                type="date"
+                className="mt-2"
+                value={form.dateOfAdmission}
+                onChange={(e) =>
+                  updateForm("dateOfAdmission", e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <SuggestionInput
+                id="hospitalName"
+                label="Hospital Name"
+                value={form.hospitalName}
+                onChange={(value) => updateForm("hospitalName", value)}
+                category={dropdownCategories.externalProvider}
+              />
+            </div>
+            <div>
+              <Label htmlFor="status" className="font-medium">
+                Status
+              </Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => updateForm("status", value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Admit">Admit</SelectItem>
+                  <SelectItem value="Discharge">Discharge</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Employee details
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label htmlFor="empNo" className="font-medium">
+                Employee No *
+              </Label>
+              <Input
+                id="empNo"
+                className="mt-2"
+                value={form.empNo}
+                onChange={(e) => updateForm("empNo", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="employeeName" className="font-medium">
+                Employee Name *
+              </Label>
+              <Input
+                id="employeeName"
+                className="mt-2"
+                value={form.employeeName}
+                onChange={(e) => updateForm("employeeName", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="emiratesId" className="font-medium">
+                Emirates ID *
+              </Label>
+              <Input
+                id="emiratesId"
+                className="mt-2"
+                value={form.emiratesId}
+                onChange={(e) => updateForm("emiratesId", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="insuranceId" className="font-medium">
+                Insurance ID
+              </Label>
+              <Input
+                id="insuranceId"
+                className="mt-2"
+                value={form.insuranceId}
+                onChange={(e) => updateForm("insuranceId", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="mobileNumber" className="font-medium">
+                Mobile Number
+              </Label>
+              <Input
+                id="mobileNumber"
+                className="mt-2"
+                value={form.mobileNumber}
+                onChange={(e) => updateForm("mobileNumber", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="trLocation" className="font-medium">
+                TR Location
+              </Label>
+              <Select
+                value={form.trLocation}
+                onValueChange={(value) => updateForm("trLocation", value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select TR location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {trLocationOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Case details
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label htmlFor="natureOfCase" className="font-medium">
+                Nature of Case
+              </Label>
+              <Select
+                value={form.natureOfCase}
+                onValueChange={(value) => updateForm("natureOfCase", value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select nature of case" />
+                </SelectTrigger>
+                <SelectContent>
+                  {natureOfCaseOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="caseCategory" className="font-medium">
+                Case Category
+              </Label>
+              <Select
+                value={form.caseCategory}
+                onValueChange={(value) => updateForm("caseCategory", value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select case category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {caseCategoryOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2">
+              <SuggestionInput
+                id="primaryDiagnosis"
+                label="Primary Diagnosis"
+                value={form.primaryDiagnosis}
+                onChange={(value) => updateForm("primaryDiagnosis", value)}
+                category={dropdownCategories.primaryDiagnosis}
+              />
+            </div>
+            <Card className="space-y-2 sm:col-span-2 lg:col-span-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+                  Secondary Diagnosis
+                </h2>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
+                >
+                  Add diagnosis
+                </Button>
+              </div>
+              <div className="space-y-3">
+                {secondaryDiagnoses.map((diagnosis, index) => (
+                  <div
+                    key={`secondary-diagnosis-${index}`}
+                    className="flex gap-2 items-end"
+                  >
+                    <div className="flex-1">
+                      <SuggestionInput
+                        id={`secondaryDiagnosis-${index}`}
+                        label={index === 0 ? "Diagnosis" : ""}
+                        value={diagnosis}
+                        onChange={(value) =>
+                          setSecondaryDiagnoses((prev) =>
+                            prev.map((item, i) =>
+                              i === index ? value : item,
+                            ),
+                          )
+                        }
+                        category={dropdownCategories.primaryDiagnosis}
+                      />
+                    </div>
+                    {secondaryDiagnoses.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setSecondaryDiagnoses((prev) =>
+                            prev.filter((_, i) => i !== index),
+                          )
+                        }
+                        className="h-10"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </Card>
+
+        <Card className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Discharge & fitness
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <Label htmlFor="dateOfDischarge" className="font-medium">
+                Date of Discharge
+              </Label>
+              <Input
+                id="dateOfDischarge"
+                type="date"
+                className="mt-2"
+                value={form.dateOfDischarge}
+                onChange={(e) =>
+                  updateForm("dateOfDischarge", e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="daysHospitalized" className="font-medium">
+                Days Hospitalized
+              </Label>
+              <Input
+                id="daysHospitalized"
+                type="number"
+                enableStepper={false}
+                className="mt-2"
+                value={form.daysHospitalized}
+                onChange={(e) =>
+                  updateForm("daysHospitalized", e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="fitnessStatus" className="font-medium">
+                Fitness Status
+              </Label>
+              <Select
+                value={form.fitnessStatus}
+                onValueChange={(value) => updateForm("fitnessStatus", value)}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select fitness status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Fit to Work">Fit to Work</SelectItem>
+                  <SelectItem value="Fit with Restriction">Fit with Restriction</SelectItem>
+                  <SelectItem value="Not Fit to Work">Not Fit to Work</SelectItem>
+                  <SelectItem value="Not Decided">Not Decided</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="dischargeSummaryReceived" className="font-medium">
+                Discharge Summary Received
+              </Label>
+              <Select
+                value={form.dischargeSummaryReceived ? "Yes" : "No"}
+                onValueChange={(value) =>
+                  updateForm("dischargeSummaryReceived", value === "Yes")
+                }
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="isolationRequired" className="font-medium">
+                Isolation Required
+              </Label>
+              <Select
+                value={form.isolationRequired ? "Yes" : "No"}
+                onValueChange={(value) =>
+                  updateForm("isolationRequired", value === "Yes")
+                }
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Follow up visits
+            </h2>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFollowUp((prev) => [...prev, emptyFollowUp])}
+            >
+              Add follow up
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {followUp.map((visit, index) => (
+              <div
+                key={`followup-${index}`}
+                className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 p-4 sm:grid-cols-2 dark:border-gray-900"
+              >
+                <div>
+                  <Label className="font-medium">Date</Label>
+                  <Input
+                    type="date"
+                    className="mt-2"
+                    value={visit.date}
+                    onChange={(e) =>
+                      handleFollowUpChange(index, "date", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="font-medium">Remarks</Label>
+                  <Input
+                    className="mt-2"
+                    value={visit.remarks}
+                    onChange={(e) =>
+                      handleFollowUpChange(index, "remarks", e.target.value)
+                    }
+                  />
+                </div>
+                {followUp.length > 1 && (
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() =>
+                        setFollowUp((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Divider />
+
+        <Card className="space-y-6">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+              Final notes
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Label htmlFor="finalRemarks" className="font-medium">
+                Final Remarks
+              </Label>
+              <Input
+                id="finalRemarks"
+                className="mt-2"
+                value={form.finalRemarks}
+                onChange={(e) => updateForm("finalRemarks", e.target.value)}
+              />
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Saving..." : "Save hospital record"}
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/hospital">Cancel</Link>
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
