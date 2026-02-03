@@ -7,6 +7,14 @@ import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
+import { Spinner } from "@/components/ui/Spinner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/Dialog"
 import { useAuthStore } from "@/store/auth"
 import { cx } from "@/lib/utils"
 
@@ -18,6 +26,8 @@ export function LoginForm({
   const { login, isLoading, error, } = useAuthStore()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogType, setDialogType] = useState<"signup" | "forgot" | null>(null)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -67,12 +77,16 @@ export function LoginForm({
               <Label htmlFor="password" className="font-medium">
                 Password
               </Label>
-              <a
-                href="#"
+              <button
+                type="button"
+                onClick={() => {
+                  setDialogType("forgot")
+                  setDialogOpen(true)
+                }}
                 className="text-sm text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
               >
                 Forgot your password?
-              </a>
+              </button>
             </div>
             <Input
               id="password"
@@ -88,15 +102,48 @@ export function LoginForm({
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Login"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner className="h-4 w-4" />
+                  Signing in...
+                </span>
+              ) : (
+                "Login"
+              )}
             </Button>
   
           </div>
           <p className="text-center text-sm text-gray-500">
-            Don&apos;t have an account? <a href="#">Sign up</a>
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setDialogType("signup")
+                setDialogOpen(true)
+              }}
+              className="text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+            >
+              Sign up
+            </button>
           </p>
         </form>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {dialogType === "signup" ? "Sign up" : "Forgot your password?"}
+            </DialogTitle>
+            <DialogDescription>
+              Please contact the admin department for assistance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end mt-4">
+            <Button onClick={() => setDialogOpen(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

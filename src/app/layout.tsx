@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
   },
 }
 
