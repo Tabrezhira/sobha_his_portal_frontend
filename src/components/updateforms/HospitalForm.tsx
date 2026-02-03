@@ -51,6 +51,22 @@ const getDisplayOptions = (options: string[], current?: string) => {
   return Array.from(new Set(items)).filter(Boolean)
 }
 
+const normalizeSelectValue = (value?: string) =>
+  typeof value === "string" ? value.trim() : ""
+
+const ensureAndReturnOptions = (
+  options: string[],
+  value: string | undefined,
+): string[] => {
+  const normalized = normalizeSelectValue(value)
+  if (!normalized) return options
+
+  const exists = options.some(
+    (opt) => normalizeSelectValue(opt) === normalized,
+  )
+  return exists ? options : [...options, normalized]
+}
+
 type ClinicEmployeeDetails = {
   empNo: string
   employeeName: string
@@ -296,6 +312,22 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
       return value.toISOString().slice(0, 10)
     }
 
+    // Ensure all values from initialData are in their respective options
+    const updatedNatureOfCaseOptions = normalizeSelectValue(initialData.natureOfCase)
+      ? ensureAndReturnOptions(natureOfCaseOptions, initialData.natureOfCase)
+      : natureOfCaseOptions
+    const updatedCaseCategoryOptions = normalizeSelectValue(initialData.caseCategory)
+      ? ensureAndReturnOptions(caseCategoryOptions, initialData.caseCategory)
+      : caseCategoryOptions
+    const updatedTrLocationOptions = normalizeSelectValue(initialData.trLocation)
+      ? ensureAndReturnOptions(trLocationOptions, initialData.trLocation)
+      : trLocationOptions
+
+    // Update state with all options at once
+    setNatureOfCaseOptions(updatedNatureOfCaseOptions)
+    setCaseCategoryOptions(updatedCaseCategoryOptions)
+    setTrLocationOptions(updatedTrLocationOptions)
+
     setForm((prev) => ({
       ...prev,
       locationId: initialData.locationId ?? "",
@@ -344,7 +376,7 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
           }))
         : [emptyFollowUp],
     )
-  }, [initialData, clinicVisitId])
+  }, [initialData, clinicVisitId, natureOfCaseOptions, caseCategoryOptions, trLocationOptions])
 
   useEffect(() => {
     if (!employee) return

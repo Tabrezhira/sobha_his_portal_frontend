@@ -63,6 +63,22 @@ const getDisplayOptions = (options: string[], current?: string) => {
   return Array.from(new Set(items)).filter(Boolean)
 }
 
+const normalizeSelectValue = (value?: string) =>
+  typeof value === "string" ? value.trim() : ""
+
+const ensureAndReturnOptions = (
+  options: string[],
+  value: string | undefined,
+): string[] => {
+  const normalized = normalizeSelectValue(value)
+  if (!normalized) return options
+
+  const exists = options.some(
+    (opt) => normalizeSelectValue(opt) === normalized,
+  )
+  return exists ? options : [...options, normalized]
+}
+
 const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
   function IsolationForm(
     {
@@ -126,6 +142,14 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
       return value.toISOString().slice(0, 10)
     }
 
+    // Ensure all values from initialData are in their respective options
+    const updatedTrLocationOptions = normalizeSelectValue(initialData.trLocation)
+      ? ensureAndReturnOptions(trLocationOptions, initialData.trLocation)
+      : trLocationOptions
+
+    // Update state with all options at once
+    setTrLocationOptions(updatedTrLocationOptions)
+
     setForm((prev) => ({
       ...prev,
       locationId: initialData.locationId ?? "",
@@ -147,7 +171,7 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
       currentStatus: initialData.currentStatus ?? "",
       remarks: initialData.remarks ?? "",
     }))
-  }, [initialData, clinicVisitId])
+  }, [initialData, clinicVisitId, trLocationOptions])
 
   useEffect(() => {
     if (!employee) return
