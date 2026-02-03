@@ -22,8 +22,17 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet"
 
-import { Patient } from "@/data/schema"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/Select"
+
+import { Patient, dropdownCategories } from "@/data/schema"
 import { dropdownApi } from "@/lib/api"
+import { useDropdownData } from "@/hooks/useDropdownData"
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -35,6 +44,8 @@ export function DataTableRowActions<TData>({
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const patient = row.original as Patient
+  
+  const { data: trLocationOptions } = useDropdownData(dropdownCategories.trLocation)
 
   const [formData, setFormData] = useState({
     empId: patient.empId || "",
@@ -181,14 +192,21 @@ export function DataTableRowActions<TData>({
               >
                 TR Location
               </label>
-              <input
-                id="trLocation"
-                name="trLocation"
-                type="text"
+              <Select
                 value={formData.trLocation}
-                onChange={handleInputChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, trLocation: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select TR location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {trLocationOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

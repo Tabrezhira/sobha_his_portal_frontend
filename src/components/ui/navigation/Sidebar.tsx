@@ -29,11 +29,11 @@ const navigation = [
     href: siteConfig.baseLinks.isolation,
     icon: RiShieldCrossLine,
   },
-  {
-    name: "Settings",
-    href: siteConfig.baseLinks.settings.general,
-    icon: RiSettings5Line,
-  },
+  // {
+  //   name: "Settings",
+  //   href: siteConfig.baseLinks.settings.general,
+  //   icon: RiSettings5Line,
+  // },
 ] as const
 
 const shortcuts = [

@@ -50,10 +50,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <div className="mx-auto max-w-screen-2xl">
-          <ThemeProvider defaultTheme="system" attribute="class">
+          {/* <ThemeProvider defaultTheme="system" attribute="class"> */}
             <AuthShell>{children}</AuthShell>
             <Toaster />
-          </ThemeProvider>
+          {/* </ThemeProvider> */}
         </div>
       </body>
     </html>

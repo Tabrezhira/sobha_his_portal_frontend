@@ -54,7 +54,7 @@ export function DropdownUserProfile({
             {user?.email ?? profile?.email ?? user?.name ?? profile?.name ??
               "Signed in"}
           </DropdownMenuLabel>
-          <DropdownMenuGroup>
+          {/* <DropdownMenuGroup>
             <DropdownMenuSubMenu>
               <DropdownMenuSubMenuTrigger>Theme</DropdownMenuSubMenuTrigger>
               <DropdownMenuSubMenuContent>
@@ -97,7 +97,7 @@ export function DropdownUserProfile({
                 </DropdownMenuRadioGroup>
               </DropdownMenuSubMenuContent>
             </DropdownMenuSubMenu>
-          </DropdownMenuGroup>
+          </DropdownMenuGroup> */}
           <DropdownMenuSeparator />
           {/* <DropdownMenuGroup>
             <DropdownMenuItem>
