@@ -15,14 +15,23 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
-  const { login, isLoading, error } = useAuthStore()
+  const { login, isLoading, error, user } = useAuthStore()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     await login(email, password)
-    router.replace("/overview")
+    
+    // Get the updated user from the store
+    const currentUser = useAuthStore.getState().user
+    
+    // Redirect based on role
+    if (currentUser?.role === "staff") {
+      router.replace("/employee")
+    } else {
+      router.replace("/overview")
+    }
   }
 
   return (
