@@ -7,7 +7,7 @@ import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
-import { Spinner } from "@/components/ui/Spinner"
+import { Spinner } from "@/components/spinner"
 import {
   Dialog,
   DialogContent,
