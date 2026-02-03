@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/Button"
@@ -28,6 +28,13 @@ export function LoginForm({
   const [password, setPassword] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogType, setDialogType] = useState<"signup" | "forgot" | null>(null)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [, startTransition] = useTransition()
+
+  useEffect(() => {
+    router.prefetch("/overview")
+    router.prefetch("/employee")
+  }, [router])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -38,9 +45,15 @@ export function LoginForm({
     
     // Redirect based on role
     if (currentUser?.role === "staff") {
-      router.replace("/employee")
+      setIsRedirecting(true)
+      startTransition(() => {
+        router.replace("/employee")
+      })
     } else {
-      router.replace("/overview")
+      setIsRedirecting(true)
+      startTransition(() => {
+        router.replace("/overview")
+      })
     }
   }
 
@@ -101,11 +114,11 @@ export function LoginForm({
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full" disabled={isLoading || isRedirecting}>
+              {isLoading || isRedirecting ? (
                 <span className="flex items-center gap-2">
                   <Spinner className="h-4 w-4" />
-                  Signing in...
+                  {isLoading ? "Signing in..." : "Redirecting..."}
                 </span>
               ) : (
                 "Login"
