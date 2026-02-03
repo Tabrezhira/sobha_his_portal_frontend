@@ -8,7 +8,7 @@ import {
   useState,
 } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
@@ -44,6 +44,7 @@ type IsolationFormProps = {
   initialData?: IsolationFormInitialData
   hideActions?: boolean
   onSaveSuccess?: () => void
+  clinicIsolations?: any[]
 }
 
 export type IsolationFormRef = {
@@ -88,10 +89,11 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
       initialData,
       hideActions = false,
       onSaveSuccess,
+      clinicIsolations,
     },
     ref,
   ) {
-  const router = useRouter()
+  // const router = useRouter()
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -117,9 +119,10 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
   })
 
   const isEditMode = mode === "edit"
-  const isolationRecordId = initialData?._id ?? initialData?.id
+  // const isolationRecordId = initialData?._id ?? initialData?.id
 
   const [submitting, setSubmitting] = useState(false)
+  const [hasChangesAfterUpdate, setHasChangesAfterUpdate] = useState(true)
 
   const trLocationDisplayOptions = useMemo(() => {
     const current = form.trLocation?.trim()
@@ -197,6 +200,9 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
   }
 
   useEffect(() => {
@@ -246,57 +252,57 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
     isValid: () => Boolean(canSubmit),
   }))
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault()
 
-    if (!clinicVisitId && !form.clinicVisitId) {
-      toast.error("Clinic visit is required. Please save clinic visit first.")
-      return
-    }
+  if (!clinicVisitId && !form.clinicVisitId) {
+    toast.error("Clinic visit is required. Please save clinic visit first.")
+    return
+  }
 
-    if (!canSubmit) {
-      toast.error("Please fill all required fields.")
-      return
-    }
+  if (!canSubmit) {
+    toast.error("Please fill all required fields.")
+    return
+  }
 
-    if (isEditMode && !isolationRecordId) {
-      toast.error("Isolation record not found.")
-      return
-    }
+  const existingIsolation =
+    clinicIsolations?.find((iso: any) => iso?._id)
 
-    setSubmitting(true)
-    try {
-      if (isEditMode && isolationRecordId) {
-        await api.put(`/isolation/${isolationRecordId}`, buildPayload())
-        toast.success("Isolation record updated successfully.")
-        if (onSaveSuccess) {
-          onSaveSuccess()
-        } else {
-          router.push("/isolation")
-        }
-        return
-      }
+  const isolationRecordId = existingIsolation?._id
 
-      const response = await api.post("/isolation", buildPayload())
-      toast.success("Isolation record saved successfully.")
+  setSubmitting(true)
 
-      // Redirect to the detail page if we get an ID back
+  try {
+    if (isolationRecordId) {
+      // ✅ PUT — update existing isolation (NO REDIRECT)
+      await api.put(`/isolation/${isolationRecordId}`, buildPayload())
+      toast.success("Isolation record updated successfully.")
+      setHasChangesAfterUpdate(false)
+
       if (onSaveSuccess) {
         onSaveSuccess()
-      } else if (response.data?._id) {
-        router.push(`/isolation/${response.data._id}`)
-      } else {
-        router.push("/isolation")
       }
-    } catch {
-      toast.error(
-        isEditMode
-          ? "Failed to update isolation record."
-          : "Failed to save isolation record.",
-      )
-      setSubmitting(false)
+
+      return
     }
+
+    // ✅ POST — create new isolation (NO REDIRECT)
+    await api.post("/isolation", buildPayload())
+    toast.success("Isolation record created successfully.")
+
+    if (onSaveSuccess) {
+      onSaveSuccess()
+    }
+  } catch {
+    toast.error(
+      isolationRecordId
+        ? "Failed to update isolation record."
+        : "Failed to save isolation record."
+    )
+  } finally {
+    setSubmitting(false)
   }
+}
 
   return (
     <div className="space-y-6">
@@ -557,7 +563,10 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
             <Button asChild variant="secondary">
               <Link href="/isolation">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={!canSubmit || submitting}>
+            <Button 
+              type="submit" 
+              disabled={!canSubmit || submitting || (mode === "edit" && !hasChangesAfterUpdate)}
+            >
               {submitting
                 ? isEditMode
                   ? "Updating..."

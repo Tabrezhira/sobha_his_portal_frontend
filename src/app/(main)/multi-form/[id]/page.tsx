@@ -54,6 +54,7 @@ export default function MultiFormEditPage() {
   )
   const [ipAdmissionRequired, setIpAdmissionRequired] = useState(false)
   const [caseCategory, setCaseCategory] = useState("")
+  const [isolationRequired, setIsolationRequired] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<
@@ -109,7 +110,9 @@ export default function MultiFormEditPage() {
 
   const isHospitalEnabled = ipAdmissionRequired || hasHospitalRecord
   const isIsolationEnabled =
-    caseCategory === "COMMUNICABLE /INFECTIOUS DISEASE" || hasIsolationRecord
+    caseCategory === "COMMUNICABLE /INFECTIOUS DISEASE" || 
+    isolationRequired || 
+    hasIsolationRecord
 
   const requestedTab = searchParams.get("tab")
 
@@ -205,6 +208,8 @@ export default function MultiFormEditPage() {
                 employee={clinicEmployee}
                 initialData={hospitalData ?? undefined}
                 onSaveSuccess={handleSaveComplete}
+                clinicHospitalizations={clinicData?.hospitalizations}
+                onIsolationRequiredChange={setIsolationRequired}
               />
             )}
           </TabsContent>
@@ -219,6 +224,7 @@ export default function MultiFormEditPage() {
                 employee={clinicEmployee}
                 initialData={isolationData ?? undefined}
                 onSaveSuccess={handleSaveComplete}
+                clinicIsolations={clinicData?.isolations}
               />
             )}
           </TabsContent>

@@ -295,7 +295,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       onCaseCategoryChange,
       onClinicSaved,
       onReset,
-      onSaveSuccess,
+      // onSaveSuccess,
       conditionMet,
       clinicSaved,
       mode = "create",
@@ -668,6 +668,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
   )
   const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
   const lastFetchedEmpNo = useRef<string | null>(null)
+  const [hasChangesAfterUpdate, setHasChangesAfterUpdate] = useState(true)
 
   const canSubmit = useMemo(() => {
     return Boolean(
@@ -686,6 +687,11 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
 
   const updateForm = (key: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
+    
+    // Mark that changes have been made in edit mode
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
     
     // Notify parent of changes
     if (key === "ipAdmissionRequired" && onIpAdmissionChange) {
@@ -742,6 +748,9 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     setMedicines((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     )
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
   }
 
   const handleReferralChange = (
@@ -752,6 +761,9 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     setReferrals((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     )
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
   }
 
   const handleFollowUpChange = (
@@ -769,6 +781,9 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         return { ...ref, followUpVisits }
       }),
     )
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
   }
 
   const buildPayload = () => {
@@ -922,9 +937,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       if (isEditMode && clinicRecordId) {
         await api.put(`/clinic/${clinicRecordId}`, buildPayload())
         toast.success("Clinic visit updated successfully.")
-        if (onSaveSuccess) {
-          onSaveSuccess()
-        }
+        setHasChangesAfterUpdate(false)
         return
       }
 
@@ -1292,7 +1305,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setNurseAssessments((prev) => [...prev, ""])}
+              onClick={() => {
+                setNurseAssessments((prev) => [...prev, ""])
+                if (isEditMode) setHasChangesAfterUpdate(true)
+              }}
             >
               Add assessment
             </Button>
@@ -1308,11 +1324,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                     id={`nurseAssessment-${index}`}
                     label={index === 0 ? "Assessment" : ""}
                     value={assessment}
-                    onChange={(value) =>
+                    onChange={(value) => {
                       setNurseAssessments((prev) =>
                         prev.map((item, i) => (i === index ? value : item))
                       )
-                    }
+                      if (isEditMode) setHasChangesAfterUpdate(true)
+                    }}
                     category={dropdownCategories.nurseAssessment}
                   />
                 </div>
@@ -1320,11 +1337,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() =>
+                    onClick={() => {
                       setNurseAssessments((prev) =>
                         prev.filter((_, i) => i !== index)
                       )
-                    }
+                      if (isEditMode) setHasChangesAfterUpdate(true)
+                    }}
                     className="h-10"
                   >
                     Remove
@@ -1480,7 +1498,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
+              onClick={() => {
+                setSecondaryDiagnoses((prev) => [...prev, ""])
+                if (isEditMode) setHasChangesAfterUpdate(true)
+              }}
             >
               Add diagnosis
             </Button>
@@ -1496,11 +1517,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                     id={`secondaryDiagnosis-${index}`}
                     label={index === 0 ? "Diagnosis" : ""}
                     value={diagnosis}
-                    onChange={(value) =>
+                    onChange={(value) => {
                       setSecondaryDiagnoses((prev) =>
                         prev.map((item, i) => (i === index ? value : item))
                       )
-                    }
+                      if (isEditMode) setHasChangesAfterUpdate(true)
+                    }}
                     category={dropdownCategories.primaryDiagnosis}
                   />
                 </div>
@@ -1508,11 +1530,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() =>
+                    onClick={() => {
                       setSecondaryDiagnoses((prev) =>
                         prev.filter((_, i) => i !== index)
                       )
-                    }
+                      if (isEditMode) setHasChangesAfterUpdate(true)
+                    }}
                     className="h-10"
                   >
                     Remove
@@ -1533,7 +1556,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setMedicines((prev) => [...prev, emptyMedicine])}
+              onClick={() => {
+                setMedicines((prev) => [...prev, emptyMedicine])
+                if (isEditMode) setHasChangesAfterUpdate(true)
+              }}
             >
               Add medicine
             </Button>
@@ -1594,11 +1620,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() =>
+                      onClick={() => {
                         setMedicines((prev) =>
                           prev.filter((_, i) => i !== index),
                         )
-                      }
+                        if (isEditMode) setHasChangesAfterUpdate(true)
+                      }}
                     >
                       Remove
                     </Button>
@@ -1694,7 +1721,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setReferrals((prev) => [...prev, emptyReferral])}
+              onClick={() => {
+                setReferrals((prev) => [...prev, emptyReferral])
+                if (isEditMode) setHasChangesAfterUpdate(true)
+              }}
             >
               Add referral
             </Button>
@@ -1982,7 +2012,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() =>
+                      onClick={() => {
                         setReferrals((prev) =>
                           prev.map((item, i) =>
                             i === index
@@ -1996,7 +2026,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                               : item,
                           ),
                         )
-                      }
+                        if (isEditMode) setHasChangesAfterUpdate(true)
+                      }}
                     >
                       Add follow up
                     </Button>
@@ -2044,7 +2075,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                             <Button
                               type="button"
                               variant="secondary"
-                              onClick={() =>
+                              onClick={() => {
                                 setReferrals((prev) =>
                                   prev.map((item, i) =>
                                     i === index
@@ -2059,7 +2090,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                                       : item,
                                   ),
                                 )
-                              }
+                                if (isEditMode) setHasChangesAfterUpdate(true)
+                              }}
                             >
                               Remove follow up
                             </Button>
@@ -2074,9 +2106,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() =>
+                    onClick={() => {
                       setReferrals((prev) => prev.filter((_, i) => i !== index))
-                    }
+                      if (isEditMode) setHasChangesAfterUpdate(true)
+                    }}
                   >
                     Remove referral
                   </Button>
@@ -2122,7 +2155,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
               type="submit"
               disabled={
                 submitting ||
-                (mode === "create" && Boolean(conditionMet && clinicSaved))
+                (mode === "create" && Boolean(conditionMet && clinicSaved)) ||
+                (mode === "edit" && !hasChangesAfterUpdate)
               }
             >
               {submitting

@@ -9,7 +9,7 @@ import {
   useState,
 } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
@@ -83,6 +83,8 @@ type HospitalFormProps = {
   initialData?: HospitalFormInitialData
   hideActions?: boolean
   onSaveSuccess?: () => void
+  clinicHospitalizations?: any[]
+  onIsolationRequiredChange?: (required: boolean) => void
 }
 
 export type HospitalFormRef = {
@@ -246,10 +248,12 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
       initialData,
       hideActions = false,
       onSaveSuccess,
+      clinicHospitalizations,
+      onIsolationRequiredChange,
     },
     ref,
   ) {
-  const router = useRouter()
+  // const router = useRouter()
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -284,12 +288,13 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
   })
 
   const isEditMode = mode === "edit"
-  const hospitalRecordId = initialData?._id ?? initialData?.id
+  // const hospitalRecordId = initialData?._id ?? initialData?.id
 
   const [followUp, setFollowUp] = useState([emptyFollowUp])
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [hasChangesAfterUpdate, setHasChangesAfterUpdate] = useState(true)
 
   const trLocationDisplayOptions = useMemo(() => {
     const current = form.trLocation?.trim()
@@ -376,7 +381,12 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
           }))
         : [emptyFollowUp],
     )
-  }, [initialData, clinicVisitId, natureOfCaseOptions, caseCategoryOptions, trLocationOptions])
+    
+    // Notify parent of initial isolationRequired value
+    if (onIsolationRequiredChange) {
+      onIsolationRequiredChange(Boolean(initialData.isolationRequired))
+    }
+  }, [initialData, clinicVisitId, natureOfCaseOptions, caseCategoryOptions, trLocationOptions, onIsolationRequiredChange])
 
   useEffect(() => {
     if (!employee) return
@@ -402,6 +412,14 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
 
   const updateForm = (key: keyof typeof form, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }))
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
+    
+    // Notify parent of isolationRequired changes
+    if (key === "isolationRequired" && onIsolationRequiredChange) {
+      onIsolationRequiredChange(value as boolean)
+    }
   }
 
   useEffect(() => {
@@ -435,6 +453,9 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
     setFollowUp((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     )
+    if (isEditMode) {
+      setHasChangesAfterUpdate(true)
+    }
   }
 
   const buildPayload = () => {
@@ -482,60 +503,114 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
     isValid: () => Boolean(canSubmit),
   }))
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setError(null)
-    setMessage(null)
 
-    if (!clinicVisitId && !form.clinicVisitId) {
-      toast.error("Clinic visit is required. Please save clinic visit first.")
-      return
-    }
+// const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//   event.preventDefault()
+//   setError(null)
+//   setMessage(null)
 
-    if (!canSubmit) {
-      toast.error("Please fill all required fields.")
-      return
-    }
+//   if (!clinicVisitId && !form.clinicVisitId) {
+//     toast.error("Clinic visit is required. Please save clinic visit first.")
+//     return
+//   }
 
-    if (isEditMode && !hospitalRecordId) {
-      toast.error("Hospital record not found.")
-      return
-    }
+//   if (!canSubmit) {
+//     toast.error("Please fill all required fields.")
+//     return
+//   }
 
-    setSubmitting(true)
-    try {
-      if (isEditMode && hospitalRecordId) {
-        await api.put(`/hospital/${hospitalRecordId}`, buildPayload())
-        toast.success("Hospital record updated successfully.")
-        if (onSaveSuccess) {
-          onSaveSuccess()
-        } else {
-          setTimeout(() => {
-            router.push("/hospital")
-          }, 1000)
-        }
-        return
-      }
+//   // 🔹 FIND EXISTING HOSPITALIZATION ID (from your JSON)
+//   const existingHospitalization =
+//     clinicHospitalizations?.find((h: any) => h?._id)
 
-      await api.post("/hospital", buildPayload())
-      toast.success("Hospital record saved successfully.")
+//   const hospitalRecordId = existingHospitalization?._id
+
+//   setSubmitting(true)
+
+//   try {
+//     if (hospitalRecordId) {
+//       // ✅ PUT - Update existing hospitalization
+//       await api.put(`/hospital/${hospitalRecordId}`, buildPayload())
+//       toast.success("Hospital record updated successfully.")
+//       setHasChangesAfterUpdate(false)
+//       return
+//     }
+
+//     // ✅ POST - Create new hospitalization
+//     await api.post("/hospital", buildPayload())
+//     toast.success("Hospital record created successfully.")
+
+//     if (onSaveSuccess) {
+//       onSaveSuccess()
+//     } else {
+//       setTimeout(() => {
+//         router.push("/hospital")
+//       }, 1000)
+//     }
+//   } catch {
+//     toast.error(
+//       hospitalRecordId
+//         ? "Failed to update hospital record."
+//         : "Failed to save hospital record."
+//     )
+//   } finally {
+//     setSubmitting(false)
+//   }
+// }
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault()
+  setError(null)
+  setMessage(null)
+
+  if (!clinicVisitId && !form.clinicVisitId) {
+    toast.error("Clinic visit is required. Please save clinic visit first.")
+    return
+  }
+
+  if (!canSubmit) {
+    toast.error("Please fill all required fields.")
+    return
+  }
+
+  // Get existing hospitalization ID from clinicHospitalizations (not initialData)
+  const existingHospitalization =
+    clinicHospitalizations?.find((h: any) => h?._id)
+
+  const hospitalRecordId = existingHospitalization?._id
+
+  setSubmitting(true)
+
+  try {
+    if (hospitalRecordId) {
+      // ✅ PUT — update existing hospital record (NO REDIRECT)
+      await api.put(`/hospital/${hospitalRecordId}`, buildPayload())
+      toast.success("Hospital record updated successfully.")
+      setHasChangesAfterUpdate(false)
+
       if (onSaveSuccess) {
         onSaveSuccess()
-      } else {
-        setTimeout(() => {
-          router.push("/hospital")
-        }, 1000)
       }
-    } catch {
-      toast.error(
-        isEditMode
-          ? "Failed to update hospital record."
-          : "Failed to save hospital record.",
-      )
-    } finally {
-      setSubmitting(false)
+
+      return
     }
+
+    // ✅ POST — create new hospital record (NO REDIRECT)
+    await api.post("/hospital", buildPayload())
+    toast.success("Hospital record created successfully.")
+
+    if (onSaveSuccess) {
+      onSaveSuccess()
+    }
+  } catch {
+    toast.error(
+      hospitalRecordId
+        ? "Failed to update hospital record."
+        : "Failed to save hospital record."
+    )
+  } finally {
+    setSubmitting(false)
   }
+}
 
   return (
     <div className="space-y-6">
@@ -780,7 +855,10 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
+                  onClick={() => {
+                    setSecondaryDiagnoses((prev) => [...prev, ""])
+                    if (isEditMode) setHasChangesAfterUpdate(true)
+                  }}
                 >
                   Add diagnosis
                 </Button>
@@ -796,13 +874,14 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                         id={`secondaryDiagnosis-${index}`}
                         label={index === 0 ? "Diagnosis" : ""}
                         value={diagnosis}
-                        onChange={(value) =>
+                        onChange={(value) => {
                           setSecondaryDiagnoses((prev) =>
                             prev.map((item, i) =>
                               i === index ? value : item,
                             ),
                           )
-                        }
+                          if (isEditMode) setHasChangesAfterUpdate(true)
+                        }}
                         category={dropdownCategories.primaryDiagnosis}
                       />
                     </div>
@@ -810,11 +889,12 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() =>
+                        onClick={() => {
                           setSecondaryDiagnoses((prev) =>
                             prev.filter((_, i) => i !== index),
                           )
-                        }
+                          if (isEditMode) setHasChangesAfterUpdate(true)
+                        }}
                         className="h-10"
                       >
                         Remove
@@ -931,7 +1011,10 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setFollowUp((prev) => [...prev, emptyFollowUp])}
+              onClick={() => {
+                setFollowUp((prev) => [...prev, emptyFollowUp])
+                if (isEditMode) setHasChangesAfterUpdate(true)
+              }}
             >
               Add follow up
             </Button>
@@ -968,11 +1051,12 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() =>
+                      onClick={() => {
                         setFollowUp((prev) =>
                           prev.filter((_, i) => i !== index),
                         )
-                      }
+                        if (isEditMode) setHasChangesAfterUpdate(true)
+                      }}
                     >
                       Remove
                     </Button>
@@ -1008,7 +1092,10 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
 
         {!hideActions && (
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={submitting}>
+            <Button 
+              type="submit" 
+              disabled={submitting || (mode === "edit" && !hasChangesAfterUpdate)}
+            >
               {submitting
                 ? isEditMode
                   ? "Updating..."
