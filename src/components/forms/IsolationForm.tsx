@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   forwardRef,
   useEffect,
@@ -7,8 +9,6 @@ import {
   useMemo,
   useState,
 } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
@@ -23,10 +23,11 @@ import {
   SelectValue,
 } from "@/components/Select"
 import { Textarea } from "@/components/Textarea"
-import { dropdownCategories } from "@/data/schema"
-import { useDropdownStore } from "@/store/dropdown"
-import { api } from "@/lib/api"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Isolation } from "@/data/schema"
+import { dropdownCategories } from "@/data/schema"
+import { api } from "@/lib/api"
+import { useDropdownStore } from "@/store/dropdown"
 
 type ClinicEmployeeDetails = {
   empNo: string
@@ -381,11 +382,13 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
                   <SelectValue placeholder="Select TR location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationDisplayOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {trLocationDisplayOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -413,8 +416,10 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ISOLATION">ISOLATION</SelectItem>
-                  <SelectItem value="REHABILITATION">REHABILITATION</SelectItem>
+                  <ScrollArea className="h-[200px]">
+                    <SelectItem value="ISOLATION">ISOLATION</SelectItem>
+                    <SelectItem value="REHABILITATION">REHABILITATION</SelectItem>
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -440,14 +445,16 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    trLocationOptions,
-                    form.isolatedIn,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      trLocationOptions,
+                      form.isolatedIn,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>

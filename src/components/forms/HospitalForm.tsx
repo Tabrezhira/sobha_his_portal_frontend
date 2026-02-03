@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   forwardRef,
   useEffect,
@@ -8,8 +10,6 @@ import {
   useRef,
   useState,
 } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
@@ -24,10 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/Select"
-import { dropdownCategories } from "@/data/schema"
-import { useDropdownStore } from "@/store/dropdown"
-import { api } from "@/lib/api"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Hospital } from "@/data/schema"
+import { dropdownCategories } from "@/data/schema"
+import { api } from "@/lib/api"
+import { useDropdownStore } from "@/store/dropdown"
 
 const emptyFollowUp = { date: "", remarks: "" }
 
@@ -582,8 +583,10 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Admit">Admit</SelectItem>
-                  <SelectItem value="Discharge">Discharge</SelectItem>
+                  <ScrollArea className="h-[200px]">
+                    <SelectItem value="Admit">Admit</SelectItem>
+                    <SelectItem value="Discharge">Discharge</SelectItem>
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -667,11 +670,13 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                   <SelectValue placeholder="Select TR location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationDisplayOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {trLocationDisplayOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -697,14 +702,16 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                   <SelectValue placeholder="Select nature of case" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    natureOfCaseOptions,
-                    form.natureOfCase,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      natureOfCaseOptions,
+                      form.natureOfCase,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -720,14 +727,16 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
                   <SelectValue placeholder="Select case category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    caseCategoryOptions,
-                    form.caseCategory,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      caseCategoryOptions,
+                      form.caseCategory,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>

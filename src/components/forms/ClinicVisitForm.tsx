@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   forwardRef,
   useEffect,
@@ -8,15 +9,11 @@ import {
   useRef,
   useState,
 } from "react"
-import Link from "next/link"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import { Checkbox } from "@/components/Checkbox"
-import { Divider } from "@/components/Divider"
-import { Input } from "@/components/Input"
-import { Label } from "@/components/Label"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/Dialog"
+import { Divider } from "@/components/Divider"
+import { Input } from "@/components/Input"
+import { Label } from "@/components/Label"
 import {
   Select,
   SelectContent,
@@ -32,10 +32,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/Select"
-import { dropdownCategories } from "@/data/schema"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { ClinicVisit } from "@/data/schema"
-import { useDropdownStore } from "@/store/dropdown"
+import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
+import { useDropdownStore } from "@/store/dropdown"
 
 const emptyMedicine = { name: "", course: "", expiryDate: "" }
 const emptyFollowUp = { visitDate: "", visitRemarks: "" }
@@ -1014,10 +1015,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                  <SelectItem value="Referred">Referred</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  <ScrollArea className="h-[200px]">
+                    <SelectItem value="Open">Open</SelectItem>
+                    <SelectItem value="Closed">Closed</SelectItem>
+                    <SelectItem value="Referred">Referred</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1105,13 +1108,15 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select TR location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(trLocationOptions, form.trLocation).map(
-                    (option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                    ),
-                  )}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(trLocationOptions, form.trLocation).map(
+                      (option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                      ),
+                    )}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1150,14 +1155,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select nature of case" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    natureOfCaseOptions,
-                    form.natureOfCase,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      natureOfCaseOptions,
+                      form.natureOfCase,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1174,14 +1181,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select case category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    caseCategoryOptions,
-                    form.caseCategory,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      caseCategoryOptions,
+                      form.caseCategory,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1247,14 +1256,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select symptom duration" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    symptomDurationOptions,
-                    form.symptomDuration,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      symptomDurationOptions,
+                      form.symptomDuration,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1319,13 +1330,15 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select sent to" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(sentToOptions, form.sentTo).map(
-                    (option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                    ),
-                  )}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(sentToOptions, form.sentTo).map(
+                      (option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                      ),
+                    )}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1342,14 +1355,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder={form.sentTo ? "Select provider" : "Select 'Sent To' first"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDisplayOptions(
-                    providerNameOptions,
-                    form.providerName,
-                  ).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
+                  <ScrollArea className="h-[200px]">
+                    {getDisplayOptions(
+                      providerNameOptions,
+                      form.providerName,
+                    ).map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1468,14 +1483,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                       <SelectValue placeholder="Select course" />
                     </SelectTrigger>
                     <SelectContent>
-                      {getDisplayOptions(
-                        medicineCourseOptions,
-                        medicine.course,
-                      ).map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
+                      <ScrollArea className="h-[200px]">
+                        {getDisplayOptions(
+                          medicineCourseOptions,
+                          medicine.course,
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1528,8 +1545,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Approved">Approved</SelectItem>
-                  <SelectItem value="Not Approved">Not Approved</SelectItem>
+                  <ScrollArea className="h-[200px]">
+                    <SelectItem value="Approved">Approved</SelectItem>
+                    <SelectItem value="Not Approved">Not Approved</SelectItem>
+                  </ScrollArea>
                 </SelectContent>
               </Select>
             </div>
@@ -1621,14 +1640,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                         <SelectValue placeholder="Select referral type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {getDisplayOptions(
-                          referralTypeOptions,
-                          referral.referralType,
-                        ).map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
+                        <ScrollArea className="h-[200px]">
+                          {getDisplayOptions(
+                            referralTypeOptions,
+                            referral.referralType,
+                          ).map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </ScrollArea>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1646,14 +1667,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                         <SelectValue placeholder="Select referred to" />
                       </SelectTrigger>
                       <SelectContent>
-                        {getDisplayOptions(
-                          referredToOptions,
-                          referral.referredToHospital,
-                        ).map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
+                        <ScrollArea className="h-[200px]">
+                          {getDisplayOptions(
+                            referredToOptions,
+                            referral.referredToHospital,
+                          ).map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </ScrollArea>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1686,14 +1709,16 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                         <SelectValue placeholder="Select specialist type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {getDisplayOptions(
-                          specialistTypeOptions,
-                          referral.specialistType,
-                        ).map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
+                        <ScrollArea className="h-[200px]">
+                          {getDisplayOptions(
+                            specialistTypeOptions,
+                            referral.specialistType,
+                          ).map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </ScrollArea>
                       </SelectContent>
                     </Select>
                   </div>
