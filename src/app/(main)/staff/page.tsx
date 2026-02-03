@@ -5,36 +5,34 @@ import { DataTable } from "@/app/(main)/staff/_components/data-table/DataTable"
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import { User } from "@/data/schema"
-import { api } from "@/lib/api"
 import { useDropdownData } from "@/hooks/useDropdownData"
-import { useEffect, useState } from "react"
+import { api } from "@/lib/api"
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
 } from "@/components/ui/sheet"
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/Select"
 
 export default function StaffPage() {
-  const [data, setData] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize] = useState(20)
-  const [totalRows, setTotalRows] = useState(0)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const { data: locationOptions } = useDropdownData("TR LOCATION")
@@ -47,42 +45,29 @@ export default function StaffPage() {
     locationId: "",
   })
 
-  useEffect(() => {
-    let isMounted = true
+  const { data: response, isLoading, isFetching, error } = useQuery({
+    queryKey: ["staff", { search, pageIndex, pageSize }],
+    queryFn: async () => {
+      const response = await api.get("/auth", {
+        params: { q: search || undefined, page: pageIndex + 1, limit: pageSize },
+      })
 
-    const load = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await api.get("/auth", {
-          params: { q: search || undefined, page: pageIndex + 1, limit: pageSize },
-        })
+      const items = response?.data?.items ?? response?.data?.data ?? response?.data
+      const total = response?.data?.total ?? (Array.isArray(items) ? items.length : 0)
 
-        const items = response?.data?.items ?? response?.data?.data ?? response?.data
-        const total = response?.data?.total ?? (Array.isArray(items) ? items.length : 0)
-        
-        if (isMounted) {
-          setData(Array.isArray(items) ? items : [])
-          setTotalRows(typeof total === "number" ? total : 0)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError("Failed to load staff")
-          setData([])
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+      return {
+        items: Array.isArray(items) ? (items as User[]) : [],
+        total: typeof total === "number" ? total : 0,
       }
-    }
+    },
+    placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  })
 
-    load()
-
-    return () => {
-      isMounted = false
-    }
-  }, [search, pageIndex, pageSize])
+  const data = response?.items ?? []
+  const totalRows = response?.total ?? 0
 
   const handleCreateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -108,7 +93,7 @@ export default function StaffPage() {
         role: "staff",
         locationId: "",
       })
-      window.location.reload()
+      await queryClient.invalidateQueries({ queryKey: ["staff"] })
     } catch (error) {
       console.error("Error creating staff:", error)
       toast.error("Failed to create staff")
@@ -134,7 +119,14 @@ export default function StaffPage() {
           </p>
         )}
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-500">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-500">
+            Failed to load staff
+          </p>
+        )}
+        {!isLoading && isFetching && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Updating results...
+          </p>
         )}
         <DataTable
           data={data}

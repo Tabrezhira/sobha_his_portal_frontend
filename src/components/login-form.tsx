@@ -1,22 +1,22 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState, useTransition } from "react"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Dialog"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
 import { Spinner } from "@/components/spinner"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/Dialog"
-import { useAuthStore } from "@/store/auth"
 import { cx } from "@/lib/utils"
+import { useAuthStore } from "@/store/auth"
 
 export function LoginForm({
   className,

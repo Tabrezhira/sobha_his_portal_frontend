@@ -5,52 +5,34 @@ import { DataTable } from "@/app/(main)/employee/_components/data-table/DataTabl
 import { Card } from "@/components/Card"
 import { Patient } from "@/data/schema"
 import { dropdownApi } from "@/lib/api"
-import { useEffect, useState } from "react"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 
 export default function Example() {
-  const [data, setData] = useState<Patient[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize] = useState(20)
-  const [totalRows, setTotalRows] = useState(0)
-
-  useEffect(() => {
-    let isMounted = true
-
-    const load = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const response = await dropdownApi.get("/patients", {
-          params: { q: search || undefined, page: pageIndex + 1, limit: pageSize },
-        })
-
-        const items = response?.data?.items
-        const total = response?.data?.total
-        if (isMounted) {
-          setData(Array.isArray(items) ? items : [])
-          setTotalRows(typeof total === "number" ? total : 0)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError("Failed to load patients")
-          setData([])
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+  const { data: response, isLoading, isFetching, error } = useQuery({
+    queryKey: ["employees", { search, pageIndex, pageSize }],
+    queryFn: async () => {
+      const response = await dropdownApi.get("/patients", {
+        params: { q: search || undefined, page: pageIndex + 1, limit: pageSize },
+      })
+      const items = response?.data?.items
+      const total = response?.data?.total
+      return {
+        items: Array.isArray(items) ? (items as Patient[]) : [],
+        total: typeof total === "number" ? total : 0,
       }
-    }
+    },
+    placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  })
 
-    load()
-
-    return () => {
-      isMounted = false
-    }
-  }, [search, pageIndex, pageSize])
+  const data = response?.items ?? []
+  const totalRows = response?.total ?? 0
 
   return (
     <>
@@ -64,7 +46,14 @@ export default function Example() {
           </p>
         )}
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-500">{error}</p>
+          <p className="text-sm text-red-600 dark:text-red-500">
+            Failed to load employees
+          </p>
+        )}
+        {!isLoading && isFetching && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Updating results...
+          </p>
         )}
         <DataTable
           data={data}

@@ -4,6 +4,7 @@ import "./globals.css"
 import { siteConfig } from "./siteConfig"
 
 import { AuthShell } from "@/components/AuthShell"
+import { ReactQueryProvider } from "@/components/ReactQueryProvider"
 import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({
@@ -50,8 +51,10 @@ export default function RootLayout({
       >
         <div className="mx-auto max-w-screen-2xl">
           {/* <ThemeProvider defaultTheme="system" attribute="class"> */}
-            <AuthShell>{children}</AuthShell>
-            <Toaster />
+            <ReactQueryProvider>
+              <AuthShell>{children}</AuthShell>
+              <Toaster />
+            </ReactQueryProvider>
           {/* </ThemeProvider> */}
         </div>
       </body>
