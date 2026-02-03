@@ -15,7 +15,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
-  const { login, isLoading, error, user } = useAuthStore()
+  const { login, isLoading, error, } = useAuthStore()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
