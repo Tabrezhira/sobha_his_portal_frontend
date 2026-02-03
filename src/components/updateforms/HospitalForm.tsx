@@ -226,7 +226,7 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
     {
       clinicVisitId,
       employee,
-      mode = "create",
+      mode = "edit",
       initialData,
       hideActions = false,
       onSaveSuccess,

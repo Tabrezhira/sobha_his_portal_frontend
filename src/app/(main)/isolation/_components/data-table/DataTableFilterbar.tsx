@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/Button"
 import { Searchbar } from "@/components/Searchbar"
-import { RiDownloadLine } from "@remixicon/react"
 import { Table } from "@tanstack/react-table"
 import { useState } from "react"
 import { useDebouncedCallback } from "use-debounce"

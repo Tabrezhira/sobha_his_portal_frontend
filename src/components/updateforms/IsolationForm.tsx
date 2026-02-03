@@ -68,7 +68,7 @@ const IsolationForm = forwardRef<IsolationFormRef, IsolationFormProps>(
     {
       clinicVisitId,
       employee,
-      mode = "create",
+      mode = "edit",
       initialData,
       hideActions = false,
       onSaveSuccess,

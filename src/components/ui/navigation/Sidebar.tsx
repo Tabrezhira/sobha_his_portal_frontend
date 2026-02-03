@@ -6,7 +6,6 @@ import {
   RiHospitalLine,
   RiLinkM,
   RiShieldCrossLine,
-  RiSettings5Line,
   RiStethoscopeLine,
   RiTeamLine,
 } from "@remixicon/react"

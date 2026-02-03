@@ -72,7 +72,22 @@ export default function Example() {
             data={data}
             columns={columns}
             onRowClick={(row) => {
-              const recordId = (row as { _id?: string; id?: string })._id
+              const record = row as {
+                _id?: string
+                id?: string
+                clinicVisitId?: { _id?: string; id?: string } | string
+              }
+              const recordId = record._id ?? record.id
+              const clinicVisitId =
+                typeof record.clinicVisitId === "string"
+                  ? record.clinicVisitId
+                  : record.clinicVisitId?._id ?? record.clinicVisitId?.id
+
+              if (clinicVisitId) {
+                router.push(`/multi-form/${clinicVisitId}?tab=hospital`)
+                return
+              }
+
               if (!recordId) return
               router.push(`/hospital/${recordId}`)
             }}

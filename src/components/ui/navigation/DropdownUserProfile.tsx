@@ -6,21 +6,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSubMenu,
-  DropdownMenuSubMenuContent,
-  DropdownMenuSubMenuTrigger,
   DropdownMenuTrigger,
 } from "@/components/Dropdown"
-import {
-  RiArrowRightUpLine,
-  RiComputerLine,
-  RiMoonLine,
-  RiSunLine,
-} from "@remixicon/react"
-import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 import * as React from "react"
 import { useAuthStore } from "@/store/auth"
@@ -35,7 +23,6 @@ export function DropdownUserProfile({
   align = "start",
 }: DropdownUserProfileProps) {
   const [mounted, setMounted] = React.useState(false)
-  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const { user, profile, logout } = useAuthStore()
   React.useEffect(() => {

@@ -78,6 +78,22 @@ const getDisplayOptions = (options: string[], current?: string) => {
 const normalizeSelectValue = (value?: string) =>
   typeof value === "string" ? value.trim() : ""
 
+const ensureInOptions = (
+  options: string[],
+  value: string | undefined,
+  setState: (value: string[]) => void,
+) => {
+  const normalized = normalizeSelectValue(value)
+  if (!normalized) return
+
+  const exists = options.some(
+    (opt) => normalizeSelectValue(opt) === normalized,
+  )
+  if (!exists) {
+    setState([...options, normalized])
+  }
+}
+
 const useDropdownSearch = (
   baseUrl: string | undefined,
   category: string,
@@ -361,6 +377,17 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       return value.toISOString().slice(0, 10)
     }
 
+    // Step 1: Ensure all values from initialData are in their respective options
+    ensureInOptions(natureOfCaseOptions, initialData.natureOfCase, setNatureOfCaseOptions)
+    ensureInOptions(caseCategoryOptions, initialData.caseCategory, setCaseCategoryOptions)
+    ensureInOptions(sentToOptions, initialData.sentTo, setSentToOptions)
+    ensureInOptions(symptomDurationOptions, initialData.symptomDuration, setSymptomDurationOptions)
+    ensureInOptions(trLocationOptions, initialData.trLocation, setTrLocationOptions)
+    ensureInOptions(referralTypeOptions, initialData.referrals?.[0]?.referralType, setReferralTypeOptions)
+    ensureInOptions(referredToOptions, initialData.referrals?.[0]?.referredToHospital, setReferredToOptions)
+    ensureInOptions(specialistTypeOptions, initialData.referrals?.[0]?.specialistType, setSpecialistTypeOptions)
+
+    // Step 2: Set form with normalized values
     setForm((prev) => ({
       ...prev,
       locationId: initialData.locationId ?? "",
@@ -470,7 +497,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     if (onCaseCategoryChange) {
       onCaseCategoryChange(initialData.caseCategory ?? "")
     }
-  }, [initialData, onIpAdmissionChange, onCaseCategoryChange])
+  }, [initialData, natureOfCaseOptions, caseCategoryOptions, sentToOptions, symptomDurationOptions, trLocationOptions, referralTypeOptions, referredToOptions, specialistTypeOptions, onIpAdmissionChange, onCaseCategoryChange])
 
   useEffect(() => {
     fetchCategories(process.env.NEXT_PUBLIC_DROPDOWN_API_URL)
@@ -559,6 +586,23 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
   const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
   const [nurseAssessments, setNurseAssessments] = useState<string[]>([])
   const [referrals, setReferrals] = useState([emptyReferral])
+
+  // Step 3: Ensure medicine course values are in options
+  useEffect(() => {
+    medicines.forEach((medicine) => {
+      ensureInOptions(medicineCourseOptions, medicine.course, setMedicineCourseOptions)
+    })
+  }, [medicines, medicineCourseOptions])
+
+  // Step 4: Ensure referral dropdown values are in options
+  useEffect(() => {
+    referrals.forEach((referral) => {
+      ensureInOptions(referralTypeOptions, referral.referralType, setReferralTypeOptions)
+      ensureInOptions(referredToOptions, referral.referredToHospital, setReferredToOptions)
+      ensureInOptions(specialistTypeOptions, referral.specialistType, setSpecialistTypeOptions)
+    })
+  }, [referrals, referralTypeOptions, referredToOptions, specialistTypeOptions])
+
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)

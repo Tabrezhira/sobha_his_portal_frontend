@@ -74,7 +74,7 @@ export default function Example() {
             onRowClick={(row) => {
               const recordId = (row as { _id?: string; id?: string })._id
               if (!recordId) return
-              router.push(`/clinic/${recordId}`)
+              router.push(`/multi-form/${recordId}`)
             }}
           />
         )}

@@ -6,13 +6,11 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/Dropdown"
 import { cx, focusInput } from "@/lib/utils"
 import { RiArrowRightSLine, RiExpandUpDownLine } from "@remixicon/react"
 import React from "react"
-import { ModalAddWorkspace } from "./ModalAddWorkspace"
 import { useAuthStore } from "@/store/auth"
 
 const workspaces = [
@@ -29,8 +27,7 @@ const workspaces = [
 export const WorkspacesDropdownDesktop = () => {
   const { user, profile } = useAuthStore()
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
-  const [hasOpenDialog, setHasOpenDialog] = React.useState(false)
-  const dropdownTriggerRef = React.useRef<null | HTMLButtonElement>(null)
+  const [hasOpenDialog] = React.useState(false)
   const focusRef = React.useRef<null | HTMLButtonElement>(null)
 
   const displayName = user?.name ?? profile?.name ?? "Workspace"
@@ -43,16 +40,6 @@ export const WorkspacesDropdownDesktop = () => {
     .map((part) => part[0]?.toUpperCase())
     .join("")
 
-  const handleDialogItemSelect = () => {
-    focusRef.current = dropdownTriggerRef.current
-  }
-
-  const handleDialogItemOpenChange = (open: boolean) => {
-    setHasOpenDialog(open)
-    if (open === false) {
-      setDropdownOpen(false)
-    }
-  }
   return (
     <>
       {/* sidebar (lg+) */}
@@ -143,8 +130,7 @@ export const WorkspacesDropdownDesktop = () => {
 export const WorkspacesDropdownMobile = () => {
   const { user, profile } = useAuthStore()
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
-  const [hasOpenDialog, setHasOpenDialog] = React.useState(false)
-  const dropdownTriggerRef = React.useRef<null | HTMLButtonElement>(null)
+  const [hasOpenDialog] = React.useState(false)
   const focusRef = React.useRef<null | HTMLButtonElement>(null)
 
   const displayName = user?.name ?? profile?.name ?? "Workspace"
@@ -157,16 +143,6 @@ export const WorkspacesDropdownMobile = () => {
     .map((part) => part[0]?.toUpperCase())
     .join("")
 
-  const handleDialogItemSelect = () => {
-    focusRef.current = dropdownTriggerRef.current
-  }
-
-  const handleDialogItemOpenChange = (open: boolean) => {
-    setHasOpenDialog(open)
-    if (open === false) {
-      setDropdownOpen(false)
-    }
-  }
   return (
     <>
       {/* sidebar (xs-lg) */}

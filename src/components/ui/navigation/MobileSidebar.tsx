@@ -16,7 +16,6 @@ import {
   RiLinkM,
   RiMenuLine,
   RiShieldCrossLine,
-  RiSettings5Line,
   RiStethoscopeLine,
   RiTeamLine,
 } from "@remixicon/react"
