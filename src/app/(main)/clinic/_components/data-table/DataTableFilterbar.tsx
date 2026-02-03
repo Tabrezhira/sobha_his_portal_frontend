@@ -13,11 +13,15 @@ interface DataTableToolbarProps<TData> {
 }
 
 export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0
-  const [searchTerm, setSearchTerm] = useState<string>("")
+  const isFiltered =
+    table.getState().columnFilters.length > 0 ||
+    Boolean(table.getState().globalFilter)
+  const [searchTerm, setSearchTerm] = useState<string>(
+    (table.getState().globalFilter as string) ?? "",
+  )
 
   const debouncedSetFilterValue = useDebouncedCallback((value) => {
-    table.getColumn("employeeName")?.setFilterValue(value)
+    table.setGlobalFilter(value)
   }, 300)
 
   const handleSearchChange = (event: any) => {
@@ -29,19 +33,21 @@ export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-x-6">
       <div className="flex w-full flex-col gap-2 sm:w-fit sm:flex-row sm:items-center">
-        {table.getColumn("employeeName")?.getIsVisible() && (
-          <Searchbar
-            type="search"
-            placeholder="Search by employee..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full sm:max-w-[250px] sm:[&>input]:h-[30px]"
-          />
-        )}
+        <Searchbar
+          type="search"
+          placeholder="Search by employee or emp no..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="w-full sm:max-w-[250px] sm:[&>input]:h-[30px]"
+        />
         {isFiltered && (
           <Button
             variant="ghost"
-            onClick={() => table.resetColumnFilters()}
+            onClick={() => {
+              table.resetColumnFilters()
+              table.setGlobalFilter("")
+              setSearchTerm("")
+            }}
             className="border border-gray-200 px-2 font-semibold text-indigo-600 sm:border-none sm:py-1 dark:border-gray-800 dark:text-indigo-500"
           >
             Clear filters
@@ -49,13 +55,13 @@ export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
         )}
       </div>
       <div className="flex items-center gap-2">
-        <Button
+        {/* <Button
           variant="secondary"
           className="hidden gap-x-2 px-2 py-1.5 text-sm sm:text-xs lg:flex"
         >
           <RiDownloadLine className="size-4 shrink-0" aria-hidden="true" />
           Export
-        </Button>
+        </Button> */}
         <ViewOptions table={table} />
       </div>
     </div>

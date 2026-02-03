@@ -44,17 +44,17 @@ export const columns = [
   //     displayName: "Select",
   //   },
   // }),
-  columnHelper.accessor("slNo", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Sl No" />
-    ),
-    enableSorting: true,
-    enableHiding: false,
-    meta: {
-      className: "text-left",
-      displayName: "Sl No",
-    },
-  }),
+  // columnHelper.accessor("slNo", {
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Sl No" />
+  //   ),
+  //   enableSorting: true,
+  //   enableHiding: false,
+  //   meta: {
+  //     className: "text-left",
+  //     displayName: "Sl No",
+  //   },
+  // }),
   columnHelper.accessor("date", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />

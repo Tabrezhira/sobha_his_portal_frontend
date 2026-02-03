@@ -14,18 +14,18 @@ import {
   RiHome2Line,
   RiHospitalLine,
   RiLinkM,
-  RiListCheck,
   RiMenuLine,
   RiShieldCrossLine,
   RiSettings5Line,
   RiStethoscopeLine,
+  RiTeamLine,
 } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navigation = [
   { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
-  { name: "Details", href: siteConfig.baseLinks.details, icon: RiListCheck },
+  { name: "Employee", href: "/employee", icon: RiTeamLine },
   { name: "Clinic", href: siteConfig.baseLinks.clinic, icon: RiStethoscopeLine },
   { name: "Hospital", href: siteConfig.baseLinks.hospital, icon: RiHospitalLine },
   {
@@ -43,17 +43,17 @@ const navigation = [
 const shortcuts = [
   {
     name: "New clinic visit",
-    href: "/clinic/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {
     name: "New hospital record",
-    href: "/hospital/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {
     name: "New isolation record",
-    href: "/isolation/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {

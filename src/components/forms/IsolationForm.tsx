@@ -44,7 +44,6 @@ export default function IsolationForm({ clinicVisitId, employee }: IsolationForm
   const [form, setForm] = useState({
     locationId: "",
     clinicVisitId: clinicVisitId ?? "",
-    siNo: "",
     empNo: "",
     type: "",
     employeeName: "",
@@ -60,7 +59,6 @@ export default function IsolationForm({ clinicVisitId, employee }: IsolationForm
     dateTo: "",
     currentStatus: "",
     remarks: "",
-    createdBy: "",
   })
 
   const [submitting, setSubmitting] = useState(false)
@@ -93,11 +91,9 @@ export default function IsolationForm({ clinicVisitId, employee }: IsolationForm
   const canSubmit = useMemo(() => {
     return (
       (clinicVisitId || form.clinicVisitId) &&
-      form.siNo &&
       form.empNo &&
       form.employeeName &&
-      form.emiratesId &&
-      form.createdBy
+      form.emiratesId
     )
   }, [clinicVisitId, form])
 
@@ -129,7 +125,6 @@ export default function IsolationForm({ clinicVisitId, employee }: IsolationForm
     return {
       locationId: form.locationId || undefined,
       clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
-      siNo: Number(form.siNo),
       empNo: form.empNo,
       type: form.type || undefined,
       employeeName: form.employeeName,
@@ -145,7 +140,6 @@ export default function IsolationForm({ clinicVisitId, employee }: IsolationForm
       dateTo: form.dateTo || undefined,
       currentStatus: form.currentStatus || undefined,
       remarks: form.remarks || undefined,
-      createdBy: form.createdBy,
     }
   }
 

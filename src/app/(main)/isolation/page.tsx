@@ -55,7 +55,7 @@ export default function IsolationPage() {
           Isolation
         </h1>
         <Button asChild variant="secondary">
-          <Link href="/isolation/new">New isolation record</Link>
+          <Link href="/multi-form/new">New isolation record</Link>
         </Button>
       </div>
       <Card className="mt-4 sm:mt-6 lg:mt-10">

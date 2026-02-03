@@ -37,11 +37,13 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const pageSize = 20
   const [rowSelection, setRowSelection] = React.useState({})
+  const [globalFilter, setGlobalFilter] = React.useState("")
   const table = useReactTable({
     data,
     columns,
     state: {
       rowSelection,
+      globalFilter,
     },
     initialState: {
       pagination: {
@@ -50,6 +52,16 @@ export function DataTable<TData>({
       },
     },
     enableRowSelection: true,
+    enableGlobalFilter: true,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const search = String(filterValue ?? "").toLowerCase().trim()
+      if (!search) return true
+      const original = row.original as { empNo?: string | number; employeeName?: string }
+      const empNo = String(original?.empNo ?? "").toLowerCase()
+      const employeeName = String(original?.employeeName ?? "").toLowerCase()
+      return empNo.includes(search) || employeeName.includes(search)
+    },
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,

@@ -225,9 +225,10 @@ interface ClinicVisitFormProps {
   }) => void
   onReset?: () => void
   conditionMet?: boolean
+  clinicSaved?: boolean
 }
 
-export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryChange, onClinicSaved, onReset, conditionMet }: ClinicVisitFormProps) {
+export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryChange, onClinicSaved, onReset, conditionMet, clinicSaved }: ClinicVisitFormProps) {
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -1793,7 +1794,10 @@ export default function ClinicVisitForm({ onIpAdmissionChange, onCaseCategoryCha
         </Card>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={submitting}>
+          <Button
+            type="submit"
+            disabled={submitting || Boolean(conditionMet && clinicSaved)}
+          >
             {submitting ? "Saving..." : "Save clinic visit"}
           </Button>
           <Button asChild variant="secondary">

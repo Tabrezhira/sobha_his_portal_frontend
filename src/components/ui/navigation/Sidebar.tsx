@@ -39,17 +39,17 @@ const navigation = [
 const shortcuts = [
   {
     name: "New clinic visit",
-    href: "/clinic/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {
     name: "New hospital record",
-    href: "/hospital/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {
     name: "New isolation record",
-    href: "/isolation/new",
+    href: "/multi-form/new",
     icon: RiLinkM,
   },
   {

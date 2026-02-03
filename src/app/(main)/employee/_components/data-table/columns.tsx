@@ -8,17 +8,17 @@ import { DataTableRowActions } from "./DataTableRowActions"
 const columnHelper = createColumnHelper<Patient>()
 
 export const columns = [
-  columnHelper.display({
-    id: "srNo",
-    header: "Sr. No",
-    cell: ({ row }) => <span className="tabular-nums">{row.index + 1}</span>,
-    enableSorting: false,
-    enableHiding: false,
-    meta: {
-      className: "text-left",
-      displayName: "Sr. No",
-    },
-  }),
+  // columnHelper.display({
+  //   id: "srNo",
+  //   header: "Sr. No",
+  //   cell: ({ row }) => <span className="tabular-nums">{row.index + 1}</span>,
+  //   enableSorting: false,
+  //   enableHiding: false,
+  //   meta: {
+  //     className: "text-left",
+  //     displayName: "Sr. No",
+  //   },
+  // }),
   columnHelper.accessor("empId", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Emp ID" />

@@ -99,7 +99,7 @@ export function DropdownUserProfile({
             </DropdownMenuSubMenu>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
+          {/* <DropdownMenuGroup>
             <DropdownMenuItem>
               Changelog
               <RiArrowRightUpLine
@@ -121,8 +121,8 @@ export function DropdownUserProfile({
                 aria-hidden="true"
               />
             </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          </DropdownMenuGroup> */}
+          {/* <DropdownMenuSeparator /> */}
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => {

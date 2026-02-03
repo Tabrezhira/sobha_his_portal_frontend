@@ -87,23 +87,24 @@ export default function MultiFormPage() {
           </TabsList>
         </div>
 
-        <TabsContent value="clinic" className="mt-6" forceMount>
+        <TabsContent value="clinic" className="mt-6">
           <ClinicVisitForm 
             onIpAdmissionChange={setIpAdmissionRequired}
             onCaseCategoryChange={setCaseCategory}
             onClinicSaved={handleClinicSaved}
             onReset={handleResetForm}
             conditionMet={conditionMet}
+            clinicSaved={clinicSaved}
           />
         </TabsContent>
 
-        <TabsContent value="hospital" className="mt-6" forceMount>
+        <TabsContent value="hospital" className="mt-6">
           {isHospitalEnabled && clinicSaved && (
             <HospitalForm clinicVisitId={clinicId ?? undefined} employee={clinicEmployee} />
           )}
         </TabsContent>
 
-        <TabsContent value="isolation" className="mt-6" forceMount>
+        <TabsContent value="isolation" className="mt-6">
           {isIsolationEnabled && clinicSaved && (
             <IsolationForm clinicVisitId={clinicId ?? undefined} employee={clinicEmployee} />
           )}

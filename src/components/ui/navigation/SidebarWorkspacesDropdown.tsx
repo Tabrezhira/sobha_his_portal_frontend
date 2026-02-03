@@ -128,12 +128,12 @@ export const WorkspacesDropdownDesktop = () => {
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          {/* <DropdownMenuSeparator />
           <ModalAddWorkspace
             onSelect={handleDialogItemSelect}
             onOpenChange={handleDialogItemOpenChange}
             itemName="Add workspace"
-          />
+          /> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </>
@@ -239,12 +239,12 @@ export const WorkspacesDropdownMobile = () => {
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          {/* <DropdownMenuSeparator />
           <ModalAddWorkspace
             onSelect={handleDialogItemSelect}
             onOpenChange={handleDialogItemOpenChange}
             itemName="Add workspace"
-          />
+          /> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

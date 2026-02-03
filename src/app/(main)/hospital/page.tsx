@@ -55,7 +55,7 @@ export default function Example() {
           Hospital
         </h1>
         <Button asChild variant="secondary">
-          <Link href="/hospital/new">New hospital record</Link>
+          <Link href="/multi-form/new">New hospital record</Link>
         </Button>
       </div>
       <Card className="mt-4 sm:mt-6 lg:mt-10">
