@@ -176,6 +176,7 @@ export type Isolation = {
 }
 
 export type User = {
+	_id?: string
 	name?: string
 	empId?: string
 	email?: string

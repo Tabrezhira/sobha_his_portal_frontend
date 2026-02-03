@@ -11,9 +11,11 @@ import { columns } from "@/app/(main)/hospital/_components/data-table/columns"
 import { DataTable } from "@/app/(main)/hospital/_components/data-table/DataTable"
 import { api } from "@/lib/api"
 import { Hospital } from "@/data/schema"
+import { useAuthStore } from "@/store/auth"
 
 export default function Example() {
   const router = useRouter()
+  const { user } = useAuthStore()
   const [data, setData] = useState<Hospital[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -21,8 +23,10 @@ export default function Example() {
   useEffect(() => {
     let isMounted = true
 
+    const endpoint = user?.role === "staff" ? "/hospital/my-location" : "/hospital"
+
     api
-      .get("/hospital")
+      .get(endpoint)
       .then((response) => {
         const payload = Array.isArray(response.data)
           ? response.data
@@ -46,7 +50,7 @@ export default function Example() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [user?.role])
 
   return (
     <>

@@ -18,13 +18,16 @@ import {
   RiShieldCrossLine,
   RiStethoscopeLine,
   RiTeamLine,
+  RiUserLine,
 } from "@remixicon/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuthStore } from "@/store/auth"
 
 const navigation = [
   { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
   { name: "Employee", href: "/employee", icon: RiTeamLine },
+  { name: "Staff", href: "/staff", icon: RiUserLine },
   { name: "Clinic", href: siteConfig.baseLinks.clinic, icon: RiStethoscopeLine },
   { name: "Hospital", href: siteConfig.baseLinks.hospital, icon: RiHospitalLine },
   {
@@ -64,6 +67,18 @@ const shortcuts = [
 
 export default function MobileSidebar() {
   const pathname = usePathname()
+  const { user } = useAuthStore()
+  
+  const filteredNavigation = navigation.filter(item => {
+    if (item.name === "Overview") {
+      return user?.role === "manager"
+    }
+    if (item.name === "Staff") {
+      return user?.role === "manager" || user?.role === "superadmin"
+    }
+    return true
+  })
+  
   const isActive = (itemHref: string) => {
     if (itemHref === siteConfig.baseLinks.settings.general) {
       return pathname.startsWith("/settings")
@@ -95,7 +110,7 @@ export default function MobileSidebar() {
               className="flex flex-1 flex-col space-y-10"
             >
               <ul role="list" className="space-y-1.5">
-                {navigation.map((item) => (
+                {filteredNavigation.map((item) => (
                   <li key={item.name}>
                     <DrawerClose asChild>
                       <Link

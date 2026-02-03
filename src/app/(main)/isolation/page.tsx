@@ -11,9 +11,11 @@ import { columns } from "@/app/(main)/isolation/_components/data-table/columns"
 import { DataTable } from "@/app/(main)/isolation/_components/data-table/DataTable"
 import { api } from "@/lib/api"
 import { Isolation } from "@/data/schema"
+import { useAuthStore } from "@/store/auth"
 
 export default function IsolationPage() {
   const router = useRouter()
+  const { user } = useAuthStore()
   const [data, setData] = useState<Isolation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -21,8 +23,10 @@ export default function IsolationPage() {
   useEffect(() => {
     let isMounted = true
 
+    const endpoint = user?.role === "staff" ? "/isolation/my-location" : "/isolation"
+
     api
-      .get("/isolation")
+      .get(endpoint)
       .then((response) => {
         const payload = Array.isArray(response.data)
           ? response.data
@@ -46,7 +50,7 @@ export default function IsolationPage() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [user?.role])
 
   return (
     <>
