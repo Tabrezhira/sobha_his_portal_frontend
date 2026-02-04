@@ -303,12 +303,20 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     return `${year}-${month}-${day}`
   }
 
-  const getLocalTime = () => {
-    const now = new Date()
-    const hours = String(now.getHours()).padStart(2, "0")
-    const minutes = String(now.getMinutes()).padStart(2, "0")
-    return `${hours}:${minutes}`
-  }
+  // const getLocalTime = () => {
+  //   const now = new Date()
+  //   const hours = String(now.getHours()).padStart(2, "0")
+  //   const minutes = String(now.getMinutes()).padStart(2, "0")
+  //   return `${hours}:${minutes}`
+  // }
+
+  function getLocalTime() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');   // 0–23
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`; // HH:mm 24-hour format
+}
+
 
   const generateSlNo = () => String(Date.now())
 
