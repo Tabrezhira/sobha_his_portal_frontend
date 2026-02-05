@@ -6,7 +6,7 @@ import { siteConfig } from "./siteConfig"
 import { AuthShell } from "@/components/AuthShell"
 import { ReactQueryProvider } from "@/components/ReactQueryProvider"
 import { Toaster } from "@/components/ui/sonner"
-
+import { Analytics } from "@vercel/analytics/next"
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -52,7 +52,10 @@ export default function RootLayout({
         <div className="mx-auto max-w-screen-2xl">
           {/* <ThemeProvider defaultTheme="system" attribute="class"> */}
             <ReactQueryProvider>
-              <AuthShell>{children}</AuthShell>
+              <AuthShell>
+                {children}
+               <Analytics />
+              </AuthShell>
               <Toaster />
             </ReactQueryProvider>
           {/* </ThemeProvider> */}
