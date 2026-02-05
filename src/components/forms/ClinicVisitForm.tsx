@@ -1209,6 +1209,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                 value={form.date}
                 onChange={(e) => updateForm("date", e.target.value)}
                 required
+                disabled
               />
             </div>
             <div>
@@ -1222,6 +1223,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                 value={form.time}
                 onChange={(e) => updateForm("time", e.target.value)}
                 required
+                disabled
+                step="60"
               />
             </div>
 

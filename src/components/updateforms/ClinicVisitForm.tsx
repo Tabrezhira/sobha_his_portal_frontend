@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   forwardRef,
   useEffect,
@@ -8,15 +9,11 @@ import {
   useRef,
   useState,
 } from "react"
-import Link from "next/link"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import { Checkbox } from "@/components/Checkbox"
-import { Divider } from "@/components/Divider"
-import { Input } from "@/components/Input"
-import { Label } from "@/components/Label"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/Dialog"
+import { Divider } from "@/components/Divider"
+import { Input } from "@/components/Input"
+import { Label } from "@/components/Label"
 import {
   Select,
   SelectContent,
@@ -32,10 +32,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/Select"
-import { dropdownCategories } from "@/data/schema"
 import type { ClinicVisit } from "@/data/schema"
-import { useDropdownStore } from "@/store/dropdown"
+import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
+import { useDropdownStore } from "@/store/dropdown"
 
 const emptyMedicine = { name: "", course: "", expiryDate: "" }
 const emptyFollowUp = { visitDate: "", visitRemarks: "" }
@@ -1098,6 +1098,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                 value={form.date}
                 onChange={(e) => updateForm("date", e.target.value)}
                 required
+                disabled
               />
             </div>
             <div>
@@ -1111,6 +1112,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                 value={form.time}
                 onChange={(e) => updateForm("time", e.target.value)}
                 required
+                disabled
+                step="60"
               />
             </div>
 
