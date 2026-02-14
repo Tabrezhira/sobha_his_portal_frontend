@@ -25,7 +25,11 @@ export function Filterbar<TData>({
 
   const debouncedSetFilterValue = useDebouncedCallback((value) => {
     table.setGlobalFilter(value)
-    onSearchChange?.(value)
+    if (!onSearchChange) return
+    const normalized = String(value ?? "")
+    if (normalized.length === 0 || normalized.length >= 4) {
+      onSearchChange(normalized)
+    }
   }, 300)
 
   const handleSearchChange = (event: any) => {
