@@ -29,6 +29,11 @@ interface DataTableProps<TData> {
   data: TData[]
   onRowClick?: (row: TData) => void
   onSearchChange?: (value: string) => void
+  pageIndex?: number
+  pageSize?: number
+  pageCount?: number
+  totalRows?: number
+  onPageChange?: (pageIndex: number) => void
 }
 
 export function DataTable<TData>({
@@ -36,8 +41,12 @@ export function DataTable<TData>({
   data,
   onRowClick,
   onSearchChange,
+  pageIndex,
+  pageSize = 20,
+  pageCount,
+  totalRows,
+  onPageChange,
 }: DataTableProps<TData>) {
-  const pageSize = 20
   const [rowSelection, setRowSelection] = React.useState({})
   const [globalFilter, setGlobalFilter] = React.useState("")
   const table = useReactTable({
@@ -46,12 +55,32 @@ export function DataTable<TData>({
     state: {
       rowSelection,
       globalFilter,
+      pagination:
+        pageIndex !== undefined
+          ? {
+              pageIndex,
+              pageSize,
+            }
+          : undefined,
     },
     initialState: {
       pagination: {
         pageIndex: 0,
         pageSize: pageSize,
       },
+    },
+    manualPagination: pageIndex !== undefined,
+    pageCount,
+    onPaginationChange: (updater) => {
+      if (!onPageChange) return
+      const next =
+        typeof updater === "function"
+          ? updater({
+              pageIndex: pageIndex ?? 0,
+              pageSize,
+            })
+          : updater
+      onPageChange(next.pageIndex)
     },
     enableRowSelection: true,
     enableGlobalFilter: true,
@@ -153,7 +182,11 @@ export function DataTable<TData>({
           </Table>
           {/* <DataTableBulkEditor table={table} rowSelection={rowSelection} /> */}
         </div>
-        <DataTablePagination table={table} pageSize={pageSize} />
+        <DataTablePagination
+          table={table}
+          pageSize={pageSize}
+          totalRows={totalRows}
+        />
       </div>
     </>
   )

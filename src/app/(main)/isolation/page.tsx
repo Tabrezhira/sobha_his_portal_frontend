@@ -18,27 +18,41 @@ export default function IsolationPage() {
   const router = useRouter()
   const { user } = useAuthStore()
   const [searchTerm, setSearchTerm] = useState("")
+  const [pageIndex, setPageIndex] = useState(0)
+  const pageSize = 20
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["isolation", user?.role, searchTerm],
+    queryKey: ["isolation", user?.role, searchTerm, pageIndex, pageSize],
     queryFn: async () => {
+      const page = pageIndex + 1
       if (searchTerm) {
         const response = await api.get("/isolation", {
           params: {
             empNo: searchTerm,
+            page,
+            limit: pageSize,
           },
         })
         const payload = Array.isArray(response.data)
           ? response.data
           : response.data?.data ?? response.data?.items ?? []
-        return Array.isArray(payload) ? (payload as Isolation[]) : []
+        const items = Array.isArray(payload) ? (payload as Isolation[]) : []
+        const meta = response.data?.meta
+        return { items, meta }
       }
 
       const endpoint = user?.role === "staff" ? "/isolation/my-location" : "/isolation"
-      const response = await api.get(endpoint)
+      const response = await api.get(endpoint, {
+        params: {
+          page,
+          limit: pageSize,
+        },
+      })
       const payload = Array.isArray(response.data)
         ? response.data
         : response.data?.data ?? response.data?.items ?? []
-      return Array.isArray(payload) ? (payload as Isolation[]) : []
+      const items = Array.isArray(payload) ? (payload as Isolation[]) : []
+      const meta = response.data?.meta
+      return { items, meta }
     },
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
@@ -46,7 +60,10 @@ export default function IsolationPage() {
     refetchOnWindowFocus: false,
   })
 
-  const tableData = data ?? []
+  const tableData = data?.items ?? []
+  const totalRows = typeof data?.meta?.total === "number" ? data.meta.total : undefined
+  const pageCount =
+    typeof totalRows === "number" ? Math.ceil(totalRows / pageSize) : undefined
 
   return (
     <>
@@ -77,7 +94,15 @@ export default function IsolationPage() {
             <DataTable
               data={tableData}
               columns={columns}
-              onSearchChange={setSearchTerm}
+              onSearchChange={(value) => {
+                setSearchTerm(value)
+                setPageIndex(0)
+              }}
+              pageIndex={pageIndex}
+              pageSize={pageSize}
+              pageCount={pageCount}
+              totalRows={totalRows}
+              onPageChange={setPageIndex}
               onRowClick={(row) => {
                 const record = row as {
                   _id?: string

@@ -11,11 +11,13 @@ import { Table } from "@tanstack/react-table"
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
   pageSize: number
+  totalRows?: number
 }
 
 export function DataTablePagination<TData>({
   table,
   pageSize,
+  totalRows,
 }: DataTablePaginationProps<TData>) {
   const paginationButtons = [
     {
@@ -48,15 +50,21 @@ export function DataTablePagination<TData>({
     },
   ]
 
-  const totalRows = table.getFilteredRowModel().rows.length
+  const resolvedTotalRows =
+    typeof totalRows === "number"
+      ? totalRows
+      : table.getFilteredRowModel().rows.length
   const currentPage = table.getState().pagination.pageIndex
-  const firstRowIndex = currentPage * pageSize + 1
-  const lastRowIndex = Math.min(totalRows, firstRowIndex + pageSize - 1)
+  const firstRowIndex = resolvedTotalRows === 0 ? 0 : currentPage * pageSize + 1
+  const lastRowIndex = Math.min(
+    resolvedTotalRows,
+    firstRowIndex + pageSize - 1,
+  )
 
   return (
     <div className="flex items-center justify-between">
       <div className="text-sm tabular-nums text-gray-500">
-        {table.getFilteredSelectedRowModel().rows.length} of {totalRows} row(s)
+        {table.getFilteredSelectedRowModel().rows.length} of {resolvedTotalRows} row(s)
         selected.
       </div>
       <div className="flex items-center gap-x-6 lg:gap-x-8">
@@ -67,7 +75,7 @@ export function DataTablePagination<TData>({
           </span>{" "}
           of{" "}
           <span className="font-medium text-gray-900 dark:text-gray-50">
-            {totalRows}
+            {resolvedTotalRows}
           </span>
         </p>
         <div className="flex items-center gap-x-1.5">
