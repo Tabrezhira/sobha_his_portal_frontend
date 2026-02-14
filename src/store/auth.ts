@@ -12,6 +12,7 @@ type AuthState = {
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
+  refresh: () => Promise<boolean>
   logout: () => void
   setUser: (user: User | null) => void
   setToken: (token: string | null) => void
@@ -64,7 +65,7 @@ const getAuthFromResponse = (response: LoginResponse) => {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       profile: null,
       token: null,
@@ -105,6 +106,50 @@ export const useAuthStore = create<AuthState>()(
             profile: null,
           })
           throw error
+        }
+      },
+      refresh: async () => {
+        const { token } = get()
+        if (!token) return false
+
+        set({ isLoading: true, error: null })
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_CURD_API_URL
+          const refreshUrl = baseUrl
+            ? `${baseUrl.replace(/\/$/, "")}/auth/refresh`
+            : "/auth/refresh"
+
+          const response = await axios.post(
+            refreshUrl,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } },
+          )
+
+          const { token: newToken, user } = getAuthFromResponse(response.data)
+          if (!newToken || !user) {
+            throw new Error("Refresh response missing auth data")
+          }
+
+          set({
+            token: newToken,
+            user,
+            profile: { name: user.name, email: user.email },
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          })
+
+          return true
+        } catch (error) {
+          set({
+            token: null,
+            user: null,
+            profile: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: "Session expired. Please login again.",
+          })
+          return false
         }
       },
       logout: () => {
