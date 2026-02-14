@@ -28,12 +28,14 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
   onRowClick?: (row: TData) => void
+  onSearchChange?: (value: string) => void
 }
 
 export function DataTable<TData>({
   columns,
   data,
   onRowClick,
+  onSearchChange,
 }: DataTableProps<TData>) {
   const pageSize = 20
   const [rowSelection, setRowSelection] = React.useState({})
@@ -72,7 +74,7 @@ export function DataTable<TData>({
   return (
     <>
       <div className="space-y-3">
-        <Filterbar table={table} />
+        <Filterbar table={table} onSearchChange={onSearchChange} />
         <div className="relative overflow-hidden overflow-x-auto">
           <Table>
             <TableHead>

@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import Link from "next/link"
 
@@ -16,9 +17,22 @@ import { useAuthStore } from "@/store/auth"
 export default function IsolationPage() {
   const router = useRouter()
   const { user } = useAuthStore()
+  const [searchTerm, setSearchTerm] = useState("")
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["isolation", user?.role],
+    queryKey: ["isolation", user?.role, searchTerm],
     queryFn: async () => {
+      if (searchTerm) {
+        const response = await api.get("/isolation", {
+          params: {
+            empNo: searchTerm,
+          },
+        })
+        const payload = Array.isArray(response.data)
+          ? response.data
+          : response.data?.data ?? response.data?.items ?? []
+        return Array.isArray(payload) ? (payload as Isolation[]) : []
+      }
+
       const endpoint = user?.role === "staff" ? "/isolation/my-location" : "/isolation"
       const response = await api.get(endpoint)
       const payload = Array.isArray(response.data)
@@ -63,6 +77,7 @@ export default function IsolationPage() {
             <DataTable
               data={tableData}
               columns={columns}
+              onSearchChange={setSearchTerm}
               onRowClick={(row) => {
                 const record = row as {
                   _id?: string

@@ -9,9 +9,13 @@ import { ViewOptions } from "./DataTableViewOptions"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  onSearchChange?: (value: string) => void
 }
 
-export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
+export function Filterbar<TData>({
+  table,
+  onSearchChange,
+}: DataTableToolbarProps<TData>) {
   const isFiltered =
     table.getState().columnFilters.length > 0 ||
     Boolean(table.getState().globalFilter)
@@ -21,6 +25,7 @@ export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
 
   const debouncedSetFilterValue = useDebouncedCallback((value) => {
     table.setGlobalFilter(value)
+    onSearchChange?.(value)
   }, 300)
 
   const handleSearchChange = (event: any) => {
@@ -46,6 +51,7 @@ export function Filterbar<TData>({ table }: DataTableToolbarProps<TData>) {
               table.resetColumnFilters()
               table.setGlobalFilter("")
               setSearchTerm("")
+              onSearchChange?.("")
             }}
             className="border border-gray-200 px-2 font-semibold text-indigo-600 sm:border-none sm:py-1 dark:border-gray-800 dark:text-indigo-500"
           >

@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import Link from "next/link"
 
@@ -16,9 +17,22 @@ import { useAuthStore } from "@/store/auth"
 export default function Example() {
   const router = useRouter()
   const { user } = useAuthStore()
+  const [searchTerm, setSearchTerm] = useState("")
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["clinic", user?.role],
+    queryKey: ["clinic", user?.role, searchTerm],
     queryFn: async () => {
+      if (searchTerm) {
+        const response = await api.get("/clinic", {
+          params: {
+            empNo: searchTerm,
+          },
+        })
+        const payload = Array.isArray(response.data)
+          ? response.data
+          : response.data?.data ?? response.data?.items ?? []
+        return Array.isArray(payload) ? (payload as ClinicVisit[]) : []
+      }
+
       const endpoint = user?.role === "staff" ? "/clinic/my-location" : "/clinic"
       const response = await api.get(endpoint)
       const payload = Array.isArray(response.data)
@@ -63,6 +77,7 @@ export default function Example() {
             <DataTable
               data={tableData}
               columns={columns}
+              onSearchChange={setSearchTerm}
               onRowClick={(row) => {
                 const recordId = (row as { _id?: string; id?: string })._id
                 if (!recordId) return
