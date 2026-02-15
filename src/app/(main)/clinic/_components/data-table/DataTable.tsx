@@ -29,6 +29,7 @@ interface DataTableProps<TData> {
   data: TData[]
   onRowClick?: (row: TData) => void
   onSearchChange?: (value: string) => void
+  searchValue?: string
   pageIndex?: number
   pageSize?: number
   pageCount?: number
@@ -41,6 +42,7 @@ export function DataTable<TData>({
   data,
   onRowClick,
   onSearchChange,
+  searchValue,
   pageIndex,
   pageSize = 20,
   pageCount,
@@ -103,7 +105,11 @@ export function DataTable<TData>({
   return (
     <>
       <div className="space-y-3">
-        <Filterbar table={table} onSearchChange={onSearchChange} />
+        <Filterbar
+          table={table}
+          onSearchChange={onSearchChange}
+          searchValue={searchValue}
+        />
         <div className="relative overflow-hidden overflow-x-auto">
           <Table>
             <TableHead>

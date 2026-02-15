@@ -38,6 +38,7 @@ import type { ClinicVisit } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
 import { useDropdownStore } from "@/store/dropdown"
+import EmployeeSummary from "@/components/forms/EmployeeSummary"
 
 const emptyMedicine = { name: "", course: "", expiryDate: "" }
 const emptyFollowUp = { visitDate: "", visitRemarks: "" }
@@ -578,11 +579,14 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
   const [error, setError] = useState<string | null>(null)
   const [tokenDialogOpen, setTokenDialogOpen] = useState(false)
   const [createdTokenNo, setCreatedTokenNo] = useState<string | null>(null)
+  const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
+  const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
   const [employeeLookupError, setEmployeeLookupError] = useState<string | null>(
     null,
   )
   const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
   const lastFetchedEmpNo = useRef<string | null>(null)
+  const lastSummaryEmpNo = useRef<string | null>(null)
 
   const canSubmit = useMemo(() => {
     return Boolean(
@@ -609,6 +613,15 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     if (key === "caseCategory" && onCaseCategoryChange) {
       onCaseCategoryChange(value as string)
     }
+  }
+
+  const openSummaryForEmpNo = (empNo: string) => {
+    const trimmed = empNo.trim()
+    if (!trimmed) return
+    if (lastSummaryEmpNo.current === trimmed && summaryDialogOpen) return
+    lastSummaryEmpNo.current = trimmed
+    setSummaryEmpId(trimmed)
+    setSummaryDialogOpen(true)
   }
 
   const handleEmployeeLookup = async (empNo: string) => {
@@ -1180,6 +1193,47 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={summaryDialogOpen}
+        onOpenChange={(open) => {
+          setSummaryDialogOpen(open)
+          if (!open) {
+            setSummaryEmpId(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Employee summary</DialogTitle>
+            <DialogDescription>
+              Summary for the selected employee.
+            </DialogDescription>
+          </DialogHeader>
+          <EmployeeSummary empId={summaryEmpId ?? ""} />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setSummaryDialogOpen(false)
+                setSummaryEmpId(null)
+              }}
+            >
+              Close
+            </Button>
+            {summaryEmpId ? (
+              <Button asChild>
+                <Link href={`/clinic?empNo=${encodeURIComponent(summaryEmpId)}`}>
+                  Detail lists
+                </Link>
+              </Button>
+            ) : (
+              <Button disabled>Detail lists</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <input type="hidden" name="slNo" value={form.slNo} readOnly />
         <input
@@ -1272,11 +1326,18 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   if (lastFetchedEmpNo.current === e.target.value.trim()) {
                     lastFetchedEmpNo.current = null
                   }
+                  if (lastSummaryEmpNo.current === e.target.value.trim()) {
+                    lastSummaryEmpNo.current = null
+                  }
                 }}
-                onBlur={(e) => handleEmployeeLookup(e.target.value)}
+                onBlur={(e) => {
+                  handleEmployeeLookup(e.target.value)
+                  openSummaryForEmpNo(e.target.value)
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === "Tab") {
                     handleEmployeeLookup(e.currentTarget.value)
+                    openSummaryForEmpNo(e.currentTarget.value)
                   }
                 }}
                 required

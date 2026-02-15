@@ -274,3 +274,20 @@ export const dropdownCategories = {
 	...inputsearch,
 } as const
 
+export type Summary = {
+  success: boolean;
+  data: {
+    empNo: string;
+    last90Days: {
+      count: number;
+      visits: {
+        date: string;
+        provider: string;
+      }[];
+    };
+    allTimeTotalVisits: number;
+    sickLeaveApprovedCount: number;
+    totalReferrals: number;
+    openReferrals: number;
+  };
+};

@@ -3,18 +3,20 @@
 import { Button } from "@/components/Button"
 import { Searchbar } from "@/components/Searchbar"
 import { Table } from "@tanstack/react-table"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { ViewOptions } from "./DataTableViewOptions"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
   onSearchChange?: (value: string) => void
+  searchValue?: string
 }
 
 export function Filterbar<TData>({
   table,
   onSearchChange,
+  searchValue,
 }: DataTableToolbarProps<TData>) {
   const isFiltered =
     table.getState().columnFilters.length > 0 ||
@@ -22,6 +24,12 @@ export function Filterbar<TData>({
   const [searchTerm, setSearchTerm] = useState<string>(
     (table.getState().globalFilter as string) ?? "",
   )
+
+  useEffect(() => {
+    if (typeof searchValue !== "string") return
+    setSearchTerm(searchValue)
+    table.setGlobalFilter(searchValue)
+  }, [searchValue, table])
 
   const debouncedSetFilterValue = useDebouncedCallback((value) => {
     table.setGlobalFilter(value)

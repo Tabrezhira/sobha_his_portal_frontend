@@ -1,8 +1,8 @@
 "use client"
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
 import Link from "next/link"
 
@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/auth"
 
 export default function Example() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuthStore()
   const [searchTerm, setSearchTerm] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
@@ -65,6 +66,14 @@ export default function Example() {
   const pageCount =
     typeof totalRows === "number" ? Math.ceil(totalRows / pageSize) : undefined
 
+  useEffect(() => {
+    const empNo = searchParams.get("empNo")?.trim() ?? ""
+    if (empNo && empNo !== searchTerm) {
+      setSearchTerm(empNo)
+      setPageIndex(0)
+    }
+  }, [searchParams, searchTerm])
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -94,6 +103,7 @@ export default function Example() {
             <DataTable
               data={tableData}
               columns={columns}
+              searchValue={searchTerm}
               onSearchChange={(value) => {
                 setSearchTerm(value)
                 setPageIndex(0)
