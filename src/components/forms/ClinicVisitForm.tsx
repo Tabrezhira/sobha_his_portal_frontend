@@ -1205,12 +1205,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Employee summary</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mb-2 ">
               Summary for the selected employee.
             </DialogDescription>
           </DialogHeader>
           <EmployeeSummary empId={summaryEmpId ?? ""} />
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button
               type="button"
               variant="secondary"
