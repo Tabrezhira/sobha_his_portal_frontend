@@ -1218,7 +1218,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
               </Label>
               <Input
                 id="time"
-                type="time"
+                type="text"
                 className="mt-2"
                 value={form.time}
                 onChange={(e) => updateForm("time", e.target.value)}
