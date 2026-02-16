@@ -24,19 +24,40 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+/**
+ * Props for the DataTable component.
+ * @template TData - The type of data displayed in the table.
+ */
 interface DataTableProps<TData> {
+  /** The column definitions for the table. */
   columns: ColumnDef<TData>[]
+  /** The data to display in the table. */
   data: TData[]
+  /** Callback function when a row is clicked. */
   onRowClick?: (row: TData) => void
+  /** Callback function when the search term changes. */
   onSearchChange?: (value: string) => void
+  /** The current search value. */
   searchValue?: string
+  /** The current page index (0-indexed). */
   pageIndex?: number
+  /** The number of items per page. */
   pageSize?: number
+  /** The total number of pages. */
   pageCount?: number
+  /** The total number of rows. */
   totalRows?: number
+  /** Callback function when the page changes. */
   onPageChange?: (pageIndex: number) => void
 }
 
+/**
+ * A reusable data table component with support for pagination, sorting, and filtering.
+ *
+ * @template TData - The type of data displayed in the table.
+ * @param {DataTableProps<TData>} props - The component props.
+ * @returns {JSX.Element} The rendered DataTable component.
+ */
 export function DataTable<TData>({
   columns,
   data,
@@ -60,9 +81,9 @@ export function DataTable<TData>({
       pagination:
         pageIndex !== undefined
           ? {
-              pageIndex,
-              pageSize,
-            }
+            pageIndex,
+            pageSize,
+          }
           : undefined,
     },
     initialState: {
@@ -78,9 +99,9 @@ export function DataTable<TData>({
       const next =
         typeof updater === "function"
           ? updater({
-              pageIndex: pageIndex ?? 0,
-              pageSize,
-            })
+            pageIndex: pageIndex ?? 0,
+            pageSize,
+          })
           : updater
       onPageChange(next.pageIndex)
     },

@@ -47,12 +47,18 @@ const emptyReferral = {
   followUpVisits: [emptyFollowUp],
 }
 
+/**
+ * Represents an item returned by the dropdown API.
+ */
 type DropdownApiItem = {
   _id: string
   name: string
   category: string
 }
 
+/**
+ * Represents the response structure from the dropdown API.
+ */
 type DropdownApiResponse = {
   success: boolean
   count?: number
@@ -61,6 +67,15 @@ type DropdownApiResponse = {
 
 const DEFAULT_DROPDOWN_LIMIT = 5
 
+/**
+ * Custom hook to search for dropdown items from the API.
+ * Uses debouncing to minimize API calls.
+ *
+ * @param {string | undefined} baseUrl - The base URL for the API.
+ * @param {string} category - The category of items to search for.
+ * @param {string} query - The search query string.
+ * @returns {{ items: string[], loading: boolean }} The list of items and loading state.
+ */
 const useDropdownSearch = (
   baseUrl: string | undefined,
   category: string,
@@ -98,8 +113,8 @@ const useDropdownSearch = (
         const payload = (await response.json()) as DropdownApiResponse
         const names = Array.isArray(payload?.data)
           ? payload.data
-              .map((item) => item?.name)
-              .filter((name): name is string => Boolean(name))
+            .map((item) => item?.name)
+            .filter((name): name is string => Boolean(name))
           : []
         setItems(names)
       } catch (error) {
@@ -130,6 +145,12 @@ type SuggestionInputProps = {
   type?: string
 }
 
+/**
+ * A reusable input component that shows suggestions based on user input.
+ *
+ * @param {SuggestionInputProps} props - The component props.
+ * @returns {JSX.Element} The rendered SuggestionInput component.
+ */
 const SuggestionInput = ({
   id,
   label,
@@ -209,7 +230,16 @@ const SuggestionInput = ({
   )
 }
 
-export default function ClinicVisitForm() {
+/**
+ * NewClinicVisitPage component.
+ *
+ * This page allows users to create a new clinic visit record.
+ * It contains a comprehensive form with various fields for patient details,
+ * visit details, and medical information.
+ *
+ * @returns {JSX.Element} The rendered NewClinicVisitPage component.
+ */
+export default function NewClinicVisitPage() {
   const fetchCategories = useDropdownStore((state) => state.fetchCategories)
   const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -914,57 +944,57 @@ export default function ClinicVisitForm() {
                 </SelectContent>
               </Select>
             </div>
-                   <Card className="space-y-2 col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-              Nurse Assessment
-            </h2>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setNurseAssessments((prev) => [...prev, ""])}
-            >
-              Add assessment
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {nurseAssessments.map((assessment, index) => (
-              <div
-                key={`nurse-assessment-${index}`}
-                className="flex gap-2 items-end"
-              >
-                <div className="flex-1">
-                  <SuggestionInput
-                    id={`nurseAssessment-${index}`}
-                    label={index === 0 ? "Assessment" : ""}
-                    value={assessment}
-                    onChange={(value) =>
-                      setNurseAssessments((prev) =>
-                        prev.map((item, i) => (i === index ? value : item))
-                      )
-                    }
-                    category={dropdownCategories.nurseAssessment}
-                  />
-                </div>
-                {nurseAssessments.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() =>
-                      setNurseAssessments((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
-                    className="h-10"
-                  >
-                    Remove
-                  </Button>
-                )}
+            <Card className="space-y-2 col-span-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+                  Nurse Assessment
+                </h2>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setNurseAssessments((prev) => [...prev, ""])}
+                >
+                  Add assessment
+                </Button>
               </div>
-            ))}
-          </div>
-        </Card>
-                    <div>
+              <div className="space-y-3">
+                {nurseAssessments.map((assessment, index) => (
+                  <div
+                    key={`nurse-assessment-${index}`}
+                    className="flex gap-2 items-end"
+                  >
+                    <div className="flex-1">
+                      <SuggestionInput
+                        id={`nurseAssessment-${index}`}
+                        label={index === 0 ? "Assessment" : ""}
+                        value={assessment}
+                        onChange={(value) =>
+                          setNurseAssessments((prev) =>
+                            prev.map((item, i) => (i === index ? value : item))
+                          )
+                        }
+                        category={dropdownCategories.nurseAssessment}
+                      />
+                    </div>
+                    {nurseAssessments.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setNurseAssessments((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          )
+                        }
+                        className="h-10"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+            <div>
               <Label htmlFor="symptomDuration" className="font-medium">
                 Symptom Duration
               </Label>
@@ -984,7 +1014,7 @@ export default function ClinicVisitForm() {
                 </SelectContent>
               </Select>
             </div>
-                        <div>
+            <div>
               <Label htmlFor="temperature" className="font-medium">
                 Temperature
               </Label>
@@ -1094,56 +1124,56 @@ export default function ClinicVisitForm() {
                 category={dropdownCategories.primaryDiagnosis}
               />
             </div>
-                    <Card className="space-y-2 col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-              Secondary Diagnosis
-            </h2>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
-            >
-              Add diagnosis
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {secondaryDiagnoses.map((diagnosis, index) => (
-              <div
-                key={`secondary-diagnosis-${index}`}
-                className="flex gap-2 items-end"
-              >
-                <div className="flex-1">
-                  <SuggestionInput
-                    id={`secondaryDiagnosis-${index}`}
-                    label={index === 0 ? "Diagnosis" : ""}
-                    value={diagnosis}
-                    onChange={(value) =>
-                      setSecondaryDiagnoses((prev) =>
-                        prev.map((item, i) => (i === index ? value : item))
-                      )
-                    }
-                    category={dropdownCategories.primaryDiagnosis}
-                  />
-                </div>
-                {secondaryDiagnoses.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() =>
-                      setSecondaryDiagnoses((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
-                    className="h-10"
-                  >
-                    Remove
-                  </Button>
-                )}
+            <Card className="space-y-2 col-span-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+                  Secondary Diagnosis
+                </h2>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
+                >
+                  Add diagnosis
+                </Button>
               </div>
-            ))}
-          </div>
-        </Card>
+              <div className="space-y-3">
+                {secondaryDiagnoses.map((diagnosis, index) => (
+                  <div
+                    key={`secondary-diagnosis-${index}`}
+                    className="flex gap-2 items-end"
+                  >
+                    <div className="flex-1">
+                      <SuggestionInput
+                        id={`secondaryDiagnosis-${index}`}
+                        label={index === 0 ? "Diagnosis" : ""}
+                        value={diagnosis}
+                        onChange={(value) =>
+                          setSecondaryDiagnoses((prev) =>
+                            prev.map((item, i) => (i === index ? value : item))
+                          )
+                        }
+                        category={dropdownCategories.primaryDiagnosis}
+                      />
+                    </div>
+                    {secondaryDiagnoses.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setSecondaryDiagnoses((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          )
+                        }
+                        className="h-10"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </Card>
 
@@ -1160,7 +1190,7 @@ export default function ClinicVisitForm() {
           </div>
         </Card> */}
 
- 
+
 
         <Card className="space-y-6">
           <div className="flex items-center justify-between">
@@ -1497,12 +1527,12 @@ export default function ClinicVisitForm() {
                             prev.map((item, i) =>
                               i === index
                                 ? {
-                                    ...item,
-                                    secondaryDiagnosisReferral: [
-                                      ...item.secondaryDiagnosisReferral,
-                                      "",
-                                    ],
-                                  }
+                                  ...item,
+                                  secondaryDiagnosisReferral: [
+                                    ...item.secondaryDiagnosisReferral,
+                                    "",
+                                  ],
+                                }
                                 : item,
                             ),
                           )
@@ -1528,15 +1558,15 @@ export default function ClinicVisitForm() {
                                     prev.map((item, i) =>
                                       i === index
                                         ? {
-                                            ...item,
-                                            secondaryDiagnosisReferral:
-                                              item.secondaryDiagnosisReferral.map(
-                                                (entry, entryIndex) =>
-                                                  entryIndex === diagnosisIndex
-                                                    ? value
-                                                    : entry,
-                                              ),
-                                          }
+                                          ...item,
+                                          secondaryDiagnosisReferral:
+                                            item.secondaryDiagnosisReferral.map(
+                                              (entry, entryIndex) =>
+                                                entryIndex === diagnosisIndex
+                                                  ? value
+                                                  : entry,
+                                            ),
+                                        }
                                         : item,
                                     ),
                                   )
@@ -1553,13 +1583,13 @@ export default function ClinicVisitForm() {
                                     prev.map((item, i) =>
                                       i === index
                                         ? {
-                                            ...item,
-                                            secondaryDiagnosisReferral:
-                                              item.secondaryDiagnosisReferral.filter(
-                                                (_, entryIndex) =>
-                                                  entryIndex !== diagnosisIndex,
-                                              ),
-                                          }
+                                          ...item,
+                                          secondaryDiagnosisReferral:
+                                            item.secondaryDiagnosisReferral.filter(
+                                              (_, entryIndex) =>
+                                                entryIndex !== diagnosisIndex,
+                                            ),
+                                        }
                                         : item,
                                     ),
                                   )
@@ -1634,12 +1664,12 @@ export default function ClinicVisitForm() {
                           prev.map((item, i) =>
                             i === index
                               ? {
-                                  ...item,
-                                  followUpVisits: [
-                                    ...item.followUpVisits,
-                                    emptyFollowUp,
-                                  ],
-                                }
+                                ...item,
+                                followUpVisits: [
+                                  ...item.followUpVisits,
+                                  emptyFollowUp,
+                                ],
+                              }
                               : item,
                           ),
                         )

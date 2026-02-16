@@ -13,6 +13,14 @@ interface DataTableToolbarProps<TData> {
   searchValue?: string
 }
 
+/**
+ * Filterbar component for the data table.
+ * Provides search functionality and view options.
+ *
+ * @template TData - The type of data in the table.
+ * @param {DataTableToolbarProps<TData>} props - The component props.
+ * @returns {JSX.Element} The rendered Filterbar component.
+ */
 export function Filterbar<TData>({
   table,
   onSearchChange,

@@ -6,6 +6,11 @@ import { DataTableColumnHeader } from "./DataTableColumnHeader"
 
 const columnHelper = createColumnHelper<ClinicVisit>()
 
+/**
+ * Helper function to format a date value.
+ * @param {Date | string} [value] - The date value to format.
+ * @returns {string} The formatted date string.
+ */
 const formatDate = (value?: Date | string) => {
   if (!value) return ""
   const date = value instanceof Date ? value : new Date(value)
@@ -13,6 +18,9 @@ const formatDate = (value?: Date | string) => {
   return date.toLocaleDateString()
 }
 
+/**
+ * The column definitions for the Clinic Visit data table.
+ */
 export const columns = [
   // columnHelper.display({
   //   id: "select",

@@ -14,7 +14,15 @@ import { ClinicVisit } from "@/data/schema"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
 
-export default function Example() {
+/**
+ * ClinicPage component.
+ *
+ * This component displays a list of clinic visits in a data table.
+ * It fetches data from the API using React Query, supporting pagination and search.
+ *
+ * @returns {JSX.Element} The rendered ClinicPage component.
+ */
+export default function ClinicPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuthStore()
