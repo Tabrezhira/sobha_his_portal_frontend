@@ -21,6 +21,7 @@ export function AuthShell({ children }: AuthShellProps) {
   const offlineToastId = useRef<string | number | null>(null)
 
   const isLoginRoute = useMemo(() => pathname.startsWith("/login"), [pathname])
+  const isHiRoute = useMemo(() => pathname.startsWith("/h&i"), [pathname])
 
   useEffect(() => {
     setHydrated(true)
@@ -86,8 +87,8 @@ export function AuthShell({ children }: AuthShellProps) {
 
   return (
     <>
-      {!isLoginRoute && <Sidebar />}
-      <main className={!isLoginRoute ? "lg:pl-72" : undefined}>
+      {!isLoginRoute && !isHiRoute && <Sidebar />}
+      <main className={!isLoginRoute && !isHiRoute ? "lg:pl-72" : undefined}>
         {children}
       </main>
     </>
