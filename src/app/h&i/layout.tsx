@@ -1,26 +1,12 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-
 import { HiNavbar } from "@/components/HiNavbar"
-import { TabNavigation, TabNavigationLink } from "@/components/TabNavigation"
-
-const navigation = [
-	{ name: "Case Resolution", href: "/h&i/caseResolution" },
-	{ name: "Grievance", href: "/h&i/grievance" },
-	{ name: "Happiness Score", href: "/h&i/happinessScore" },
-	{ name: "IP Admission", href: "/h&i/ipAdmission" },
-	{ name: "Member Feedback", href: "/h&i/memberFeedback" },
-]
 
 export default function Layout({
 	children,
 }: Readonly<{
 	children: React.ReactNode
 }>) {
-	const pathname = usePathname()
-
 	return (
 		<div className="flex min-h-screen flex-col">
 			<HiNavbar />

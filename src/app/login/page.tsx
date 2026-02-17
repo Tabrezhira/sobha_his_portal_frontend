@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 import { LoginForm } from "@/components/login-form"
 
 export default function Page() {
@@ -7,7 +9,7 @@ export default function Page() {
       style={{ backgroundImage: "url('/homeimg.webp')" }}
     >
       <div className="w-full max-w-sm flex flex-col items-center gap-6 px-6">
-        <img src="/logo.svg" alt="Logo" className="h-12 w-auto" />
+        <Image src="/logo.svg" alt="Logo" width={120} height={48} />
         <LoginForm />
       </div>
     </div>

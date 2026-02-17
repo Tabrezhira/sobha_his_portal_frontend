@@ -53,7 +53,6 @@ export function HiNavbar() {
           {/* Download Button */}
           <Button
             variant="ghost"
-            size="sm"
             onClick={handleDownload}
             className="hidden sm:inline-flex"
           >
@@ -69,7 +68,6 @@ export function HiNavbar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
                 className="flex items-center gap-2"
               >
                 <div className="flex size-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400">
