@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
-import { Table } from "@/components/Table";
+// import { Table } from "@/components/Table";
 import { RiArrowLeftLine, RiEdit2Line, RiLoaderLine, RiSearchLine } from "@remixicon/react";
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";

@@ -45,7 +45,7 @@ export default function Layout({
 }>) {
 	const pathname = usePathname()
 	const isMainPage = pathname === "/h&i"
-	const currentModule = modules.find((m) => m.href === pathname)
+	// const currentModule = modules.find((m) => m.href === pathname)
 
 	return (
 		<div className="flex min-h-screen flex-col">
