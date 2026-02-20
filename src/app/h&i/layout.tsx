@@ -1,31 +1,101 @@
 "use client"
 
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { HiNavbar } from "@/components/HiNavbar"
+import { RiHomeLine, RiArrowRightSLine } from "@remixicon/react"
+
+const modules = [
+	{
+		name: "Your Dashboard",
+		href: "/h&i",
+		icon: "RiBarChart2Line",
+	},
+	{
+		name: "Case Resolution",
+		href: "/h&i/caseResolution",
+		icon: "RiFileList2Line",
+	},
+	{
+		name: "IP Admission",
+		href: "/h&i/ipAdmission",
+		icon: "RiHospitalLine",
+	},
+	{
+		name: "Member Feedback",
+		href: "/h&i/memberFeedback",
+		icon: "RiPhoneLine",
+	},
+	{
+		name: "Grievance",
+		href: "/h&i/grievance",
+		icon: "RiUserVoiceLine",
+	},
+	{
+		name: "Happiness Score",
+		href: "/h&i/happinessScore",
+		icon: "RiEmotionHappyLine",
+	},
+]
 
 export default function Layout({
 	children,
 }: Readonly<{
 	children: React.ReactNode
 }>) {
+	const pathname = usePathname()
+	const isMainPage = pathname === "/h&i"
+	const currentModule = modules.find((m) => m.href === pathname)
+
 	return (
 		<div className="flex min-h-screen flex-col">
 			<HiNavbar />
-			<div className="flex-1 p-4 sm:px-6 sm:pb-10 sm:pt-10 lg:px-10 lg:pt-7">
-				{/* <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-					H&amp;I
-				</h1> */}
-				{/* <TabNavigation className="mt-4 sm:mt-6 lg:mt-10">
-					{navigation.map((item) => (
-						<TabNavigationLink
-							key={item.name}
-							asChild
-							active={pathname === item.href}
-						>
-							<Link href={item.href}>{item.name}</Link>
-						</TabNavigationLink>
-					))}
-				</TabNavigation> */}
-				<div className="pt-6">{children}</div>
+			<div className="flex flex-1">
+				{/* Sidebar Navigation */}
+				{!isMainPage && (
+					<div className="w-64 border-r border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+						<div className="sticky top-16 space-y-1 overflow-y-auto p-4">
+							<Link
+								href="/h&i"
+								className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+							>
+								<RiHomeLine className="size-5" />
+								Home
+							</Link>
+
+							<div className="my-4 border-t border-gray-200 dark:border-gray-800" />
+
+							<p className="px-4 py-2 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+								Modules
+							</p>
+
+							{modules.map((module) => {
+								const isActive = pathname === module.href
+								return (
+									<Link
+										key={module.href}
+										href={module.href}
+										className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+											isActive
+												? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400"
+												: "text-gray-600 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+										}`}
+									>
+										<RiArrowRightSLine
+											className={`size-4 ${isActive ? "opacity-100" : "opacity-0"}`}
+										/>
+										{module.name}
+									</Link>
+								)
+							})}
+						</div>
+					</div>
+				)}
+
+				{/* Main Content */}
+				<div className="flex-1 p-4 sm:px-6 sm:pb-10 sm:pt-10 lg:px-10 lg:pt-7">
+					<div className="pt-6">{children}</div>
+				</div>
 			</div>
 		</div>
 	)

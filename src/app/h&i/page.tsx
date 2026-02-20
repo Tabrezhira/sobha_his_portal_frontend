@@ -149,7 +149,7 @@ export default function Page() {
           ))}
         </div>
 
-        <div className="mt-6 rounded-2xl bg-white/90 p-5 shadow-sm dark:bg-gray-950/80">
+        {/* <div className="mt-6 rounded-2xl bg-white/90 p-5 shadow-sm dark:bg-gray-950/80">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">
               Your Data Accuracy
@@ -164,7 +164,7 @@ export default function Page() {
           <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
             Summary updated.
           </p>
-        </div>
+        </div> */}
       </section>
 
       <section>
