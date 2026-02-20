@@ -13,24 +13,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
-import { CreateGrievanceInput, GrievanceStatus, IPatient } from "@/data/h&Ischema";
+import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@remixicon/react";
+import { IGrievance, IPatient } from "@/data/h&Ischema";
 import { useDropdownStore } from "@/store/dropdown";
 import { useAuthStore } from "@/store/auth";
 import { dropdown } from "@/data/schema";
 
-interface NewGrievanceFormProps {
+interface UpdateGrievanceFormProps {
+  grievance: IGrievance;
   onBack: () => void;
 }
 
-export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
+export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievanceFormProps) {
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [searching, setSearching] = useState(false);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
   const { fetchDropdownData } = useDropdownStore();
-  const { user, token } = useAuthStore();
+  const {  token } = useAuthStore();
 
   useEffect(() => {
     const loadTrLocationData = async () => {
@@ -41,35 +43,10 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
     loadTrLocationData();
   }, [fetchDropdownData]);
 
-  useEffect(() => {
-    if (user?.name) {
-      setFormData((prev) => ({ ...prev, Manager: user.name || "" }));
-    }
-  }, [user]);
-
-  const [formData, setFormData] = useState<CreateGrievanceInput>({
-    date: new Date(),
-    employeeId: "",
-    employeeName: "",
-    insuranceID: "",
-    trLocation: "",
-    Manager: "",
-    employeeMobile: "",
-    sourceOfGrievance: "",
-    grievanceRemarks: "",
-    typeOfIssue: "",
-    issueDate: new Date(),
-    closedDate: undefined,
-    tatMins: undefined,
-    slaTatMins: undefined,
-    status: GrievanceStatus.Open,
-    rootCause: "",
-    correctiveAction: "",
-    correctiveActionStatus: "",
-    preventiveAction: "",
-    preventiveActionStatus: "",
-    responsibility: "",
-    remarks: "",
+  const [formData, setFormData] = useState<IGrievance>({
+    ...grievance,
+    date: grievance.date || new Date(),
+    issueDate: grievance.issueDate || new Date(),
   });
 
   const handleChange = (
@@ -143,8 +120,8 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
         ...formData,
         employeeId: formData.employeeId.toUpperCase(),
       };
-      const response = await fetch(`${apiUrl}/grievance/`, {
-        method: "POST",
+      const response = await fetch(`${apiUrl}/grievance/${grievance._id}`, {
+        method: "PUT",
         headers: { 
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` })
@@ -155,52 +132,71 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
       if (response.ok) {
         setNotification({
           type: "success",
-          message: "Grievance created successfully!",
+          message: "Grievance updated successfully!",
         });
         setTimeout(() => {
           setNotification(null);
-          setFormData({
-            date: new Date(),
-            employeeId: "",
-            employeeName: "",
-            insuranceID: "",
-            trLocation: "",
-            Manager: user?.name || "",
-            employeeMobile: "",
-            sourceOfGrievance: "",
-            grievanceRemarks: "",
-            typeOfIssue: "",
-            issueDate: new Date(),
-            closedDate: undefined,
-            tatMins: undefined,
-            slaTatMins: undefined,
-            status: GrievanceStatus.Open,
-            rootCause: "",
-            correctiveAction: "",
-            correctiveActionStatus: "",
-            preventiveAction: "",
-            preventiveActionStatus: "",
-            responsibility: "",
-            remarks: "",
-          });
           onBack();
         }, 2000);
       } else {
         setNotification({
           type: "error",
-          message: "Failed to create grievance. Please try again.",
+          message: "Failed to update grievance. Please try again.",
         });
         setTimeout(() => setNotification(null), 3000);
       }
     } catch (error) {
-      console.error("Error creating grievance:", error);
+      console.error("Error updating grievance:", error);
       setNotification({
         type: "error",
-        message: "Failed to create grievance. Please check your connection.",
+        message: "Failed to update grievance. Please check your connection.",
       });
       setTimeout(() => setNotification(null), 3000);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this grievance?")) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_CURD_API_URL;
+      const response = await fetch(`${apiUrl}/grievance/${grievance._id}`, {
+        method: "DELETE",
+        headers: {
+          ...(token && { "Authorization": `Bearer ${token}` })
+        }
+      });
+
+      if (response.ok) {
+        setNotification({
+          type: "success",
+          message: "Grievance deleted successfully!",
+        });
+        setTimeout(() => {
+          setNotification(null);
+          onBack();
+        }, 2000);
+      } else {
+        setNotification({
+          type: "error",
+          message: "Failed to delete grievance. Please try again.",
+        });
+        setTimeout(() => setNotification(null), 3000);
+      }
+    } catch (error) {
+      console.error("Error deleting grievance:", error);
+      setNotification({
+        type: "error",
+        message: "Failed to delete grievance. Please check your connection.",
+      });
+      setTimeout(() => setNotification(null), 3000);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -215,7 +211,7 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
           Back
         </button>
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
-          Register New Grievance
+          Update Grievance
         </h2>
       </div>
 
@@ -282,7 +278,7 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
               <Input
                 id="insuranceID"
                 name="insuranceID"
-                value={formData.insuranceID}
+                value={formData.insuranceID || ""}
                 onChange={handleChange}
                 placeholder="Enter ID number"
                 disabled
@@ -425,7 +421,7 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
 
             <div>
               <Label htmlFor="status">Status *</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as GrievanceStatus })}>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as any })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -593,6 +589,25 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
             Cancel
           </Button>
           <Button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            variant="secondary"
+            className="flex items-center gap-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+          >
+            {deleting ? (
+              <>
+                <RiLoaderLine className="size-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <RiDeleteBinLine className="size-4" />
+                Delete
+              </>
+            )}
+          </Button>
+          <Button
             type="submit"
             disabled={loading}
             className="flex items-center gap-2"
@@ -600,12 +615,12 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
             {loading ? (
               <>
                 <RiLoaderLine className="size-4 animate-spin" />
-                Creating...
+                Updating...
               </>
             ) : (
               <>
                 <RiCheckLine className="size-4" />
-                Create Grievance
+                Update Grievance
               </>
             )}
           </Button>
