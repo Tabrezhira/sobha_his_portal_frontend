@@ -13,7 +13,7 @@ import {
 } from "@/components/Dropdown"
 import { RiDownloadCloud2Line, RiLogoutBoxLine, RiUserLine } from "@remixicon/react"
 
-export function HiNavbar() {
+export function HiNavbar({ mobileMenu }: { mobileMenu?: React.ReactNode }) {
   const router = useRouter()
   const { user, profile, logout } = useAuthStore()
 
@@ -35,7 +35,8 @@ export function HiNavbar() {
       <div className="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* Left Side - Logo */}
         <div className="flex items-center gap-2">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500">
+          {mobileMenu}
+          <div className="hidden size-10 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500 sm:flex">
             <span className="text-lg font-bold">M</span>
           </div>
           <div className="hidden sm:flex sm:flex-col">

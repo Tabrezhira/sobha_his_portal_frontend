@@ -291,3 +291,12 @@ export type Summary = {
     openReferrals: number;
   };
 };
+
+export type HappinessSurveyEligibility = {
+	success: boolean
+	data: {
+		empId: string
+		lastSurveyDate: string
+		nextEligibleDate: string
+	}
+}

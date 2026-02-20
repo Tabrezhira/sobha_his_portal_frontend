@@ -52,9 +52,9 @@ const summaryCards = [
 
 const modules = [
   {
-    name: "Your Dashboard",
-    description: "Open HI dashboard",
-    href: "/h&i",
+    name: "HIS Portal",
+    description: "Open HIS portal",
+    href: "/",
     icon: RiBarChart2Line,
     badge: "Dashboard",
     gradient:
