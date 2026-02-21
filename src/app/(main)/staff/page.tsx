@@ -35,22 +35,9 @@ export default function StaffPage() {
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize] = useState(20)
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false)
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const { data: locationOptions } = useDropdownData("TR LOCATION")
   const [createFormData, setCreateFormData] = useState({
-    empId: "",
-    name: "",
-    email: "",
-    password: "",
-    role: "staff" as "staff" | "manager" | "superadmin",
-    locationId: "",
-    managerLocation: [] as string[],
-  })
-  const [editFormData, setEditFormData] = useState({
-    _id: "",
     empId: "",
     name: "",
     email: "",
@@ -89,59 +76,21 @@ export default function StaffPage() {
     setCreateFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  const handleLocationToggle = (location: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      managerLocation: prev.managerLocation.includes(location)
+        ? prev.managerLocation.filter((loc) => loc !== location)
+        : [...prev.managerLocation, location],
+    }))
   }
 
-  const handleLocationToggle = (location: string, isEdit: boolean = false) => {
-    if (isEdit) {
-      setEditFormData((prev) => ({
-        ...prev,
-        managerLocation: prev.managerLocation.includes(location)
-          ? prev.managerLocation.filter((loc) => loc !== location)
-          : [...prev.managerLocation, location],
-      }))
-    } else {
-      setCreateFormData((prev) => ({
-        ...prev,
-        managerLocation: prev.managerLocation.includes(location)
-          ? prev.managerLocation.filter((loc) => loc !== location)
-          : [...prev.managerLocation, location],
-      }))
-    }
-  }
-
-  const handleRoleChange = (value: "staff" | "manager" | "superadmin", isEdit: boolean = false) => {
-    if (isEdit) {
-      setEditFormData((prev) => ({
-        ...prev,
-        role: value,
-        managerLocation: value === "manager" ? prev.managerLocation : [],
-      }))
-    } else {
-      setCreateFormData((prev) => ({
-        ...prev,
-        role: value,
-        managerLocation: value === "manager" ? prev.managerLocation : [],
-      }))
-    }
-  }
-
-  const handleEditStaff = (user: User) => {
-    if (!user._id) return
-    setEditingUserId(user._id)
-    setEditFormData({
-      _id: user._id,
-      empId: user.empId || "",
-      name: user.name || "",
-      email: user.email || "",
-      password: "", // Don't pre-fill password
-      role: (user.role || "staff") as "staff" | "manager" | "superadmin",
-      locationId: user.locationId || "",
-      managerLocation: (user.role === "manager" && user.managerLocation) ? user.managerLocation : [],
-    })
-    setIsEditSheetOpen(true)
+  const handleRoleChange = (value: "staff" | "manager" | "superadmin") => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      role: value,
+      managerLocation: value === "manager" ? prev.managerLocation : [],
+    }))
   }
 
   const handleCreateStaff = async () => {
@@ -185,59 +134,6 @@ export default function StaffPage() {
       toast.error("Failed to create staff")
     } finally {
       setIsCreating(false)
-    }
-  }
-
-  const handleUpdateStaff = async () => {
-    if (!editFormData.empId || !editFormData.name || !editFormData.email || !editFormData.locationId) {
-      toast.error("All fields are required")
-      return
-    }
-
-    if (editFormData.role === "manager" && editFormData.managerLocation.length === 0) {
-      toast.error("Please select at least one location for manager role")
-      return
-    }
-
-    setIsUpdating(true)
-    try {
-      const payload: any = {
-        empId: editFormData.empId,
-        name: editFormData.name,
-        email: editFormData.email,
-        role: editFormData.role,
-        locationId: editFormData.locationId,
-      }
-
-      // Only include password if it's not empty
-      if (editFormData.password) {
-        payload.password = editFormData.password
-      }
-
-      // Only include managerLocation if role is manager
-      if (editFormData.role === "manager") {
-        payload.managerLocation = editFormData.managerLocation
-      }
-
-      await api.put(`/auth/${editFormData._id}`, payload)
-      toast.success("Staff updated successfully")
-      setIsEditSheetOpen(false)
-      setEditFormData({
-        _id: "",
-        empId: "",
-        name: "",
-        email: "",
-        password: "",
-        role: "staff",
-        locationId: "",
-        managerLocation: [],
-      })
-      await queryClient.invalidateQueries({ queryKey: ["staff"] })
-    } catch (error) {
-      console.error("Error updating staff:", error)
-      toast.error("Failed to update staff")
-    } finally {
-      setIsUpdating(false)
     }
   }
 
@@ -285,7 +181,6 @@ export default function StaffPage() {
               )
             },
           }}
-          onEditRow={handleEditStaff}
         />
       </Card>
 
@@ -464,185 +359,6 @@ export default function StaffPage() {
             </Button>
             <Button onClick={handleCreateStaff} disabled={isCreating}>
               {isCreating ? "Creating..." : "Create Staff"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Update Staff</SheetTitle>
-            <SheetDescription>
-              Update staff information below
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-empId"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Employee ID <span className="text-red-600">*</span>
-              </label>
-              <input
-                id="edit-empId"
-                name="empId"
-                type="text"
-                value={editFormData.empId}
-                onChange={handleEditInputChange}
-                placeholder="Enter employee ID"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-name"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                id="edit-name"
-                name="name"
-                type="text"
-                value={editFormData.name}
-                onChange={handleEditInputChange}
-                placeholder="Enter name"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-email"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Email <span className="text-red-600">*</span>
-              </label>
-              <input
-                id="edit-email"
-                name="email"
-                type="email"
-                value={editFormData.email}
-                onChange={handleEditInputChange}
-                placeholder="Enter email"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-password"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Password (leave blank to keep current)
-              </label>
-              <input
-                id="edit-password"
-                name="password"
-                type="password"
-                value={editFormData.password}
-                onChange={handleEditInputChange}
-                placeholder="Enter new password"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-role"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Role
-              </label>
-              <Select
-                value={editFormData.role}
-                onValueChange={(value) => handleRoleChange(value as "staff" | "manager" | "superadmin", true)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="superadmin">Superadmin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="edit-locationId"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Location ID <span className="text-red-600">*</span>
-              </label>
-              <Select
-                value={editFormData.locationId}
-                onValueChange={(value) => setEditFormData((prev) => ({ ...prev, locationId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locationOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {editFormData.role === "manager" && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Manage Locations <span className="text-red-600">*</span>
-                </label>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Select locations this manager can manage
-                </p>
-                <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
-                  {locationOptions.length > 0 ? (
-                    locationOptions.map((location) => (
-                      <div key={location} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`edit-loc-${location}`}
-                          checked={editFormData.managerLocation.includes(location)}
-                          onCheckedChange={() => handleLocationToggle(location, true)}
-                        />
-                        <label
-                          htmlFor={`edit-loc-${location}`}
-                          className="cursor-pointer text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {location}
-                        </label>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-xs text-gray-400">No locations available</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <SheetFooter className="mt-6">
-            <Button
-              variant="secondary"
-              onClick={() => setIsEditSheetOpen(false)}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdateStaff} disabled={isUpdating}>
-              {isUpdating ? "Updating..." : "Update Staff"}
             </Button>
           </SheetFooter>
         </SheetContent>

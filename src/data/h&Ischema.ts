@@ -212,6 +212,8 @@ export interface IIpAdmission {
   caseTypeChangeComments?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  dateOfAdmission?: Date; // Alias for doa
+  employeeName?: string; // Alias for name
 }
 
 // Type for creating a new IP admission

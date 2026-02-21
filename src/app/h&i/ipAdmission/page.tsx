@@ -56,9 +56,9 @@ const options = [
 export default function Page() {
 	const [activeAction, setActiveAction] = useState<string | null>(null)
 	const [search, setSearch] = useState("")
-	const { user, token } = useAuthStore()
+	const {  token } = useAuthStore()
 
-	const { data: admissions = [], isLoading } = useQuery({
+	const { data: admissions = [], isLoading } = useQuery<IIpAdmission[]>({
 		queryKey: ["ipAdmissions", search, token],
 		queryFn: async () => {
 			const response = await api.get("/hospital/manager/discharge-status", {
@@ -99,7 +99,6 @@ export default function Page() {
 				<div className="flex items-center gap-3">
 					<Button
 						variant="ghost"
-						size="sm"
 						onClick={() => {
 							setActiveAction(null)
 							setSearch("")
@@ -192,7 +191,6 @@ export default function Page() {
 												</td>
 												<td className="px-4 py-3">
 													<Button
-														size="sm"
 														onClick={() => handleSelectAdmission(admission)}
 													>
 														Select
