@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/Button"
+import { Checkbox } from "@/components/Checkbox"
 import { RiMoreFill } from "@remixicon/react"
 import { Row } from "@tanstack/react-table"
 import { useState } from "react"
@@ -55,6 +56,7 @@ export function DataTableRowActions<TData>({
     role: user.role || "staff",
     locationId: user.locationId || "",
     password: "",
+    managerLocation: (user.role === "manager" && user.managerLocation) ? user.managerLocation : [],
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,9 +64,31 @@ export function DataTableRowActions<TData>({
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleRoleChange = (value: "staff" | "manager" | "superadmin") => {
+    setFormData((prev) => ({
+      ...prev,
+      role: value,
+      managerLocation: value === "manager" ? prev.managerLocation : [],
+    }))
+  }
+
+  const handleLocationToggle = (location: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      managerLocation: prev.managerLocation.includes(location)
+        ? prev.managerLocation.filter((loc) => loc !== location)
+        : [...prev.managerLocation, location],
+    }))
+  }
+
   const handleSave = async () => {
     if (!user.empId) {
       toast.error("User ID is missing")
+      return
+    }
+
+    if (formData.role === "manager" && formData.managerLocation.length === 0) {
+      toast.error("Please select at least one location for manager role")
       return
     }
 
@@ -80,6 +104,10 @@ export function DataTableRowActions<TData>({
       
       if (formData.password) {
         updateData.password = formData.password
+      }
+
+      if (formData.role === "manager") {
+        updateData.managerLocation = formData.managerLocation
       }
 
       await api.put(`/auth/${user._id}`, updateData)
@@ -219,7 +247,7 @@ export function DataTableRowActions<TData>({
               </label>
               <Select
                 value={formData.role}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, role: value as "staff" | "manager" | "superadmin" }))}
+                onValueChange={handleRoleChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
@@ -255,6 +283,38 @@ export function DataTableRowActions<TData>({
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.role === "manager" && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Manage Locations <span className="text-red-600">*</span>
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Select locations this manager can manage
+                </p>
+                <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-950">
+                  {locationOptions.length > 0 ? (
+                    locationOptions.map((location) => (
+                      <div key={location} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`edit-manager-loc-${location}`}
+                          checked={formData.managerLocation.includes(location)}
+                          onCheckedChange={() => handleLocationToggle(location)}
+                        />
+                        <label
+                          htmlFor={`edit-manager-loc-${location}`}
+                          className="cursor-pointer text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {location}
+                        </label>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400">No locations available</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <label

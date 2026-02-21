@@ -1,5 +1,14 @@
+"use client"
+
 import { Card } from "@/components/Card"
-import { RiAddLine, RiArrowRightSLine, RiCheckLine, RiEdit2Line } from "@remixicon/react"
+import { Button } from "@/components/Button"
+import { Input } from "@/components/Input"
+import { RiAddLine, RiArrowRightSLine, RiArrowLeftSLine, RiCheckLine, RiEdit2Line } from "@remixicon/react"
+import { useState } from "react"
+import { IIpAdmission } from "@/data/h&Ischema"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
+import { useAuthStore } from "@/store/auth"
 
 const options = [
 	{
@@ -10,6 +19,7 @@ const options = [
 			"border-2 border-dashed border-gray-300 bg-white p-8 transition-all duration-200 hover:border-amber-400 hover:bg-amber-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-amber-500/10",
 		iconClass:
 			"inline-flex size-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 group-hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:group-hover:bg-amber-500/30",
+		action: "new-visit",
 	},
 	{
 		title: "Repeat Visit",
@@ -19,6 +29,7 @@ const options = [
 			"border-2 border-dashed border-gray-300 bg-white p-8 transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-blue-500/10",
 		iconClass:
 			"inline-flex size-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 group-hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:group-hover:bg-blue-500/30",
+		action: "repeat-visit",
 	},
 	{
 		title: "Mark Discharged",
@@ -28,6 +39,7 @@ const options = [
 			"border-2 border-dashed border-gray-300 bg-white p-8 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-emerald-500/10",
 		iconClass:
 			"inline-flex size-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:group-hover:bg-emerald-500/30",
+		action: "mark-discharged",
 	},
 	{
 		title: "Change Case Type",
@@ -37,10 +49,168 @@ const options = [
 			"border-2 border-dashed border-gray-300 bg-white p-8 transition-all duration-200 hover:border-violet-400 hover:bg-violet-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-violet-500/10",
 		iconClass:
 			"inline-flex size-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 group-hover:bg-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:group-hover:bg-violet-500/30",
+		action: "change-case-type",
 	},
 ]
 
 export default function Page() {
+	const [activeAction, setActiveAction] = useState<string | null>(null)
+	const [search, setSearch] = useState("")
+	const { user, token } = useAuthStore()
+
+	const { data: admissions = [], isLoading } = useQuery({
+		queryKey: ["ipAdmissions", search, token],
+		queryFn: async () => {
+			const response = await api.get("/hospital/manager/discharge-status", {
+				params: { q: search || undefined },
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			})
+			return Array.isArray(response?.data?.data) ? response.data.data : []
+		},
+		enabled: !!activeAction && !!token,
+		staleTime: 5 * 60 * 1000,
+	})
+
+	const handleActionClick = (action: string) => {
+		setActiveAction(action)
+		setSearch("")
+	}
+
+	const handleSelectAdmission = (admission: IIpAdmission) => {
+		// Handle selection - navigate to form or pass data
+		console.log("Selected admission:", admission)
+	}
+
+	const formatDate = (date?: Date | string) => {
+		if (!date) return "-"
+		return new Date(date).toLocaleDateString()
+	}
+
+	const getActionTitle = () => {
+		return options.find((opt) => opt.action === activeAction)?.title || ""
+	}
+
+	// Show table view
+	if (activeAction) {
+		return (
+			<div className="space-y-6">
+				<div className="flex items-center gap-3">
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => {
+							setActiveAction(null)
+							setSearch("")
+						}}
+						className="gap-2"
+					>
+						<RiArrowLeftSLine className="size-4" />
+						Back
+					</Button>
+					<h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
+						{getActionTitle()}
+					</h2>
+				</div>
+
+				<div className="space-y-4">
+					<div>
+						<label htmlFor="search" className="text-sm font-medium">
+							Search by Employee No or Name
+						</label>
+						<Input
+							id="search"
+							placeholder="Search..."
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							className="mt-2"
+						/>
+					</div>
+
+					<div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+						<div className="overflow-x-auto">
+							<table className="w-full text-sm">
+								<thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+									<tr>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											EMP NO
+										</th>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											EMPLOYEE NAME
+										</th>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											TR LOCATION
+										</th>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											HOSPITAL NAME
+										</th>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											DATE OF ADMISSION
+										</th>
+										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+											ACTION
+										</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+									{isLoading ? (
+										<tr>
+											<td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+												<div className="flex items-center justify-center">
+													<div className="size-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 dark:border-gray-700 dark:border-t-gray-50"></div>
+													<span className="ml-2">Loading...</span>
+												</div>
+											</td>
+										</tr>
+									) : admissions.length === 0 ? (
+										<tr>
+											<td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+												No admissions found
+											</td>
+										</tr>
+									) : (
+										admissions.map((admission) => (
+											<tr
+												key={admission._id}
+												className="hover:bg-gray-50 dark:hover:bg-gray-900"
+											>
+												<td className="px-4 py-3 text-gray-900 dark:text-gray-50">
+													{admission.empNo}
+												</td>
+												<td className="px-4 py-3 text-gray-900 dark:text-gray-50">
+													{admission.employeeName || admission.name}
+												</td>
+												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+													{admission.trLocation || "-"}
+												</td>
+												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+													{admission.hospitalName || "-"}
+												</td>
+												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+													{formatDate(admission.dateOfAdmission || admission.doa)}
+												</td>
+												<td className="px-4 py-3">
+													<Button
+														size="sm"
+														onClick={() => handleSelectAdmission(admission)}
+													>
+														Select
+													</Button>
+												</td>
+											</tr>
+										))
+									)}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	// Show options grid
 	return (
 		<div className="space-y-6">
 			<div>
@@ -49,10 +219,13 @@ export default function Page() {
 				</h2>
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					{options.map((option) => (
-						<button key={option.title} type="button" className="group">
-							<Card
-								className={option.cardClass}
-							>
+						<button
+							key={option.title}
+							type="button"
+							className="group"
+							onClick={() => handleActionClick(option.action)}
+						>
+							<Card className={option.cardClass}>
 								<span className={option.iconClass}>
 									<option.icon className="size-7" />
 								</span>

@@ -144,3 +144,84 @@ export interface IPatient {
   trLocation?: string | null;
   mobileNumber?: string | null;
 }
+
+// ========== IP Admission Types ==========
+
+// Follow-up interface
+export interface IFollowUp {
+  followUpDate?: Date;
+  remarks?: string;
+}
+
+// Technician Visit interface
+export interface ITechnicianVisit {
+  visitNumber?: number;
+  technicianFeedback?: string;
+  physicianFeedback?: string;
+}
+
+// Main IP Admission interface
+export interface IIpAdmission {
+  _id?: string;
+  hospitalCase?: string; // ObjectId reference to Hospital
+  empNo: string;
+  name: string;
+  emiratesId?: string;
+  insuranceId?: string;
+  trLocation?: string;
+  mobileNumber?: string;
+  hospitalName?: string;
+  doa?: Date; // Date of Admission
+  natureOfCase?: string;
+  caseCategory?: string;
+  caseType?: string;
+  primaryDiagnosis?: string;
+  secondaryDiagnosis?: string;
+  status?: string;
+  dischargeSummaryReceived?: boolean;
+  dod?: Date; // Date of Discharge
+  noOfDaysHospitalized?: number;
+  followUps?: IFollowUp[];
+  fitnessStatus?: string;
+  exitStatus?: string;
+  isolationOrRehabilitationRequired?: boolean;
+  remarks?: string;
+  hiManagers?: string;
+  admissionMode?: string;
+  admissionType?: string;
+  insuranceApprovalStatus?: string;
+  treatmentUndergone?: string;
+  imVisitStatus?: string;
+  noOfVisits?: number;
+  technicianVisits?: ITechnicianVisit[];
+  treatmentLocation?: string;
+  placeOfLocation?: string;
+  postRecoveryLocation?: string;
+  fitToTravel?: boolean;
+  postRehabRequired?: boolean;
+  durationOfRehab?: number;
+  followUpRequired?: boolean;
+  rehabExtension?: boolean;
+  rehabExtensionDuration?: number;
+  memberResumeToWork?: Date;
+  technicianFeedbackForm?: string;
+  dischargedHI?: boolean;
+  dodHI?: Date;
+  source?: string;
+  dischargeComments?: string;
+  caseTypeChangeComments?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Type for creating a new IP admission
+export type CreateIpAdmissionInput = Omit<
+  IIpAdmission,
+  "_id" | "createdAt" | "updatedAt"
+>;
+
+// Type for updating an IP admission
+export type UpdateIpAdmissionInput = Partial<
+  Omit<IIpAdmission, "_id" | "createdAt" | "updatedAt">
+>;
+

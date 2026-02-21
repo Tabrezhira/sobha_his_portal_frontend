@@ -175,15 +175,32 @@ export type Isolation = {
 	createdBy: string
 }
 
-export type User = {
-	_id?: string
-	name?: string
-	empId?: string
-	email?: string
-	password?: string
-	role?: "staff" | "manager" | "superadmin"
-	locationId: string
-}
+export type User = (
+	| {
+			_id?: string
+			name?: string
+			empId?: string
+			email?: string
+			password?: string
+			role: "manager"
+			locationId: string
+			managerLocation: string[] // Required for managers
+			createdAt?: Date | string
+			updatedAt?: Date | string
+	  }
+	| {
+			_id?: string
+			name?: string
+			empId?: string
+			email?: string
+			password?: string
+			role?: "staff" | "superadmin" | undefined
+			locationId: string
+			managerLocation?: never
+			createdAt?: Date | string
+			updatedAt?: Date | string
+	  }
+)
 
 export type Patient = {
 	_id?: string
