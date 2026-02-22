@@ -48,7 +48,7 @@ const emptyReferral = {
   referredToHospital: "",
   visitDateReferral: "",
   specialistType: "",
-  doctorName: "",
+  doctorNameReferral: "",
   investigationReports: "",
   primaryDiagnosisReferral: "",
   secondaryDiagnosisReferral: [] as string[],
@@ -331,6 +331,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       employeeName: "",
       emiratesId: "",
       insuranceId: "",
+      dateOfJoining: "",
+      eligibilityForSickLeave: false,
       trLocation: "",
       mobileNumber: "",
       natureOfCase: "",
@@ -351,6 +353,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       totalSickLeaveDays: "",
       remarks: "",
       visitStatus: "Open",
+      referral: false,
       finalRemarks: "",
       ipAdmissionRequired: false,
       createdBy: "",
@@ -390,6 +393,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         employeeName: initialData.employeeName ?? "",
         emiratesId: initialData.emiratesId ?? "",
         insuranceId: initialData.insuranceId ?? "",
+        dateOfJoining: toDateInput(initialData.dateOfJoining),
+        eligibilityForSickLeave: Boolean(initialData.eligibilityForSickLeave),
         trLocation: normalizeSelectValue(initialData.trLocation),
         mobileNumber: initialData.mobileNumber ?? "",
         natureOfCase: normalizeSelectValue(initialData.natureOfCase),
@@ -420,6 +425,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             : "",
         remarks: initialData.remarks ?? "",
         visitStatus: normalizeSelectValue(initialData.visitStatus) || "Open",
+        referral: Boolean(initialData.referral),
         finalRemarks: initialData.finalRemarks ?? "",
         ipAdmissionRequired: Boolean(initialData.ipAdmissionRequired),
         createdBy: initialData.createdBy ?? "",
@@ -446,39 +452,28 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
           : [emptyMedicine],
       )
 
-      setReferrals(
-        (initialData as any).referrals?.length
-          ? (initialData as any).referrals.map((item: any) => ({
-            referralCode: item.referralCode ?? "",
-            referralType: normalizeSelectValue(item.referralType),
-            referredToHospital: normalizeSelectValue(item.referredToHospital),
-            visitDateReferral: item.visitDateReferral
-              ? String(item.visitDateReferral).slice(0, 10)
-              : "",
-            specialistType: normalizeSelectValue(item.specialistType),
-            doctorName: item.doctorName ?? "",
-            investigationReports: item.investigationReports ?? "",
-            primaryDiagnosisReferral: item.primaryDiagnosisReferral ?? "",
-            secondaryDiagnosisReferral:
-              item.secondaryDiagnosisReferral?.length
-                ? item.secondaryDiagnosisReferral
-                : [],
-            nurseRemarksReferral: item.nurseRemarksReferral ?? "",
-            insuranceApprovalRequested: Boolean(
-              item.insuranceApprovalRequested,
-            ),
-            followUpRequired: Boolean(item.followUpRequired),
-            followUpVisits: item.followUpVisits?.length
-              ? item.followUpVisits.map((visit: any) => ({
-                visitDate: visit.visitDate
-                  ? String(visit.visitDate).slice(0, 10)
-                  : "",
-                visitRemarks: visit.visitRemarks ?? "",
-              }))
-              : [emptyFollowUp],
+      setReferralDetails({
+        referralCode: initialData.referralCode ?? "",
+        referralType: normalizeSelectValue(initialData.referralType),
+        referredToHospital: normalizeSelectValue(initialData.referredToHospital),
+        visitDateReferral: toDateInput(initialData.visitDateReferral),
+        specialistType: normalizeSelectValue(initialData.specialistType),
+        doctorNameReferral: initialData.doctorNameReferral ?? "",
+        investigationReports: initialData.investigationReports ?? "",
+        primaryDiagnosisReferral: initialData.primaryDiagnosisReferral ?? "",
+        secondaryDiagnosisReferral: initialData.secondaryDiagnosisReferral?.length
+          ? initialData.secondaryDiagnosisReferral
+          : [],
+        nurseRemarksReferral: initialData.nurseRemarksReferral ?? "",
+        insuranceApprovalRequested: Boolean(initialData.insuranceApprovalRequested),
+        followUpRequired: Boolean(initialData.followUpRequired),
+        followUpVisits: initialData.followUpVisits?.length
+          ? initialData.followUpVisits.map((visit) => ({
+            visitDate: visit.visitDate ? String(visit.visitDate).slice(0, 10) : "",
+            visitRemarks: visit.visitRemarks ?? "",
           }))
-          : [emptyReferral],
-      )
+          : [emptyFollowUp],
+      })
 
       if (onIpAdmissionChange) {
         onIpAdmissionChange(Boolean(initialData.ipAdmissionRequired))
@@ -491,6 +486,44 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     useEffect(() => {
       fetchCategories(process.env.NEXT_PUBLIC_DROPDOWN_API_URL)
     }, [fetchCategories])
+
+    useEffect(() => {
+      const start = form.sickLeaveStartDate
+      const end = form.sickLeaveEndDate
+
+      if (!start || !end) {
+        setForm((prev) =>
+          prev.totalSickLeaveDays
+            ? { ...prev, totalSickLeaveDays: "" }
+            : prev,
+        )
+        return
+      }
+
+      const startDate = new Date(start)
+      const endDate = new Date(end)
+
+      if (
+        Number.isNaN(startDate.getTime()) ||
+        Number.isNaN(endDate.getTime()) ||
+        endDate < startDate
+      ) {
+        setForm((prev) =>
+          prev.totalSickLeaveDays
+            ? { ...prev, totalSickLeaveDays: "" }
+            : prev,
+        )
+        return
+      }
+
+      const msPerDay = 1000 * 60 * 60 * 24
+      const days = Math.floor((endDate.getTime() - startDate.getTime()) / msPerDay) + 1
+      const value = String(days)
+
+      setForm((prev) =>
+        prev.totalSickLeaveDays === value ? prev : { ...prev, totalSickLeaveDays: value },
+      )
+    }, [form.sickLeaveStartDate, form.sickLeaveEndDate])
 
     useEffect(() => {
       const loadDropdownOptions = async () => {
@@ -574,7 +607,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     const [medicines, setMedicines] = useState([emptyMedicine])
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
     const [nurseAssessments, setNurseAssessments] = useState<string[]>([])
-    const [referrals, setReferrals] = useState([emptyReferral])
+    const [referralDetails, setReferralDetails] = useState(emptyReferral)
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -603,6 +636,36 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         form.caseCategory
       )
     }, [form])
+
+    const joinDateDisplay = useMemo(() => {
+      if (!form.dateOfJoining) return "Not set"
+      const parsed = new Date(form.dateOfJoining)
+      return Number.isNaN(parsed.getTime())
+        ? String(form.dateOfJoining)
+        : parsed.toLocaleDateString()
+    }, [form.dateOfJoining])
+
+    const sickLeaveStatusLabel = form.eligibilityForSickLeave
+      ? "Eligible"
+      : "Not eligible"
+
+    const sickLeaveStatusColor = form.eligibilityForSickLeave
+      ? "text-emerald-600"
+      : "text-red-600"
+
+    const copyToClipboard = useCallback(async (value: string, label: string) => {
+      const trimmed = value?.toString().trim()
+      if (!trimmed) {
+        toast.error(`${label} is empty.`)
+        return
+      }
+      try {
+        await navigator.clipboard.writeText(trimmed)
+        toast.success(`${label} copied.`)
+      } catch (err) {
+        toast.error(`Unable to copy ${label}.`)
+      }
+    }, [])
 
     const updateForm = (key: keyof typeof form, value: string | boolean) => {
       setForm((prev) => ({ ...prev, [key]: value }))
@@ -820,30 +883,23 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     }
 
     const handleReferralChange = (
-      index: number,
       key: keyof typeof emptyReferral,
       value: string | boolean,
     ) => {
-      setReferrals((prev) =>
-        prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
-      )
+      setReferralDetails((prev) => ({ ...prev, [key]: value }))
     }
 
     const handleFollowUpChange = (
-      referralIndex: number,
       followIndex: number,
       key: keyof typeof emptyFollowUp,
       value: string,
     ) => {
-      setReferrals((prev) =>
-        prev.map((ref, i) => {
-          if (i !== referralIndex) return ref
-          const followUpVisits = ref.followUpVisits.map((visit, vIndex) =>
-            vIndex === followIndex ? { ...visit, [key]: value } : visit,
-          )
-          return { ...ref, followUpVisits }
-        }),
-      )
+      setReferralDetails((prev) => {
+        const followUpVisits = prev.followUpVisits.map((visit, vIndex) =>
+          vIndex === followIndex ? { ...visit, [key]: value } : visit,
+        )
+        return { ...prev, followUpVisits }
+      })
     }
 
     const buildPayload = () => {
@@ -857,42 +913,29 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
           expiryDate: item.expiryDate || undefined,
         }))
 
-      const filteredReferrals = referrals
-        .filter(
-          (item) =>
-            item.referralCode ||
-            item.referralType ||
-            item.referredToHospital ||
-            item.visitDateReferral ||
-            item.specialistType ||
-            item.doctorName ||
-            item.investigationReports ||
-            item.primaryDiagnosisReferral ||
-            (item.secondaryDiagnosisReferral?.length ?? 0) > 0 ||
-            item.nurseRemarksReferral,
-        )
-        .map((item) => ({
-          referralCode: item.referralCode || undefined,
-          referralType: item.referralType || undefined,
-          referredToHospital: item.referredToHospital || undefined,
-          visitDateReferral: item.visitDateReferral || undefined,
-          specialistType: item.specialistType || undefined,
-          doctorName: item.doctorName || undefined,
-          investigationReports: item.investigationReports || undefined,
-          primaryDiagnosisReferral: item.primaryDiagnosisReferral || undefined,
-          secondaryDiagnosisReferral: item.secondaryDiagnosisReferral?.length
-            ? item.secondaryDiagnosisReferral.filter(Boolean)
-            : undefined,
-          nurseRemarksReferral: item.nurseRemarksReferral || undefined,
-          insuranceApprovalRequested: item.insuranceApprovalRequested,
-          followUpRequired: item.followUpRequired,
-          followUpVisits: item.followUpVisits
-            .filter((visit) => visit.visitDate || visit.visitRemarks)
-            .map((visit) => ({
-              visitDate: visit.visitDate || undefined,
-              visitRemarks: visit.visitRemarks || undefined,
-            })),
+      const filteredFollowUps = referralDetails.followUpVisits
+        .filter((visit) => visit.visitDate || visit.visitRemarks)
+        .map((visit) => ({
+          visitDate: visit.visitDate || undefined,
+          visitRemarks: visit.visitRemarks || undefined,
         }))
+
+      const hasReferralDetails = Boolean(
+        form.referral ||
+        referralDetails.referralCode ||
+        referralDetails.referralType ||
+        referralDetails.referredToHospital ||
+        referralDetails.visitDateReferral ||
+        referralDetails.specialistType ||
+        referralDetails.doctorNameReferral ||
+        referralDetails.investigationReports ||
+        referralDetails.primaryDiagnosisReferral ||
+        (referralDetails.secondaryDiagnosisReferral?.filter(Boolean).length ?? 0) > 0 ||
+        referralDetails.nurseRemarksReferral ||
+        referralDetails.insuranceApprovalRequested ||
+        referralDetails.followUpRequired ||
+        filteredFollowUps.length > 0,
+      )
 
       return {
         locationId: form.locationId || undefined,
@@ -903,6 +946,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         employeeName: form.employeeName,
         emiratesId: form.emiratesId,
         insuranceId: form.insuranceId || undefined,
+        dateOfJoining: form.dateOfJoining || undefined,
+        eligibilityForSickLeave: form.eligibilityForSickLeave,
         trLocation: form.trLocation,
         mobileNumber: form.mobileNumber,
         natureOfCase: form.natureOfCase,
@@ -925,7 +970,22 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         sickLeaveEndDate: form.sickLeaveEndDate || undefined,
         totalSickLeaveDays: toNumber(form.totalSickLeaveDays),
         remarks: form.remarks || undefined,
-        referrals: filteredReferrals.length ? filteredReferrals : undefined,
+        referral: form.referral,
+        referralCode: hasReferralDetails ? referralDetails.referralCode || undefined : undefined,
+        referralType: hasReferralDetails ? referralDetails.referralType || undefined : undefined,
+        referredToHospital: hasReferralDetails ? referralDetails.referredToHospital || undefined : undefined,
+        visitDateReferral: hasReferralDetails ? referralDetails.visitDateReferral || undefined : undefined,
+        specialistType: hasReferralDetails ? referralDetails.specialistType || undefined : undefined,
+        doctorNameReferral: hasReferralDetails ? referralDetails.doctorNameReferral || undefined : undefined,
+        investigationReports: hasReferralDetails ? referralDetails.investigationReports || undefined : undefined,
+        primaryDiagnosisReferral: hasReferralDetails ? referralDetails.primaryDiagnosisReferral || undefined : undefined,
+        secondaryDiagnosisReferral: hasReferralDetails && referralDetails.secondaryDiagnosisReferral?.filter(Boolean).length
+          ? referralDetails.secondaryDiagnosisReferral.filter(Boolean)
+          : undefined,
+        nurseRemarksReferral: hasReferralDetails ? referralDetails.nurseRemarksReferral || undefined : undefined,
+        insuranceApprovalRequested: hasReferralDetails ? referralDetails.insuranceApprovalRequested : undefined,
+        followUpRequired: hasReferralDetails ? referralDetails.followUpRequired : undefined,
+        followUpVisits: hasReferralDetails && filteredFollowUps.length ? filteredFollowUps : undefined,
         visitStatus: form.visitStatus || undefined,
         finalRemarks: form.finalRemarks || undefined,
         ipAdmissionRequired: form.ipAdmissionRequired,
@@ -948,6 +1008,8 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         employeeName: "",
         emiratesId: "",
         insuranceId: "",
+        dateOfJoining: "",
+        eligibilityForSickLeave: false,
         trLocation: "",
         mobileNumber: "",
         natureOfCase: "",
@@ -968,13 +1030,14 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         totalSickLeaveDays: "",
         remarks: "",
         visitStatus: "Open",
+        referral: false,
         finalRemarks: "",
         ipAdmissionRequired: false,
       }))
       setMedicines([emptyMedicine])
       setSecondaryDiagnoses([])
       setNurseAssessments([])
-      setReferrals([emptyReferral])
+      setReferralDetails(emptyReferral)
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -1253,6 +1316,53 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {isEditMode && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="recordId" className="font-medium">
+                    Record ID
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="recordId"
+                      className="mt-0 flex-1"
+                      value={clinicRecordId ?? ""}
+                      readOnly
+                      disabled
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => copyToClipboard(String(clinicRecordId ?? ""), "Record ID")}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {isEditMode && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="tokenNo" className="font-medium">
+                    Token No
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="tokenNo"
+                      className="mt-0 flex-1"
+                      value={form.tokenNo}
+                      onChange={(e) => updateForm("tokenNo", e.target.value)}
+                      readOnly
+                      disabled
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => copyToClipboard(String(form.tokenNo ?? ""), "Token No")}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div>
                 <Label htmlFor="date" className="font-medium">
                   Date *
@@ -1356,6 +1466,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   className="mt-2"
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
+                  disabled
                   required
                 />
               </div>
@@ -1368,6 +1479,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   className="mt-2"
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
+                  disabled
                   required
                 />
               </div>
@@ -1380,6 +1492,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   className="mt-2"
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
+                  disabled
                 />
               </div>
               <div>
@@ -1389,6 +1502,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                 <Select
                   value={normalizeSelectValue(form.trLocation)}
                   onValueChange={(value) => updateForm("trLocation", value)}
+                  disabled
                   required
                 >
                   <SelectTrigger className="mt-2">
@@ -1418,6 +1532,28 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   onChange={(e) => updateForm("mobileNumber", e.target.value)}
                   required
                 />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
+                Sick leave eligibility
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="font-medium">Date of joining</Label>
+                <p className="mt-2 text-sm text-gray-900 dark:text-gray-100">
+                  {joinDateDisplay}
+                </p>
+              </div>
+              <div>
+                <Label className="font-medium">Eligibility status</Label>
+                <p className={`mt-2 text-sm font-semibold ${sickLeaveStatusColor}`}>
+                  {sickLeaveStatusLabel}
+                </p>
               </div>
             </div>
           </Card>
@@ -1884,6 +2020,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   onChange={(e) =>
                     updateForm("totalSickLeaveDays", e.target.value)
                   }
+                  disabled
                 />
               </div>
               <div className="sm:col-span-2 lg:col-span-2">
@@ -1902,406 +2039,333 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
           <Card className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Referrals
+                Referral
               </h2>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setReferrals((prev) => [...prev, emptyReferral])}
-              >
-                Add referral
-              </Button>
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Checkbox
+                  checked={form.referral}
+                  onCheckedChange={(checked) =>
+                    updateForm("referral", Boolean(checked))
+                  }
+                />
+                Referral made
+              </label>
             </div>
+
             <div className="space-y-4">
-              {referrals.map((referral, index) => (
-                <div
-                  key={`referral-${index}`}
-                  className="space-y-4 rounded-md border border-gray-200 p-4 dark:border-gray-900"
-                >
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
-                      <Label htmlFor={`referralType-${index}`} className="font-medium">
-                        Referral Type
-                      </Label>
-                      <Select
-                        value={normalizeSelectValue(referral.referralType)}
-                        onValueChange={(value) =>
-                          handleReferralChange(index, "referralType", value)
-                        }
-                      >
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select referral type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-[200px]">
-                            {getDisplayOptions(
-                              referralTypeOptions,
-                              referral.referralType,
-                            ).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor={`referredTo-${index}`} className="font-medium">
-                        Referred To
-                      </Label>
-                      <Select
-                        value={normalizeSelectValue(referral.referredToHospital)}
-                        onValueChange={(value) =>
-                          handleReferralChange(index, "referredToHospital", value)
-                        }
-                      >
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select referred to" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-[200px]">
-                            {getDisplayOptions(
-                              referredToOptions,
-                              referral.referredToHospital,
-                            ).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="font-medium">Visit Date</Label>
-                      <Input
-                        type="date"
-                        className="mt-2"
-                        value={referral.visitDateReferral}
-                        onChange={(e) =>
-                          handleReferralChange(
-                            index,
-                            "visitDateReferral",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`specialistType-${index}`} className="font-medium">
-                        Specialist Type
-                      </Label>
-                      <Select
-                        value={normalizeSelectValue(referral.specialistType)}
-                        onValueChange={(value) =>
-                          handleReferralChange(index, "specialistType", value)
-                        }
-                      >
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select specialist type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-[200px]">
-                            {getDisplayOptions(
-                              specialistTypeOptions,
-                              referral.specialistType,
-                            ).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="font-medium">Doctor Name</Label>
-                      <Input
-                        className="mt-2"
-                        value={referral.doctorName}
-                        onChange={(e) =>
-                          handleReferralChange(
-                            index,
-                            "doctorName",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="">
-                      <Label className="font-medium">Investigation Reports</Label>
-                      <Input
-                        className="mt-2"
-                        value={referral.investigationReports}
-                        onChange={(e) =>
-                          handleReferralChange(
-                            index,
-                            "investigationReports",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="sm:col-span-2 lg:col-span-3">
-                      <SuggestionInput
-                        id={`primaryDiagnosisReferral-${index}`}
-                        label="Primary Diagnosis"
-                        value={referral.primaryDiagnosisReferral}
-                        onChange={(value) =>
-                          handleReferralChange(
-                            index,
-                            "primaryDiagnosisReferral",
-                            value,
-                          )
-                        }
-                        category={dropdownCategories.primaryDiagnosis}
-                      />
-                    </div>
-                    <Card className="sm:col-span-3 lg:col-span-3 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Label className="font-medium">Secondary Diagnosis</Label>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() =>
-                            setReferrals((prev) =>
-                              prev.map((item, i) =>
-                                i === index
-                                  ? {
-                                    ...item,
-                                    secondaryDiagnosisReferral: [
-                                      ...item.secondaryDiagnosisReferral,
-                                      "",
-                                    ],
-                                  }
-                                  : item,
-                              ),
-                            )
-                          }
-                        >
-                          Add diagnosis
-                        </Button>
-                      </div>
-                      <div className="space-y-3">
-                        {referral.secondaryDiagnosisReferral.map(
-                          (diagnosis, diagnosisIndex) => (
-                            <div
-                              key={`secondary-diagnosis-referral-${index}-${diagnosisIndex}`}
-                              className="flex gap-2 items-end"
-                            >
-                              <div className="flex-1">
-                                <SuggestionInput
-                                  id={`secondaryDiagnosisReferral-${index}-${diagnosisIndex}`}
-                                  label={diagnosisIndex === 0 ? "Diagnosis" : ""}
-                                  value={diagnosis}
-                                  onChange={(value) =>
-                                    setReferrals((prev) =>
-                                      prev.map((item, i) =>
-                                        i === index
-                                          ? {
-                                            ...item,
-                                            secondaryDiagnosisReferral:
-                                              item.secondaryDiagnosisReferral.map(
-                                                (entry, entryIndex) =>
-                                                  entryIndex === diagnosisIndex
-                                                    ? value
-                                                    : entry,
-                                              ),
-                                          }
-                                          : item,
-                                      ),
-                                    )
-                                  }
-                                  category={dropdownCategories.primaryDiagnosis}
-                                />
-                              </div>
-                              {referral.secondaryDiagnosisReferral.length > 0 && (
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  onClick={() =>
-                                    setReferrals((prev) =>
-                                      prev.map((item, i) =>
-                                        i === index
-                                          ? {
-                                            ...item,
-                                            secondaryDiagnosisReferral:
-                                              item.secondaryDiagnosisReferral.filter(
-                                                (_, entryIndex) =>
-                                                  entryIndex !== diagnosisIndex,
-                                              ),
-                                          }
-                                          : item,
-                                      ),
-                                    )
-                                  }
-                                  className="h-10"
-                                >
-                                  Remove
-                                </Button>
-                              )}
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </Card>
-                    <div className="sm:col-span-2 lg:col-span-3">
-                      <Label className="font-medium">Nurse Remarks</Label>
-                      <Input
-                        className="mt-2"
-                        value={referral.nurseRemarksReferral}
-                        onChange={(e) =>
-                          handleReferralChange(
-                            index,
-                            "nurseRemarksReferral",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Checkbox
-                        checked={referral.insuranceApprovalRequested}
-                        onCheckedChange={(checked) =>
-                          handleReferralChange(
-                            index,
-                            "insuranceApprovalRequested",
-                            Boolean(checked),
-                          )
-                        }
-                      />
-                      Insurance approval requested
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Checkbox
-                        checked={referral.followUpRequired}
-                        onCheckedChange={(checked) =>
-                          handleReferralChange(
-                            index,
-                            "followUpRequired",
-                            Boolean(checked),
-                          )
-                        }
-                      />
-                      Follow up required
-                    </label>
-                  </div>
-
-                  <Divider />
-
-                  <Card className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
-                        Follow up visits
-                      </h3>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() =>
-                          setReferrals((prev) =>
-                            prev.map((item, i) =>
-                              i === index
-                                ? {
-                                  ...item,
-                                  followUpVisits: [
-                                    ...item.followUpVisits,
-                                    emptyFollowUp,
-                                  ],
-                                }
-                                : item,
-                            ),
-                          )
-                        }
-                      >
-                        Add follow up
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {referral.followUpVisits.map((visit, followIndex) => (
-                        <div
-                          key={`follow-${index}-${followIndex}`}
-                          className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
-                        >
-                          <div>
-                            <Label className="font-medium">Visit Date</Label>
-                            <Input
-                              type="date"
-                              className="mt-2"
-                              value={visit.visitDate}
-                              onChange={(e) =>
-                                handleFollowUpChange(
-                                  index,
-                                  followIndex,
-                                  "visitDate",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div>
-                            <Label className="font-medium">Remarks</Label>
-                            <Input
-                              className="mt-2"
-                              value={visit.visitRemarks}
-                              onChange={(e) =>
-                                handleFollowUpChange(
-                                  index,
-                                  followIndex,
-                                  "visitRemarks",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          {referral.followUpVisits.length > 1 && (
-                            <div className="sm:justify-self-end">
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={() =>
-                                  setReferrals((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index
-                                        ? {
-                                          ...item,
-                                          followUpVisits:
-                                            item.followUpVisits.filter(
-                                              (_, vIndex) =>
-                                                vIndex !== followIndex,
-                                            ),
-                                        }
-                                        : item,
-                                    ),
-                                  )
-                                }
-                              >
-                                Remove follow up
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {referrals.length > 1 && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <Label htmlFor="referralCode" className="font-medium">
+                    Referral Code
+                  </Label>
+                  <Input
+                    id="referralCode"
+                    className="mt-2"
+                    value={referralDetails.referralCode}
+                    onChange={(e) => handleReferralChange("referralCode", e.target.value)}
+                    disabled={!form.referral}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="referralType" className="font-medium">
+                    Referral Type
+                  </Label>
+                  <Select
+                    value={normalizeSelectValue(referralDetails.referralType)}
+                    onValueChange={(value) => handleReferralChange("referralType", value)}
+                    disabled={!form.referral}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select referral type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <ScrollArea className="h-[200px]">
+                        {getDisplayOptions(
+                          referralTypeOptions,
+                          referralDetails.referralType,
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="referredTo" className="font-medium">
+                    Referred To
+                  </Label>
+                  <Select
+                    value={normalizeSelectValue(referralDetails.referredToHospital)}
+                    onValueChange={(value) => handleReferralChange("referredToHospital", value)}
+                    disabled={!form.referral}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select referred to" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <ScrollArea className="h-[200px]">
+                        {getDisplayOptions(
+                          referredToOptions,
+                          referralDetails.referredToHospital,
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="font-medium">Visit Date</Label>
+                  <Input
+                    type="date"
+                    className="mt-2"
+                    value={referralDetails.visitDateReferral}
+                    onChange={(e) => handleReferralChange("visitDateReferral", e.target.value)}
+                    disabled={!form.referral}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="specialistType" className="font-medium">
+                    Specialist Type
+                  </Label>
+                  <Select
+                    value={normalizeSelectValue(referralDetails.specialistType)}
+                    onValueChange={(value) => handleReferralChange("specialistType", value)}
+                    disabled={!form.referral}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select specialist type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <ScrollArea className="h-[200px]">
+                        {getDisplayOptions(
+                          specialistTypeOptions,
+                          referralDetails.specialistType,
+                        ).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="font-medium">Doctor Name</Label>
+                  <Input
+                    className="mt-2"
+                    value={referralDetails.doctorNameReferral}
+                    onChange={(e) => handleReferralChange("doctorNameReferral", e.target.value)}
+                    disabled={!form.referral}
+                  />
+                </div>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <Label className="font-medium">Investigation Reports</Label>
+                  <Input
+                    className="mt-2"
+                    value={referralDetails.investigationReports}
+                    onChange={(e) => handleReferralChange("investigationReports", e.target.value)}
+                    disabled={!form.referral}
+                  />
+                </div>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <SuggestionInput
+                    id="primaryDiagnosisReferral"
+                    label="Primary Diagnosis"
+                    value={referralDetails.primaryDiagnosisReferral}
+                    onChange={(value) => handleReferralChange("primaryDiagnosisReferral", value)}
+                    category={dropdownCategories.primaryDiagnosis}
+                  />
+                </div>
+                <Card className="sm:col-span-3 lg:col-span-3 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Secondary Diagnosis</Label>
                     <Button
                       type="button"
                       variant="secondary"
                       onClick={() =>
-                        setReferrals((prev) => prev.filter((_, i) => i !== index))
+                        setReferralDetails((prev) => ({
+                          ...prev,
+                          secondaryDiagnosisReferral: [
+                            ...prev.secondaryDiagnosisReferral,
+                            "",
+                          ],
+                        }))
                       }
+                      disabled={!form.referral}
                     >
-                      Remove referral
+                      Add diagnosis
                     </Button>
-                  )}
+                  </div>
+                  <div className="space-y-3">
+                    {referralDetails.secondaryDiagnosisReferral.map(
+                      (diagnosis, diagnosisIndex) => (
+                        <div
+                          key={`secondary-diagnosis-referral-${diagnosisIndex}`}
+                          className="flex gap-2 items-end"
+                        >
+                          <div className="flex-1">
+                            <SuggestionInput
+                              id={`secondaryDiagnosisReferral-${diagnosisIndex}`}
+                              label={diagnosisIndex === 0 ? "Diagnosis" : ""}
+                              value={diagnosis}
+                              onChange={(value) =>
+                                setReferralDetails((prev) => ({
+                                  ...prev,
+                                  secondaryDiagnosisReferral:
+                                    prev.secondaryDiagnosisReferral.map(
+                                      (entry, entryIndex) =>
+                                        entryIndex === diagnosisIndex ? value : entry,
+                                    ),
+                                }))
+                              }
+                              category={dropdownCategories.primaryDiagnosis}
+                            />
+                          </div>
+                          {referralDetails.secondaryDiagnosisReferral.length > 0 && (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() =>
+                                setReferralDetails((prev) => ({
+                                  ...prev,
+                                  secondaryDiagnosisReferral:
+                                    prev.secondaryDiagnosisReferral.filter(
+                                      (_, entryIndex) => entryIndex !== diagnosisIndex,
+                                    ),
+                                }))
+                              }
+                              className="h-10"
+                              disabled={!form.referral}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </Card>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <Label className="font-medium">Nurse Remarks</Label>
+                  <Input
+                    className="mt-2"
+                    value={referralDetails.nurseRemarksReferral}
+                    onChange={(e) => handleReferralChange("nurseRemarksReferral", e.target.value)}
+                    disabled={!form.referral}
+                  />
                 </div>
-              ))}
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Checkbox
+                    checked={referralDetails.insuranceApprovalRequested}
+                    onCheckedChange={(checked) =>
+                      handleReferralChange("insuranceApprovalRequested", Boolean(checked))
+                    }
+                    disabled={!form.referral}
+                  />
+                  Insurance approval requested
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Checkbox
+                    checked={referralDetails.followUpRequired}
+                    onCheckedChange={(checked) =>
+                      handleReferralChange("followUpRequired", Boolean(checked))
+                    }
+                    disabled={!form.referral}
+                  />
+                  Follow up required
+                </label>
+              </div>
+
+              <Divider />
+
+              <Card className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                    Follow up visits
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      setReferralDetails((prev) => ({
+                        ...prev,
+                        followUpVisits: [...prev.followUpVisits, emptyFollowUp],
+                      }))
+                    }
+                    disabled={!form.referral}
+                  >
+                    Add follow up
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {referralDetails.followUpVisits.map((visit, followIndex) => (
+                    <div
+                      key={`follow-${followIndex}`}
+                      className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+                    >
+                      <div>
+                        <Label className="font-medium">Visit Date</Label>
+                        <Input
+                          type="date"
+                          className="mt-2"
+                          value={visit.visitDate}
+                          onChange={(e) =>
+                            handleFollowUpChange(
+                              followIndex,
+                              "visitDate",
+                              e.target.value,
+                            )
+                          }
+                          disabled={!form.referral}
+                        />
+                      </div>
+                      <div>
+                        <Label className="font-medium">Remarks</Label>
+                        <Input
+                          className="mt-2"
+                          value={visit.visitRemarks}
+                          onChange={(e) =>
+                            handleFollowUpChange(
+                              followIndex,
+                              "visitRemarks",
+                              e.target.value,
+                            )
+                          }
+                          disabled={!form.referral}
+                        />
+                      </div>
+                      {referralDetails.followUpVisits.length > 1 && (
+                        <div className="sm:justify-self-end">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() =>
+                              setReferralDetails((prev) => ({
+                                ...prev,
+                                followUpVisits: prev.followUpVisits.filter(
+                                  (_, vIndex) => vIndex !== followIndex,
+                                ),
+                              }))
+                            }
+                            disabled={!form.referral}
+                          >
+                            Remove follow up
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
             </div>
           </Card>
 

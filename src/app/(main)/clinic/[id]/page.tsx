@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api"
-import ClinicVisitForm, { ClinicVisitFormInitialData } from "../_components/form/ClinicVisitForm"
+import UpdateClinicVisitForm from "../_components/form/UpdateClinicVisitForm"
+import { ClinicVisitFormInitialData } from "../_components/form/ClinicVisitForm"
 
 export default function ClinicVisitEdit() {
   const params = useParams<{ id: string }>()
@@ -51,6 +52,6 @@ export default function ClinicVisitEdit() {
   }
 
   return (
-    <ClinicVisitForm mode="edit" initialData={initialData || undefined} />
+    <UpdateClinicVisitForm initialData={initialData || undefined} />
   )
 }

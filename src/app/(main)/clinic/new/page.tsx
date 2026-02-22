@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
-import ClinicVisitForm, { ClinicVisitFormRef } from "@/app/(main)/clinic/_components/form/ClinicVisitForm"
+import NewClinicVisitForm from "@/app/(main)/clinic/_components/form/NewClinicVisitForm"
+import { ClinicVisitFormRef } from "@/app/(main)/clinic/_components/form/ClinicVisitForm"
 
 export default function NewClinicVisitPage() {
   const router = useRouter()
@@ -19,25 +20,7 @@ export default function NewClinicVisitPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-            New Clinic Visit
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Enter clinic visit details and submit.
-          </p>
-        </div>
-        <Button asChild variant="secondary">
-          <Link href="/clinic">Back to clinic</Link>
-        </Button>
-      </div>
-
-      <ClinicVisitForm
-        ref={clinicRef}
-        mode="create"
-        onSaveSuccess={handleSaveComplete}
-      />
+      <NewClinicVisitForm ref={clinicRef} onSaveSuccess={handleSaveComplete} />
     </div>
   )
 }
