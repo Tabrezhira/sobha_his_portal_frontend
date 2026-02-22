@@ -31,6 +31,7 @@ export type ClinicVisitFollowUp = {
 }
 
 export type ClinicVisit = {
+	_id?: string
 	locationId?: string
 
 	date?: string | Date
@@ -90,7 +91,6 @@ export type ClinicVisit = {
 	insuranceApprovalRequested?: boolean
 	followUpRequired?: boolean
 	followUpVisits?: ClinicVisitFollowUp[]
-	referrals?: any[]
 
 	visitStatus?: string
 
