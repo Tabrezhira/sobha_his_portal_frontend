@@ -40,7 +40,7 @@ export default function Example() {
         return { items, meta }
       }
 
-      const endpoint = user?.role === "staff" ? "/hospital/my-location" : "/hospital"
+      const endpoint = user?.role === "maleNurse" ? "/hospital/my-location" : "/hospital"
       const response = await api.get(endpoint, {
         params: {
           page,

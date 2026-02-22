@@ -13,20 +13,20 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet"
 
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/Select"
 
 export default function StaffPage() {
@@ -42,7 +42,7 @@ export default function StaffPage() {
     name: "",
     email: "",
     password: "",
-    role: "staff" as "staff" | "manager" | "superadmin",
+    role: "maleNurse" as "maleNurse" | "manager" | "superadmin" | "CSR",
     locationId: "",
     managerLocation: [] as string[],
   })
@@ -85,7 +85,7 @@ export default function StaffPage() {
     }))
   }
 
-  const handleRoleChange = (value: "staff" | "manager" | "superadmin") => {
+  const handleRoleChange = (value: "maleNurse" | "manager" | "superadmin" | "CSR") => {
     setCreateFormData((prev) => ({
       ...prev,
       role: value,
@@ -124,7 +124,7 @@ export default function StaffPage() {
         name: "",
         email: "",
         password: "",
-        role: "staff",
+        role: "maleNurse",
         locationId: "",
         managerLocation: [],
       })
@@ -285,9 +285,10 @@ export default function StaffPage() {
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="maleNurse">Male Nurse</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="superadmin">Superadmin</SelectItem>
+                  <SelectItem value="CSR">CSR</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -49,7 +49,7 @@ export default function ClinicPage() {
         return { items, meta }
       }
 
-      const endpoint = user?.role === "staff" ? "/clinic/my-location" : "/clinic"
+      const endpoint = user?.role === "maleNurse" ? "/clinic/my-location" : "/clinic"
       const response = await api.get(endpoint, {
         params: {
           page,

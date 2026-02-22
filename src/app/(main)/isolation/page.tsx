@@ -40,7 +40,7 @@ export default function IsolationPage() {
         return { items, meta }
       }
 
-      const endpoint = user?.role === "staff" ? "/isolation/my-location" : "/isolation"
+      const endpoint = user?.role === "maleNurse" ? "/isolation/my-location" : "/isolation"
       const response = await api.get(endpoint, {
         params: {
           page,

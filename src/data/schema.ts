@@ -30,51 +30,36 @@ export type ClinicVisitFollowUp = {
 	visitRemarks?: string
 }
 
-export type ClinicVisitReferral = {
-	referralCode?: string
-	referralType?: string
-	referredToHospital?: string
-	visitDateReferral?: Date | string
-	specialistType?: string
-	doctorName?: string
-	investigationReports?: string
-	primaryDiagnosisReferral?: string
-	secondaryDiagnosisReferral?: string[]
-	nurseRemarksReferral?: string
-	insuranceApprovalRequested?: boolean
-	followUpRequired?: boolean
-	followUpVisits?: ClinicVisitFollowUp[]
-}
-
 export type ClinicVisit = {
 	locationId?: string
 
-	slNo: number
-	date: Date | string
-	time: string
+	date?: string | Date
+	time?: string
 
-	empNo: string
-	employeeName: string
+	empNo?: string
+	employeeName?: string
+	dateOfJoining?: string
+	eligibilityForSickLeave?: boolean
 
-	emiratesId: string
+	emiratesId?: string
 
 	insuranceId?: string
-	trLocation: string
-	mobileNumber: string
+	trLocation?: string
+	mobileNumber?: string
 
-	natureOfCase: string
-	caseCategory: string
+	natureOfCase?: string
+	caseCategory?: string
 
 	nurseAssessment?: string[]
 	symptomDuration?: string
 
-	temperature?: number
+	temperature?: string | number
 	bloodPressure?: string
-	heartRate?: number
+	heartRate?: string | number
 
 	others?: string
 
-	tokenNo: string
+	tokenNo?: string
 	sentTo?: string
 	providerName?: string
 
@@ -85,41 +70,55 @@ export type ClinicVisit = {
 
 	medicines?: ClinicVisitMedicine[]
 
-	sickLeaveStatus?: "Approved" | "Not Approved"
-	sickLeaveStartDate?: Date | string
-	sickLeaveEndDate?: Date | string
-	totalSickLeaveDays?: number
+	sickLeaveStatus?: string
+	sickLeaveStartDate?: string | Date
+	sickLeaveEndDate?: string | Date
+	totalSickLeaveDays?: string | number
 	remarks?: string
 
-	referrals?: ClinicVisitReferral[]
+	referral?: boolean
+	referralCode?: string
+	referralType?: string
+	referredToHospital?: string
+	visitDateReferral?: string | Date
+	specialistType?: string
+	doctorNameReferral?: string
+	investigationReports?: string
+	primaryDiagnosisReferral?: string
+	secondaryDiagnosisReferral?: string[]
+	nurseRemarksReferral?: string
+	insuranceApprovalRequested?: boolean
+	followUpRequired?: boolean
+	followUpVisits?: ClinicVisitFollowUp[]
 
-	visitStatus?: "Open" | "Closed" | "Referred" | "Other"
+	visitStatus?: string
 
 	finalRemarks?: string
 	ipAdmissionRequired?: boolean
-	createdBy: string
+	createdBy?: string
 }
 
 export type HospitalFollowUp = {
-	date?: Date | string
+	date?: string | Date
 	remarks?: string
 }
 
 export type Hospital = {
 	locationId?: string
-	sno: number
 
-	empNo: string
-	employeeName: string
+	clinicVisitToken?: string
 
-	emiratesId: string
+	empNo?: string
+	employeeName?: string
+
+	emiratesId?: string
 	insuranceId?: string
 
 	trLocation?: string
 	mobileNumber?: string
 
 	hospitalName?: string
-	dateOfAdmission?: Date | string
+	dateOfAdmission?: string | Date
 
 	natureOfCase?: string
 	caseCategory?: string
@@ -130,7 +129,7 @@ export type Hospital = {
 	status?: string
 
 	dischargeSummaryReceived?: boolean
-	dateOfDischarge?: Date | string
+	dateOfDischarge?: string | Date
 	daysHospitalized?: number
 
 	followUp?: HospitalFollowUp[]
@@ -140,20 +139,20 @@ export type Hospital = {
 	isolationRequired?: boolean
 
 	finalRemarks?: string
-	createdBy: string
+	createdBy?: string
 }
 
 export type Isolation = {
 	locationId?: string
 
-	siNo: number
+	clinicVisitToken?: string
 
-	empNo: string
+	empNo?: string
 	type?: string
 
-	employeeName: string
+	employeeName?: string
 
-	emiratesId: string
+	emiratesId?: string
 	insuranceId?: string
 
 	mobileNumber?: string
@@ -164,42 +163,42 @@ export type Isolation = {
 
 	nationality?: string
 
-	slUpto?: Date | string
+	slUpto?: string | Date
 
-	dateFrom?: Date | string
-	dateTo?: Date | string
+	dateFrom?: string | Date
+	dateTo?: string | Date
 
 	currentStatus?: string
 
 	remarks?: string
-	createdBy: string
+	createdBy?: string
 }
 
 export type User = (
 	| {
-			_id?: string
-			name?: string
-			empId?: string
-			email?: string
-			password?: string
-			role: "manager"
-			locationId: string
-			managerLocation: string[] // Required for managers
-			createdAt?: Date | string
-			updatedAt?: Date | string
-	  }
+		_id?: string
+		name?: string
+		empId?: string
+		email?: string
+		password?: string
+		role: "manager"
+		locationId: string
+		managerLocation: string[] // Required for managers
+		createdAt?: Date | string
+		updatedAt?: Date | string
+	}
 	| {
-			_id?: string
-			name?: string
-			empId?: string
-			email?: string
-			password?: string
-			role?: "staff" | "superadmin" | undefined
-			locationId: string
-			managerLocation?: never
-			createdAt?: Date | string
-			updatedAt?: Date | string
-	  }
+		_id?: string
+		name?: string
+		empId?: string
+		email?: string
+		password?: string
+		role?: "maleNurse" | "superadmin" | "CSR" | undefined
+		locationId: string
+		managerLocation?: never
+		createdAt?: Date | string
+		updatedAt?: Date | string
+	}
 )
 
 export type Patient = {
@@ -292,21 +291,21 @@ export const dropdownCategories = {
 } as const
 
 export type Summary = {
-  success: boolean;
-  data: {
-    empNo: string;
-    last90Days: {
-      count: number;
-      visits: {
-        date: string;
-        provider: string;
-      }[];
-    };
-    allTimeTotalVisits: number;
-    sickLeaveApprovedCount: number;
-    totalReferrals: number;
-    openReferrals: number;
-  };
+	success: boolean;
+	data: {
+		empNo: string;
+		last90Days: {
+			count: number;
+			visits: {
+				date: string;
+				provider: string;
+			}[];
+		};
+		allTimeTotalVisits: number;
+		sickLeaveApprovedCount: number;
+		totalReferrals: number;
+		openReferrals: number;
+	};
 };
 
 export type HappinessSurveyEligibility = {

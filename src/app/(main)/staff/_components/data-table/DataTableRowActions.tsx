@@ -48,12 +48,12 @@ export function DataTableRowActions<TData>({
   const user = row.original as User
   const { data: locationOptions } = useDropdownData("TR LOCATION")
   const { user: currentUser } = useAuthStore()
-  
+
   const [formData, setFormData] = useState({
     empId: user.empId || "",
     name: user.name || "",
     email: user.email || "",
-    role: user.role || "staff",
+    role: user.role || "maleNurse",
     locationId: user.locationId || "",
     password: "",
     managerLocation: (user.role === "manager" && user.managerLocation) ? user.managerLocation : [],
@@ -64,7 +64,7 @@ export function DataTableRowActions<TData>({
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleRoleChange = (value: "staff" | "manager" | "superadmin") => {
+  const handleRoleChange = (value: "maleNurse" | "manager" | "superadmin" | "CSR") => {
     setFormData((prev) => ({
       ...prev,
       role: value,
@@ -101,7 +101,7 @@ export function DataTableRowActions<TData>({
         role: formData.role,
         locationId: formData.locationId,
       }
-      
+
       if (formData.password) {
         updateData.password = formData.password
       }
@@ -163,7 +163,7 @@ export function DataTableRowActions<TData>({
           <DropdownMenuItem onClick={() => setIsSheetOpen(true)}>
             Update
           </DropdownMenuItem>
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleDelete}
             disabled={currentUser?.empId === user.empId}
             className="text-red-600 focus:text-red-600 dark:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -253,9 +253,10 @@ export function DataTableRowActions<TData>({
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="maleNurse">Male Nurse</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="superadmin">Superadmin</SelectItem>
+                  <SelectItem value="CSR">CSR</SelectItem>
                 </SelectContent>
               </Select>
             </div>

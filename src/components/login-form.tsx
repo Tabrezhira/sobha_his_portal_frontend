@@ -6,11 +6,11 @@ import { useEffect, useState, useTransition } from "react"
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/Dialog"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
@@ -39,12 +39,12 @@ export function LoginForm({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     await login(email, password)
-    
+
     // Get the updated user from the store
     const currentUser = useAuthStore.getState().user
-    
+
     // Redirect based on role
-    if (currentUser?.role === "staff") {
+    if (currentUser?.role === "maleNurse") {
       setIsRedirecting(true)
       startTransition(() => {
         router.replace("/employee")
@@ -124,7 +124,7 @@ export function LoginForm({
                 "Login"
               )}
             </Button>
-  
+
           </div>
           <p className="text-center text-sm text-gray-500">
             Don&apos;t have an account?{" "}
