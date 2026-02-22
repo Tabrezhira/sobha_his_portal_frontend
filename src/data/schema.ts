@@ -90,6 +90,7 @@ export type ClinicVisit = {
 	insuranceApprovalRequested?: boolean
 	followUpRequired?: boolean
 	followUpVisits?: ClinicVisitFollowUp[]
+	referrals?: any[]
 
 	visitStatus?: string
 

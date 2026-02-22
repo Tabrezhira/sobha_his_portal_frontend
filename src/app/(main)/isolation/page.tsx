@@ -72,7 +72,7 @@ export default function IsolationPage() {
           Isolation
         </h1>
         <Button asChild variant="secondary">
-          <Link href="/multi-form/new">New isolation record</Link>
+          <Link href="/isolation/new">New isolation record</Link>
         </Button>
       </div>
       <Card className="mt-4 sm:mt-6 lg:mt-10">
@@ -110,15 +110,6 @@ export default function IsolationPage() {
                   clinicVisitId?: { _id?: string; id?: string } | string
                 }
                 const recordId = record._id ?? record.id
-                const clinicVisitId =
-                  typeof record.clinicVisitId === "string"
-                    ? record.clinicVisitId
-                    : record.clinicVisitId?._id ?? record.clinicVisitId?.id
-
-                if (clinicVisitId) {
-                  router.push(`/multi-form/${clinicVisitId}?tab=isolation`)
-                  return
-                }
 
                 if (!recordId) return
                 router.push(`/isolation/${recordId}`)

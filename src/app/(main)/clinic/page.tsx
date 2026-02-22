@@ -82,7 +82,7 @@ export default function ClinicPage() {
           Clinic Visits
         </h1>
         <Button asChild variant="secondary">
-          <Link href="/multi-form/new">New clinic visit</Link>
+          <Link href="/clinic/new">New clinic visit</Link>
         </Button>
       </div>
       <Tabs
@@ -131,7 +131,7 @@ export default function ClinicPage() {
                 onRowClick={(row) => {
                   const recordId = (row as { _id?: string; id?: string })._id
                   if (!recordId) return
-                  router.push(`/multi-form/${recordId}`)
+                  router.push(`/clinic/${recordId}`)
                 }}
               />
             </>

@@ -47,17 +47,17 @@ const navigation = [
 const shortcuts = [
   {
     name: "New clinic visit",
-    href: "/multi-form/new",
+    href: "/clinic/new",
     icon: RiLinkM,
   },
   {
     name: "New hospital record",
-    href: "/multi-form/new",
+    href: "/hospital/new",
     icon: RiLinkM,
   },
   {
     name: "New isolation record",
-    href: "/multi-form/new",
+    href: "/isolation/new",
     icon: RiLinkM,
   },
   {
@@ -70,7 +70,7 @@ const shortcuts = [
 export default function MobileSidebar() {
   const pathname = usePathname()
   const { user } = useAuthStore()
-  
+
   const filteredNavigation = navigation.filter(item => {
     if (item.name === "Overview") {
       return user?.role === "manager"
@@ -83,7 +83,7 @@ export default function MobileSidebar() {
     }
     return true
   })
-  
+
   const isActive = (itemHref: string) => {
     if (itemHref === siteConfig.baseLinks.settings.general) {
       return pathname.startsWith("/settings")
