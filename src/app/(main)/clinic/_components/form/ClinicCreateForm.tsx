@@ -292,7 +292,6 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
     const [sentToOptions, setSentToOptions] = useState<string[]>([])
     const [symptomDurationOptions, setSymptomDurationOptions] = useState<string[]>([])
     const [providerNameOptions, setProviderNameOptions] = useState<string[]>([])
-    const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
     const [referralTypeOptions, setReferralTypeOptions] = useState<string[]>([])
     const [referredToOptions, setReferredToOptions] = useState<string[]>([])
     const [specialistTypeOptions, setSpecialistTypeOptions] = useState<string[]>([])
@@ -543,14 +542,12 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
           sentTo,
           symptomDuration,
           medicineCourse,
-          trLocation,
         ] = await Promise.all([
           fetchDropdownData(dropdownCategories.natureOfCase, baseUrl),
           fetchDropdownData(dropdownCategories.caseCategory, baseUrl),
           fetchDropdownData(dropdownCategories.sentTo, baseUrl),
           fetchDropdownData(dropdownCategories.symptomDuration, baseUrl),
           fetchDropdownData(dropdownCategories.medicineCourse, baseUrl),
-          fetchDropdownData(dropdownCategories.trLocation, baseUrl),
         ])
 
         setNatureOfCaseOptions(natureOfCase)
@@ -558,7 +555,6 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
         setSentToOptions(sentTo)
         setSymptomDurationOptions(symptomDuration)
         setMedicineCourseOptions(medicineCourse)
-        setTrLocationOptions(trLocation)
       }
 
       loadDropdownOptions()
@@ -730,7 +726,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
           employeeName: data.PatientName ?? "",
           emiratesId: data.emiratesId ?? "",
           insuranceId: data.insuranceId ?? "",
-          trLocation: data.trLocation ?? "",
+          trLocation: user?.locationId ?? "",
           mobileNumber: data.mobileNumber ?? "",
         }
 
@@ -1517,29 +1513,14 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               </div>
               <div>
                 <Label htmlFor="trLocation" className="font-medium">
-                  TR Location *
+                  TR Location
                 </Label>
-                <Select
-                  value={normalizeSelectValue(form.trLocation)}
-                  onValueChange={(value) => updateForm("trLocation", value)}
+                <Input
+                  id="trLocation"
+                  className="mt-2"
+                  value={form.trLocation}
                   disabled
-                  required
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select TR location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <ScrollArea className="h-[200px]">
-                      {getDisplayOptions(trLocationOptions, form.trLocation).map(
-                        (option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ),
-                      )}
-                    </ScrollArea>
-                  </SelectContent>
-                </Select>
+                />
               </div>
               <div>
                 <Label htmlFor="mobileNumber" className="font-medium">
