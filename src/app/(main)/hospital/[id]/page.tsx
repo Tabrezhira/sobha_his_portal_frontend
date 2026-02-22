@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api"
-import HospitalForm, { HospitalFormInitialData } from "../_components/form/HospitalForm"
+import HospitalEditForm, { HospitalEditFormInitialData } from "../_components/form/HospitalEditForm"
 
 export default function HospitalEdit() {
   const params = useParams<{ id: string }>()
   const hospitalId = params?.id
-  const [initialData, setInitialData] = useState<HospitalFormInitialData | null>(null)
+  const [initialData, setInitialData] = useState<HospitalEditFormInitialData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,6 +51,6 @@ export default function HospitalEdit() {
   }
 
   return (
-    <HospitalForm mode="edit" initialData={initialData || undefined} />
+    <HospitalEditForm initialData={initialData || undefined} />
   )
 }

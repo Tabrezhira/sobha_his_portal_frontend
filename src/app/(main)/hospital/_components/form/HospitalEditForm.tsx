@@ -52,30 +52,22 @@ const getDisplayOptions = (options: string[], current?: string) => {
   return Array.from(new Set(items)).filter(Boolean)
 }
 
-type ClinicEmployeeDetails = {
-  empNo: string
-  employeeName: string
-  emiratesId: string
-  insuranceId?: string
-  mobileNumber?: string
-  trLocation?: string
-}
 
-type HospitalFormProps = {
+type HospitalEditFormProps = {
   clinicVisitId?: string
-  employee?: ClinicEmployeeDetails | null
-  mode?: "create" | "edit"
-  initialData?: HospitalFormInitialData
+
+
+  initialData?: HospitalEditFormInitialData
   hideActions?: boolean
   onSaveSuccess?: () => void
 }
 
-export type HospitalFormRef = {
+export type HospitalEditFormRef = {
   getPayload: () => Record<string, unknown>
   isValid: () => boolean
 }
 
-export type HospitalFormInitialData = Partial<Hospital> & {
+export type HospitalEditFormInitialData = Partial<Hospital> & {
   _id?: string
   id?: string
   clinicVisitId?: string
@@ -223,12 +215,11 @@ const SuggestionInput = ({
   )
 }
 
-const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
-  function HospitalForm(
+const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
+  function HospitalEditForm(
     {
       clinicVisitId,
-      employee,
-      mode = "create",
+
       initialData,
       hideActions = false,
       onSaveSuccess,
@@ -269,7 +260,7 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
       createdBy: "",
     })
 
-    const isEditMode = mode === "edit"
+
     const hospitalRecordId = initialData?._id ?? initialData?.id
 
     const [followUp, setFollowUp] = useState([emptyFollowUp])
@@ -348,18 +339,7 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
       )
     }, [initialData, clinicVisitId])
 
-    useEffect(() => {
-      if (!employee) return
-      setForm((prev) => ({
-        ...prev,
-        empNo: employee.empNo || prev.empNo,
-        employeeName: employee.employeeName || prev.employeeName,
-        emiratesId: employee.emiratesId || prev.emiratesId,
-        insuranceId: employee.insuranceId || prev.insuranceId,
-        mobileNumber: employee.mobileNumber || prev.mobileNumber,
-        trLocation: employee.trLocation || prev.trLocation,
-      }))
-    }, [employee])
+
 
     const canSubmit = useMemo(() => {
       return (
@@ -467,14 +447,14 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
         return
       }
 
-      if (isEditMode && !hospitalRecordId) {
+      if (!hospitalRecordId) {
         toast.error("Hospital record not found.")
         return
       }
 
       setSubmitting(true)
       try {
-        if (isEditMode && hospitalRecordId) {
+        if (hospitalRecordId) {
           await api.put(`/hospital/${hospitalRecordId}`, buildPayload())
           toast.success("Hospital record updated successfully.")
           if (onSaveSuccess) {
@@ -486,22 +466,8 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
           }
           return
         }
-
-        await api.post("/hospital", buildPayload())
-        toast.success("Hospital record saved successfully.")
-        if (onSaveSuccess) {
-          onSaveSuccess()
-        } else {
-          setTimeout(() => {
-            router.push("/hospital")
-          }, 1000)
-        }
       } catch {
-        toast.error(
-          isEditMode
-            ? "Failed to update hospital record."
-            : "Failed to save hospital record.",
-        )
+        toast.error("Failed to update hospital record.")
       } finally {
         setSubmitting(false)
       }
@@ -512,12 +478,10 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-              {isEditMode ? "Hospital Record" : "New Hospital Record"}
+              Hospital Record
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              {isEditMode
-                ? "Review and update hospital details."
-                : "Enter hospital details and submit."}
+              Review and update hospital details.
             </p>
           </div>
           {!hideActions && (
@@ -987,13 +951,7 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
           {!hideActions && (
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" disabled={submitting}>
-                {submitting
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Saving..."
-                  : isEditMode
-                    ? "Update hospital record"
-                    : "Save hospital record"}
+                {submitting ? "Updating..." : "Update hospital record"}
               </Button>
               <Button asChild variant="secondary">
                 <Link href="/hospital">Cancel</Link>
@@ -1006,4 +964,4 @@ const HospitalForm = forwardRef<HospitalFormRef, HospitalFormProps>(
   }
 )
 
-export default HospitalForm
+export default HospitalEditForm

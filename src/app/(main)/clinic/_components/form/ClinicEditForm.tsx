@@ -1333,7 +1333,6 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   value={normalizeSelectValue(form.natureOfCase)}
                   onValueChange={(value) => updateForm("natureOfCase", value)}
                   required
-                  required
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select nature of case" />

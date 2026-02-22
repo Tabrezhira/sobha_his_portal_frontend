@@ -4,11 +4,11 @@ import { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
-import HospitalForm, { HospitalFormRef } from "@/app/(main)/hospital/_components/form/HospitalForm"
+import HospitalCreateForm, { HospitalCreateFormRef } from "@/app/(main)/hospital/_components/form/HospitalCreateForm"
 
 export default function NewHospitalRecordPage() {
   const router = useRouter()
-  const hospitalRef = useRef<HospitalFormRef>(null)
+  const hospitalRef = useRef<HospitalCreateFormRef>(null)
 
   const handleSaveComplete = () => {
     toast.success("Hospital record saved successfully.")
@@ -17,9 +17,8 @@ export default function NewHospitalRecordPage() {
 
   return (
     <div className="space-y-6">
-      <HospitalForm
+      <HospitalCreateForm
         ref={hospitalRef}
-        mode="create"
         onSaveSuccess={handleSaveComplete}
       />
     </div>
