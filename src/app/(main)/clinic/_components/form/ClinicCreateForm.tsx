@@ -1048,6 +1048,8 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
       setSecondaryDiagnoses([])
       setNurseAssessments([])
       setReferralDetails(emptyReferral)
+      setPatientId(null)
+      setOriginalEmployeeData(null)
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -1260,8 +1262,10 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
                   setTokenDialogOpen(false)
                   setCreatedTokenNo(null)
                   // Only reset form if no conditions are met
-                  if (!conditionMet && onReset) {
-                    onReset()
+                  if (!conditionMet) {
+                    if (onReset) {
+                      onReset()
+                    }
                     resetForm()
                   }
                 }}
