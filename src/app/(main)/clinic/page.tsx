@@ -10,6 +10,7 @@ import { columns } from "@/app/(main)/clinic/_components/data-table/columns"
 import { DataTable } from "@/app/(main)/clinic/_components/data-table/DataTable"
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ClinicVisit } from "@/data/schema"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
@@ -27,35 +28,27 @@ export default function ClinicPage() {
   const searchParams = useSearchParams()
   const { user } = useAuthStore()
   const [searchTerm, setSearchTerm] = useState("")
+  const [visitStatus, setVisitStatus] = useState<string>("OPEN") // Default to OPEN cases
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 20
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["clinic", user?.role, searchTerm, pageIndex, pageSize],
+    queryKey: ["clinic", user?.role, searchTerm, visitStatus, pageIndex, pageSize],
     queryFn: async () => {
       const page = pageIndex + 1
-      if (searchTerm) {
-        const response = await api.get("/clinic", {
-          params: {
-            empNo: searchTerm,
-            page,
-            limit: pageSize,
-          },
-        })
-        const payload = Array.isArray(response.data)
-          ? response.data
-          : response.data?.data ?? response.data?.items ?? []
-        const items = Array.isArray(payload) ? (payload as ClinicVisit[]) : []
-        const meta = response.data?.meta
-        return { items, meta }
+
+      const params: any = {
+        page,
+        limit: pageSize,
       }
 
-      const endpoint = user?.role === "maleNurse" ? "/clinic/my-location" : "/clinic"
-      const response = await api.get(endpoint, {
-        params: {
-          page,
-          limit: pageSize,
-        },
-      })
+      if (searchTerm) {
+        params.empNo = searchTerm
+      }
+      if (visitStatus !== "ALL") {
+        params.visitStatus = visitStatus
+      }
+
+      const response = await api.get("/clinic", { params })
       const payload = Array.isArray(response.data)
         ? response.data
         : response.data?.data ?? response.data?.items ?? []
@@ -92,44 +85,59 @@ export default function ClinicPage() {
           <Link href="/multi-form/new">New clinic visit</Link>
         </Button>
       </div>
-      <Card className="mt-4 sm:mt-6 lg:mt-10">
-        {error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
-            Failed to load clinic visits
-          </div>
-        ) : isLoading ? (
-          <div className="rounded-md border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
-            Loading clinic visits...
-          </div>
-        ) : (
-          <>
-            {isFetching && (
-              <div className="mb-3 text-xs text-gray-400 dark:text-gray-500">
-                Updating results...
-              </div>
-            )}
-            <DataTable
-              data={tableData}
-              columns={columns}
-              searchValue={searchTerm}
-              onSearchChange={(value) => {
-                setSearchTerm(value)
-                setPageIndex(0)
-              }}
-              pageIndex={pageIndex}
-              pageSize={pageSize}
-              pageCount={pageCount}
-              totalRows={totalRows}
-              onPageChange={setPageIndex}
-              onRowClick={(row) => {
-                const recordId = (row as { _id?: string; id?: string })._id
-                if (!recordId) return
-                router.push(`/multi-form/${recordId}`)
-              }}
-            />
-          </>
-        )}
-      </Card>
+      <Tabs
+        defaultValue="OPEN"
+        value={visitStatus}
+        onValueChange={(val) => {
+          setVisitStatus(val)
+          setPageIndex(0)
+        }}
+        className="mt-4 sm:mt-6 lg:mt-10"
+      >
+        <TabsList className="grid w-full grid-cols-3 max-w-md mb-4 bg-gray-100 dark:bg-gray-800">
+          <TabsTrigger value="OPEN">Open Cases</TabsTrigger>
+          <TabsTrigger value="CLOSED">Closed Cases</TabsTrigger>
+          <TabsTrigger value="ALL">All Cases</TabsTrigger>
+        </TabsList>
+        <Card>
+          {error ? (
+            <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+              Failed to load clinic visits
+            </div>
+          ) : isLoading ? (
+            <div className="rounded-md border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+              Loading clinic visits...
+            </div>
+          ) : (
+            <>
+              {isFetching && (
+                <div className="mb-3 text-xs text-gray-400 dark:text-gray-500">
+                  Updating results...
+                </div>
+              )}
+              <DataTable
+                data={tableData}
+                columns={columns}
+                searchValue={searchTerm}
+                onSearchChange={(value) => {
+                  setSearchTerm(value)
+                  setPageIndex(0)
+                }}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                pageCount={pageCount}
+                totalRows={totalRows}
+                onPageChange={setPageIndex}
+                onRowClick={(row) => {
+                  const recordId = (row as { _id?: string; id?: string })._id
+                  if (!recordId) return
+                  router.push(`/multi-form/${recordId}`)
+                }}
+              />
+            </>
+          )}
+        </Card>
+      </Tabs>
     </>
   )
 }
