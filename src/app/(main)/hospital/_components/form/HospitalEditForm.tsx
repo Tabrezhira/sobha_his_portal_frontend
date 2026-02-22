@@ -370,12 +370,11 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
     const canSubmit = useMemo(() => {
       return (
-        (clinicVisitId || form.clinicVisitId) &&
         form.empNo &&
         form.employeeName &&
         form.emiratesId
       )
-    }, [clinicVisitId, form])
+    }, [form])
 
     const updateForm = (key: keyof typeof form, value: string | boolean) => {
       setForm((prev) => ({ ...prev, [key]: value }))
@@ -463,11 +462,6 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       event.preventDefault()
       setError(null)
       setMessage(null)
-
-      if (!clinicVisitId && !form.clinicVisitId) {
-        toast.error("Clinic visit is required. Please save clinic visit first.")
-        return
-      }
 
       if (!canSubmit) {
         toast.error("Please fill all required fields.")
