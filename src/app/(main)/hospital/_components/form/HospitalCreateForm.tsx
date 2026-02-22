@@ -260,6 +260,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
     const [form, setForm] = useState({
       locationId: "",
+      clinicVisitToken: "",
       clinicVisitId: clinicVisitId ?? "",
       sno: "",
       empNo: "",
@@ -589,6 +590,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
 
       return {
         locationId: form.locationId || undefined,
+        clinicVisitToken: form.clinicVisitToken || undefined,
         clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
         sno: Number(form.sno),
         empNo: upperCaseValue(form.empNo),
@@ -759,6 +761,19 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <Label htmlFor="clinicVisitToken" className="font-medium">
+                  Clinic Visit Token
+                </Label>
+                <Input
+                  id="clinicVisitToken"
+                  className="mt-2"
+                  value={form.clinicVisitToken}
+                  onChange={(e) =>
+                    updateForm("clinicVisitToken", e.target.value)
+                  }
+                />
+              </div>
               <div>
                 <Label htmlFor="dateOfAdmission" className="font-medium">
                   Date of Admission

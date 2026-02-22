@@ -236,6 +236,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
     const [form, setForm] = useState({
       locationId: "",
+      clinicVisitToken: "",
       clinicVisitId: clinicVisitId ?? "",
       sno: "",
       empNo: "",
@@ -292,6 +293,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       setForm((prev) => ({
         ...prev,
         locationId: initialData.locationId ?? "",
+        clinicVisitToken: initialData.clinicVisitToken ?? "",
         clinicVisitId:
           clinicVisitId ?? initialData.clinicVisitId ?? prev.clinicVisitId,
         sno:
@@ -425,6 +427,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
       return {
         locationId: form.locationId || undefined,
+        clinicVisitToken: form.clinicVisitToken || undefined,
         clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
         sno: Number(form.sno),
         empNo: form.empNo,
@@ -539,6 +542,19 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <Label htmlFor="clinicVisitToken" className="font-medium">
+                  Clinic Visit Token
+                </Label>
+                <Input
+                  id="clinicVisitToken"
+                  className="mt-2"
+                  value={form.clinicVisitToken}
+                  onChange={(e) =>
+                    updateForm("clinicVisitToken", e.target.value)
+                  }
+                />
+              </div>
               <div>
                 <Label htmlFor="dateOfAdmission" className="font-medium">
                   Date of Admission
