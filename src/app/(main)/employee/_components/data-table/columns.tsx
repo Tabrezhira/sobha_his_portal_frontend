@@ -60,26 +60,26 @@ export const columns = [
       displayName: "Insurance ID",
     },
   }),
-  columnHelper.accessor("trLocation", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="TR Location" />
-    ),
-    enableSorting: false,
-    meta: {
-      className: "text-left",
-      displayName: "TR Location",
-    },
-  }),
-  columnHelper.accessor("mobileNumber", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Mobile" />
-    ),
-    enableSorting: false,
-    meta: {
-      className: "text-left",
-      displayName: "Mobile",
-    },
-  }),
+  // columnHelper.accessor("trLocation", {
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="TR Location" />
+  //   ),
+  //   enableSorting: false,
+  //   meta: {
+  //     className: "text-left",
+  //     displayName: "TR Location",
+  //   },
+  // }),
+  // columnHelper.accessor("mobileNumber", {
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Mobile" />
+  //   ),
+  //   enableSorting: false,
+  //   meta: {
+  //     className: "text-left",
+  //     displayName: "Mobile",
+  //   },
+  // }),
   columnHelper.display({
     id: "edit",
     header: "Edit",

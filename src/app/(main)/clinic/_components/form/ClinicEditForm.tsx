@@ -11,6 +11,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -282,6 +283,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
     },
     ref,
   ) {
+    const router = useRouter()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -295,10 +297,6 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
     const [referredToOptions, setReferredToOptions] = useState<string[]>([])
     const [specialistTypeOptions, setSpecialistTypeOptions] = useState<string[]>([])
     const [medicineCourseOptions, setMedicineCourseOptions] = useState<string[]>([])
-
-    // Track employee patient ID and original data for auto-save
-    const [patientId, setPatientId] = useState<string | null>(null)
-    const [originalEmployeeData, setOriginalEmployeeData] = useState<{ empNo: string; employeeName: string; emiratesId: string; insuranceId: string; trLocation: string; mobileNumber: string } | null>(null)
 
     const getLocalDate = () => {
       const now = new Date()
@@ -600,11 +598,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
     const [createdTokenNo, setCreatedTokenNo] = useState<string | null>(null)
     const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
     const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
-    const [employeeLookupError, setEmployeeLookupError] = useState<string | null>(
-      null,
-    )
-    const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
-    const lastFetchedEmpNo = useRef<string | null>(null)
+
     const lastSummaryEmpNo = useRef<string | null>(null)
 
     const canSubmit = useMemo(() => {
@@ -681,190 +675,9 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
       setSummaryDialogOpen(true)
     }
 
-    const handleEmployeeLookup = async (empNo: string) => {
-      const trimmed = empNo.trim().toUpperCase()
-      if (!trimmed) return
 
-      if (lastFetchedEmpNo.current === trimmed) return
-
-      setEmployeeLookupError(null)
-      setEmployeeLookupLoading(true)
-
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-        if (!baseUrl) {
-          setEmployeeLookupError("Dropdown API URL is not configured.")
-          return
-        }
-
-        const response = await fetch(`${baseUrl}/patients/emp/${trimmed}`)
-        if (!response.ok) {
-          throw new Error("Failed to fetch employee details.")
-        }
-        const data = await response.json()
-
-        const employeeData = {
-          empNo: trimmed,
-          employeeName: data.PatientName ?? "",
-          emiratesId: data.emiratesId ?? "",
-          insuranceId: data.insuranceId ?? "",
-          trLocation: data.trLocation ?? "",
-          mobileNumber: data.mobileNumber ?? "",
-        }
-
-        // Store patient ID for auto-save and original data for change detection
-        if (data._id) {
-          setPatientId(data._id)
-          setOriginalEmployeeData(employeeData)
-        } else {
-          setPatientId(null)
-          setOriginalEmployeeData(null)
-        }
-
-        setForm((prev) => ({
-          ...prev,
-          employeeName: employeeData.employeeName,
-          emiratesId: employeeData.emiratesId,
-          insuranceId: employeeData.insuranceId,
-          trLocation: employeeData.trLocation,
-          mobileNumber: employeeData.mobileNumber,
-        }))
-        lastFetchedEmpNo.current = trimmed
-      } catch (lookupError) {
-        // If lookup fails, clear patient ID to trigger creation on submit
-        setPatientId(null)
-        setOriginalEmployeeData(null)
-        setEmployeeLookupError("Unable to load employee details.")
-      } finally {
-        setEmployeeLookupLoading(false)
-      }
-    }
 
     // Check if employee details have changed and auto-save if needed, or create patient if not exists
-    const autoSaveEmployeeDetails = useCallback(async () => {
-      // If patient ID doesn't exist, try to create it first
-      if (!patientId && form.empNo.trim() && form.employeeName.trim()) {
-        try {
-          const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-          if (!baseUrl) {
-            console.error("Dropdown API URL is not configured.")
-            return
-          }
-
-          const patientPayload = {
-            empId: upperCaseValue(form.empNo),
-            PatientName: form.employeeName,
-            emiratesId: form.emiratesId,
-            insuranceId: form.insuranceId,
-            mobileNumber: form.mobileNumber,
-            trLocation: form.trLocation,
-          }
-
-          console.log("Auto-creating patient with payload:", patientPayload)
-
-          const createResponse = await fetch(`${baseUrl}/patients`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(patientPayload),
-          })
-
-          console.log("Patient creation response status:", createResponse.status)
-
-          const createdPatient = await createResponse.json()
-          console.log("Patient creation response data:", createdPatient)
-
-          if (!createResponse.ok) {
-            console.error(`Failed to create patient: ${createdPatient?.message || "Unknown error"}`)
-            return
-          }
-
-          const newPatientId = createdPatient.data?._id || createdPatient._id
-          if (newPatientId) {
-            console.log("Patient auto-created with ID:", newPatientId)
-            setPatientId(newPatientId)
-            setOriginalEmployeeData({
-              empNo: upperCaseValue(form.empNo),
-              employeeName: form.employeeName,
-              emiratesId: form.emiratesId,
-              insuranceId: form.insuranceId,
-              trLocation: form.trLocation,
-              mobileNumber: form.mobileNumber,
-            })
-            return
-          }
-        } catch (error) {
-          console.error("Error auto-creating patient:", error)
-          return
-        }
-      }
-
-      // If patient exists, check for changes and auto-save
-      if (!patientId || !originalEmployeeData) return
-
-      // Check if any employee field has changed
-      const currentData = {
-        empNo: upperCaseValue(form.empNo),
-        employeeName: form.employeeName,
-        emiratesId: form.emiratesId,
-        insuranceId: form.insuranceId,
-        trLocation: form.trLocation,
-        mobileNumber: form.mobileNumber,
-      }
-
-      const hasChanges = Object.keys(currentData).some(
-        (key) => currentData[key as keyof typeof currentData] !== originalEmployeeData[key as keyof typeof originalEmployeeData]
-      )
-
-      if (!hasChanges) return
-
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-        if (!baseUrl) {
-          console.error("Dropdown API URL is not configured.")
-          return
-        }
-
-        const payload = {
-          PatientName: form.employeeName,
-          emiratesId: form.emiratesId,
-          insuranceId: form.insuranceId,
-          trLocation: form.trLocation,
-          mobileNumber: form.mobileNumber,
-        }
-
-        console.log("Auto-saving patient changes with payload:", payload)
-
-        const response = await fetch(`${baseUrl}/patients/${patientId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        })
-
-        if (!response.ok) {
-          console.error("Failed to save patient details.")
-          return
-        }
-
-        console.log("Patient details auto-saved successfully")
-
-        // Update the original data to reflect what's now saved
-        setOriginalEmployeeData({
-          empNo: upperCaseValue(form.empNo),
-          employeeName: form.employeeName,
-          emiratesId: form.emiratesId,
-          insuranceId: form.insuranceId,
-          trLocation: form.trLocation,
-          mobileNumber: form.mobileNumber,
-        })
-      } catch (error) {
-        console.error("Error saving patient details:", error)
-      }
-    }, [patientId, originalEmployeeData, form])
-
     const handleMedicineChange = (
       index: number,
       key: keyof typeof emptyMedicine,
@@ -1053,77 +866,31 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
         return
       }
 
-      setSubmitting(true)
       try {
-        // If patient ID doesn't exist (lookup failed), create a new patient first
-        let finalPatientId = patientId
-        console.log("handleSubmit - patientId:", patientId, "form.empNo:", form.empNo)
-
-        if (!finalPatientId && form.empNo.trim()) {
-          console.log("Creating new patient because lookup failed")
-          try {
-            const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-            if (!baseUrl) {
-              throw new Error("Dropdown API URL is not configured.")
-            }
-
-            const patientPayload = {
-              empNo: upperCaseValue(form.empNo),
-              PatientName: form.employeeName,
-              emiratesId: form.emiratesId,
-              insuranceId: form.insuranceId,
-              mobileNumber: form.mobileNumber,
-              trLocation: form.trLocation,
-            }
-
-            console.log("Creating patient with payload:", patientPayload)
-
-            const createResponse = await fetch(`${baseUrl}/patients`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(patientPayload),
-            })
-
-            console.log("Patient creation response status:", createResponse.status)
-
-            const createdPatient = await createResponse.json()
-            console.log("Patient creation response data:", createdPatient)
-
-            if (!createResponse.ok) {
-              throw new Error(`Failed to create patient record: ${createdPatient?.message || "Unknown error"}`)
-            }
-
-            finalPatientId = createdPatient.data?._id || createdPatient._id
-
-            if (finalPatientId) {
-              console.log("Patient created successfully with ID:", finalPatientId)
-              setPatientId(finalPatientId)
-              // Update original data to reflect the newly created patient
-              setOriginalEmployeeData({
-                empNo: upperCaseValue(form.empNo),
-                employeeName: form.employeeName,
-                emiratesId: form.emiratesId,
-                insuranceId: form.insuranceId,
-                trLocation: form.trLocation,
-                mobileNumber: form.mobileNumber,
-              })
-            }
-          } catch (createError) {
-            console.error("Error creating patient:", createError)
-            toast.error("Failed to create patient record. Please try again.")
-            setSubmitting(false)
+        if (isEditMode && clinicRecordId) {
+          const baseUrl = process.env.NEXT_PUBLIC_CURD_API_URL
+          if (!baseUrl) {
+            toast.error("API URL is not configured.")
             return
           }
-        }
 
-        if (isEditMode && clinicRecordId) {
-          await api.put(`/clinic/${clinicRecordId}`, buildPayload())
+          const updateResponse = await fetch(`${baseUrl}/clinic/${clinicRecordId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(buildPayload()),
+          })
+
+          if (!updateResponse.ok) {
+            throw new Error("Failed to update clinic visit")
+          }
+
           toast.success("Clinic visit updated successfully.")
           if (onSaveSuccess) {
             onSaveSuccess()
           }
+          router.push("/clinic")
           return
         }
 
@@ -1210,11 +977,6 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
         {error && (
           <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
             {error}
-          </div>
-        )}
-        {employeeLookupError && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
-            {employeeLookupError}
           </div>
         )}
 
@@ -1322,7 +1084,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   <div className="flex items-center gap-2">
                     <Input
                       id="recordId"
-                      className="mt-0 flex-1"
+                      className="mt-2 flex-1"
                       value={clinicRecordId ?? ""}
                       readOnly
                       disabled
@@ -1330,6 +1092,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                     <Button
                       type="button"
                       variant="secondary"
+                      className="mt-2"
                       onClick={() => copyToClipboard(String(clinicRecordId ?? ""), "Record ID")}
                     >
                       Copy
@@ -1345,7 +1108,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   <div className="flex items-center gap-2">
                     <Input
                       id="tokenNo"
-                      className="mt-0 flex-1"
+                      className="mt-2 flex-1"
                       value={form.tokenNo}
                       onChange={(e) => updateForm("tokenNo", e.target.value)}
                       readOnly
@@ -1354,6 +1117,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                     <Button
                       type="button"
                       variant="secondary"
+                      className="mt-2"
                       onClick={() => copyToClipboard(String(form.tokenNo ?? ""), "Token No")}
                     >
                       Copy
@@ -1434,31 +1198,24 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   id="empNo"
                   className="mt-2"
                   value={form.empNo}
+                  disabled
                   onChange={(e) => {
                     const upper = upperCaseValue(e.target.value)
                     updateForm("empNo", upper)
-                    if (lastFetchedEmpNo.current === upper.trim()) {
-                      lastFetchedEmpNo.current = null
-                    }
                     if (lastSummaryEmpNo.current === upper.trim()) {
                       lastSummaryEmpNo.current = null
                     }
                   }}
                   onBlur={(e) => {
-                    handleEmployeeLookup(e.target.value)
                     openSummaryForEmpNo(e.target.value)
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === "Tab") {
-                      handleEmployeeLookup(e.currentTarget.value)
                       openSummaryForEmpNo(e.currentTarget.value)
                     }
                   }}
                   required
                 />
-                {employeeLookupLoading && (
-                  <p className="mt-2 text-xs text-gray-500">Loading details...</p>
-                )}
               </div>
               <div>
                 <Label htmlFor="employeeName" className="font-medium">
@@ -1576,12 +1333,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   value={normalizeSelectValue(form.natureOfCase)}
                   onValueChange={(value) => updateForm("natureOfCase", value)}
                   required
-                  onOpenChange={(open) => {
-                    // Auto-save employee details when Nature of Case is about to be opened
-                    if (open) {
-                      autoSaveEmployeeDetails()
-                    }
-                  }}
+                  required
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select nature of case" />
