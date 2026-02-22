@@ -2057,18 +2057,6 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <Label htmlFor="referralCode" className="font-medium">
-                    Referral Code
-                  </Label>
-                  <Input
-                    id="referralCode"
-                    className="mt-2"
-                    value={referralDetails.referralCode}
-                    onChange={(e) => handleReferralChange("referralCode", e.target.value)}
-                    disabled={!form.referral}
-                  />
-                </div>
-                <div>
                   <Label htmlFor="referralType" className="font-medium">
                     Referral Type
                   </Label>
