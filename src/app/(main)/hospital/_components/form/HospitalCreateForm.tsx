@@ -9,11 +9,20 @@ import {
   useMemo,
   useRef,
   useState,
+  useCallback,
 } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/Dialog"
 import { Divider } from "@/components/Divider"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
@@ -28,6 +37,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Hospital } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
+import EmployeeSummary from "@/components/forms/EmployeeSummary"
+import { useAuthStore } from "@/store/auth"
 import { useDropdownStore } from "@/store/dropdown"
 
 const emptyFollowUp = { date: "", remarks: "" }
@@ -46,11 +57,16 @@ type DropdownApiResponse = {
 
 const DEFAULT_DROPDOWN_LIMIT = 5
 
+
 const getDisplayOptions = (options: string[], current?: string) => {
   const trimmed = current?.trim()
   const items = trimmed ? [...options, trimmed] : options
   return Array.from(new Set(items)).filter(Boolean)
 }
+
+const upperCaseValue = (value?: string) =>
+  typeof value === "string" ? value.toUpperCase() : ""
+
 
 type ClinicEmployeeDetails = {
   empNo: string
@@ -234,6 +250,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
     ref,
   ) {
     const router = useRouter()
+    const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -271,6 +288,18 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
 
 
     const [followUp, setFollowUp] = useState([emptyFollowUp])
+
+    // Track employee lookup
+    const [employeeLookupError, setEmployeeLookupError] = useState<string | null>(null)
+    const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
+    const lastFetchedEmpNo = useRef<string | null>(null)
+    const [patientId, setPatientId] = useState<string | null>(null)
+    const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
+    const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
+    const lastSummaryEmpNo = useRef<string | null>(null)
+
+    const [originalEmployeeData, setOriginalEmployeeData] = useState<{ empNo: string; employeeName: string; emiratesId: string; insuranceId: string; trLocation: string; mobileNumber: string } | null>(null)
+
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -301,6 +330,33 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         trLocation: employee.trLocation || prev.trLocation,
       }))
     }, [employee])
+
+    useEffect(() => {
+      if (form.dateOfAdmission && form.dateOfDischarge) {
+        const admission = new Date(form.dateOfAdmission)
+        const discharge = new Date(form.dateOfDischarge)
+        if (!isNaN(admission.getTime()) && !isNaN(discharge.getTime())) {
+          const diffTime = discharge.getTime() - admission.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+          if (diffDays >= 0) {
+            setForm((prev) => {
+              if (prev.daysHospitalized !== String(diffDays)) {
+                return { ...prev, daysHospitalized: String(diffDays) }
+              }
+              return prev
+            })
+          }
+        }
+      } else {
+        setForm((prev) => {
+          if (prev.daysHospitalized !== "") {
+            return { ...prev, daysHospitalized: "" }
+          }
+          return prev
+        })
+      }
+    }, [form.dateOfAdmission, form.dateOfDischarge])
 
     const canSubmit = useMemo(() => {
       return (
@@ -338,6 +394,180 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
       loadDropdownOptions()
     }, [fetchDropdownData])
 
+
+    const openSummaryForEmpNo = (empNo: string) => {
+      const trimmed = empNo.trim()
+      if (!trimmed) return
+      if (lastSummaryEmpNo.current === trimmed && summaryDialogOpen) return
+      lastSummaryEmpNo.current = trimmed
+      setSummaryEmpId(trimmed)
+      setSummaryDialogOpen(true)
+    }
+
+    const handleEmployeeLookup = async (empNo: string) => {
+      const trimmed = empNo.trim().toUpperCase()
+      if (!trimmed) return
+
+      if (lastFetchedEmpNo.current === trimmed) return
+
+      setEmployeeLookupError(null)
+      setEmployeeLookupLoading(true)
+
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+        if (!baseUrl) {
+          setEmployeeLookupError("Dropdown API URL is not configured.")
+          return
+        }
+
+        const response = await fetch(`${baseUrl}/patients/emp/${trimmed}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch employee details.")
+        }
+        const data = await response.json()
+
+        const employeeData = {
+          empNo: trimmed,
+          employeeName: data.PatientName ?? "",
+          emiratesId: data.emiratesId ?? "",
+          insuranceId: data.insuranceId ?? "",
+          trLocation: user?.locationId ?? "",
+          mobileNumber: data.mobileNumber ?? "",
+        }
+
+        if (data._id) {
+          setPatientId(data._id)
+          setOriginalEmployeeData(employeeData)
+        } else {
+          setPatientId(null)
+          setOriginalEmployeeData(null)
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          employeeName: employeeData.employeeName,
+          emiratesId: employeeData.emiratesId,
+          insuranceId: employeeData.insuranceId,
+          mobileNumber: employeeData.mobileNumber,
+        }))
+        lastFetchedEmpNo.current = trimmed
+      } catch (lookupError) {
+        setPatientId(null)
+        setOriginalEmployeeData(null)
+        setEmployeeLookupError("Unable to load employee details.")
+      } finally {
+        setEmployeeLookupLoading(false)
+      }
+    }
+
+    const autoSaveEmployeeDetails = useCallback(async () => {
+      if (!patientId && form.empNo.trim() && form.employeeName.trim()) {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+          if (!baseUrl) return
+
+          const patientPayload = {
+            empId: upperCaseValue(form.empNo),
+            PatientName: form.employeeName,
+            emiratesId: form.emiratesId,
+            insuranceId: form.insuranceId,
+            mobileNumber: form.mobileNumber,
+            trLocation: form.trLocation,
+          }
+
+          const createResponse = await fetch(`${baseUrl}/patients`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(patientPayload),
+          })
+
+          const createdPatient = await createResponse.json()
+
+          if (!createResponse.ok) return
+
+          const newPatientId = createdPatient.data?._id || createdPatient._id
+          if (newPatientId) {
+            setPatientId(newPatientId)
+            setOriginalEmployeeData({
+              empNo: upperCaseValue(form.empNo),
+              employeeName: form.employeeName,
+              emiratesId: form.emiratesId,
+              insuranceId: form.insuranceId,
+              trLocation: form.trLocation,
+              mobileNumber: form.mobileNumber,
+            })
+            return
+          }
+        } catch (error) {
+          return
+        }
+      }
+
+      if (!patientId || !originalEmployeeData) return
+
+      const currentData = {
+        empNo: upperCaseValue(form.empNo),
+        employeeName: form.employeeName,
+        emiratesId: form.emiratesId,
+        insuranceId: form.insuranceId,
+        trLocation: form.trLocation,
+        mobileNumber: form.mobileNumber,
+      }
+
+      const hasChanges = Object.keys(currentData).some(
+        (key) => currentData[key as keyof typeof currentData] !== originalEmployeeData[key as keyof typeof originalEmployeeData]
+      )
+
+      if (!hasChanges) return
+
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+        if (!baseUrl) return
+
+        const payload = {
+          PatientName: form.employeeName,
+          emiratesId: form.emiratesId,
+          insuranceId: form.insuranceId,
+          trLocation: form.trLocation,
+          mobileNumber: form.mobileNumber,
+        }
+
+        const response = await fetch(`${baseUrl}/patients/${patientId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+
+        if (!response.ok) return
+
+        setOriginalEmployeeData({
+          empNo: upperCaseValue(form.empNo),
+          employeeName: form.employeeName,
+          emiratesId: form.emiratesId,
+          insuranceId: form.insuranceId,
+          trLocation: form.trLocation,
+          mobileNumber: form.mobileNumber,
+        })
+      } catch (error) {
+      }
+    }, [patientId, originalEmployeeData, form])
+
+    useEffect(() => {
+      const handleBeforeUnload = () => {
+        if (patientId) {
+          autoSaveEmployeeDetails()
+        }
+      }
+      window.addEventListener("beforeunload", handleBeforeUnload)
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload)
+      }
+    }, [patientId, autoSaveEmployeeDetails])
+
     const handleFollowUpChange = (
       index: number,
       key: keyof typeof emptyFollowUp,
@@ -362,7 +592,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         locationId: form.locationId || undefined,
         clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
         sno: Number(form.sno),
-        empNo: form.empNo,
+        empNo: upperCaseValue(form.empNo),
         employeeName: form.employeeName,
         emiratesId: form.emiratesId,
         insuranceId: form.insuranceId || undefined,
@@ -408,13 +638,77 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         return
       }
 
+      if (form.dateOfAdmission && form.dateOfDischarge && new Date(form.dateOfDischarge) < new Date(form.dateOfAdmission)) {
+        toast.error("Date of Discharge cannot be before Date of Admission.")
+        return
+      }
+
 
 
       setSubmitting(true)
       try {
 
 
+
+        let finalPatientId = patientId
+
+        if (!finalPatientId && form.empNo.trim()) {
+          try {
+            const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+            if (!baseUrl) {
+              throw new Error("Dropdown API URL is not configured.")
+            }
+
+            const patientPayload = {
+              empNo: upperCaseValue(form.empNo),
+              PatientName: form.employeeName,
+              emiratesId: form.emiratesId,
+              insuranceId: form.insuranceId,
+              mobileNumber: form.mobileNumber,
+              trLocation: form.trLocation,
+            }
+
+            const createResponse = await fetch(`${baseUrl}/patients`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(patientPayload),
+            })
+
+            const createdPatient = await createResponse.json()
+
+            if (!createResponse.ok) {
+              throw new Error(`Failed to create patient record: ${createdPatient?.message || "Unknown error"}`)
+            }
+
+            finalPatientId = createdPatient.data?._id || createdPatient._id
+
+            if (finalPatientId) {
+              setPatientId(finalPatientId)
+              setOriginalEmployeeData({
+                empNo: upperCaseValue(form.empNo),
+                employeeName: form.employeeName,
+                emiratesId: form.emiratesId,
+                insuranceId: form.insuranceId,
+                trLocation: form.trLocation,
+                mobileNumber: form.mobileNumber,
+              })
+            }
+          } catch (createError) {
+            toast.error("Failed to create patient record. Please try again.")
+            setSubmitting(false)
+            return
+          }
+        }
+
+        // Auto save employee changes if patient exists
+        if (finalPatientId) {
+          await autoSaveEmployeeDetails()
+        }
+
         await api.post("/hospital", buildPayload())
+
         toast.success("Hospital record saved successfully.")
         if (onSaveSuccess) {
           onSaveSuccess()
@@ -441,6 +735,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
               Enter hospital details and submit.
             </p>
           </div>
+
           {!hideActions && (
             <Button asChild variant="secondary">
               <Link href="/hospital">Back to hospital</Link>
@@ -526,13 +821,39 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
                 </Label>
-                <Input
-                  id="empNo"
-                  className="mt-2"
-                  value={form.empNo}
-                  onChange={(e) => updateForm("empNo", e.target.value)}
-                  required
-                />
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    id="empNo"
+                    value={form.empNo}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase()
+                      updateForm("empNo", val)
+                      if (val.length === 6) {
+                        handleEmployeeLookup(val)
+                      }
+                    }}
+                    required
+                  />
+                  {form.empNo && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => openSummaryForEmpNo(form.empNo)}
+                    >
+                      Summary
+                    </Button>
+                  )}
+                </div>
+                {employeeLookupLoading && (
+                  <p className="mt-1 text-xs text-blue-600">
+                    Looking up employee...
+                  </p>
+                )}
+                {employeeLookupError && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {employeeLookupError}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="employeeName" className="font-medium">
@@ -540,6 +861,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 </Label>
                 <Input
                   id="employeeName"
+                  disabled
                   className="mt-2"
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
@@ -553,6 +875,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 <Input
                   id="emiratesId"
                   className="mt-2"
+                  disabled
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
                   required
@@ -565,6 +888,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 <Input
                   id="insuranceId"
                   className="mt-2"
+                  disabled
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
                 />
@@ -741,6 +1065,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                   id="dateOfDischarge"
                   type="date"
                   className="mt-2"
+                  min={form.dateOfAdmission}
                   value={form.dateOfDischarge}
                   onChange={(e) =>
                     updateForm("dateOfDischarge", e.target.value)
@@ -754,6 +1079,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 <Input
                   id="daysHospitalized"
                   type="number"
+                  disabled
                   enableStepper={false}
                   className="mt-2"
                   value={form.daysHospitalized}
@@ -916,6 +1242,33 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
             </div>
           )}
         </form>
+
+        <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Employee Summary</DialogTitle>
+              <DialogDescription>
+                Complete clinical history for employee {summaryEmpId}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              {summaryEmpId ? (
+                <EmployeeSummary empId={summaryEmpId} />
+              ) : (
+                <p className="text-sm text-gray-500">No employee number provided</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={() => setSummaryDialogOpen(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
     )
   }

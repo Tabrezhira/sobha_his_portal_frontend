@@ -339,6 +339,33 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       )
     }, [initialData, clinicVisitId])
 
+    useEffect(() => {
+      if (form.dateOfAdmission && form.dateOfDischarge) {
+        const admission = new Date(form.dateOfAdmission)
+        const discharge = new Date(form.dateOfDischarge)
+        if (!isNaN(admission.getTime()) && !isNaN(discharge.getTime())) {
+          const diffTime = discharge.getTime() - admission.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+          if (diffDays >= 0) {
+            setForm((prev) => {
+              if (prev.daysHospitalized !== String(diffDays)) {
+                return { ...prev, daysHospitalized: String(diffDays) }
+              }
+              return prev
+            })
+          }
+        }
+      } else {
+        setForm((prev) => {
+          if (prev.daysHospitalized !== "") {
+            return { ...prev, daysHospitalized: "" }
+          }
+          return prev
+        })
+      }
+    }, [form.dateOfAdmission, form.dateOfDischarge])
+
 
 
     const canSubmit = useMemo(() => {
@@ -444,6 +471,11 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
       if (!canSubmit) {
         toast.error("Please fill all required fields.")
+        return
+      }
+
+      if (form.dateOfAdmission && form.dateOfDischarge && new Date(form.dateOfDischarge) < new Date(form.dateOfAdmission)) {
+        toast.error("Date of Discharge cannot be before Date of Admission.")
         return
       }
 
@@ -784,6 +816,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   id="dateOfDischarge"
                   type="date"
                   className="mt-2"
+                  min={form.dateOfAdmission}
                   value={form.dateOfDischarge}
                   onChange={(e) =>
                     updateForm("dateOfDischarge", e.target.value)
@@ -797,6 +830,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 <Input
                   id="daysHospitalized"
                   type="number"
+                  disabled
                   enableStepper={false}
                   className="mt-2"
                   value={form.daysHospitalized}
