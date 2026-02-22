@@ -81,6 +81,9 @@ const getDisplayOptions = (options: string[], current?: string) => {
 const normalizeSelectValue = (value?: string) =>
   typeof value === "string" ? value.trim() : ""
 
+const upperCaseValue = (value?: string) =>
+  typeof value === "string" ? value.toUpperCase() : ""
+
 const useDropdownSearch = (
   baseUrl: string | undefined,
   category: string,
@@ -389,7 +392,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             : prev.slNo,
         date: toDateInput(initialData.date) || prev.date,
         time: initialData.time ?? prev.time,
-        empNo: initialData.empNo ?? "",
+        empNo: upperCaseValue(initialData.empNo),
         employeeName: initialData.employeeName ?? "",
         emiratesId: initialData.emiratesId ?? "",
         insuranceId: initialData.insuranceId ?? "",
@@ -637,6 +640,14 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
       )
     }, [form])
 
+    const isEndBeforeStart = useMemo(() => {
+      if (!form.sickLeaveStartDate || !form.sickLeaveEndDate) return false
+      const start = new Date(form.sickLeaveStartDate)
+      const end = new Date(form.sickLeaveEndDate)
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return false
+      return end < start
+    }, [form.sickLeaveStartDate, form.sickLeaveEndDate])
+
     const joinDateDisplay = useMemo(() => {
       if (!form.dateOfJoining) return "Not set"
       const parsed = new Date(form.dateOfJoining)
@@ -689,7 +700,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     }
 
     const handleEmployeeLookup = async (empNo: string) => {
-      const trimmed = empNo.trim()
+      const trimmed = empNo.trim().toUpperCase()
       if (!trimmed) return
 
       if (lastFetchedEmpNo.current === trimmed) return
@@ -759,7 +770,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
           }
 
           const patientPayload = {
-            empId: form.empNo,
+            empId: upperCaseValue(form.empNo),
             PatientName: form.employeeName,
             emiratesId: form.emiratesId,
             insuranceId: form.insuranceId,
@@ -792,7 +803,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             console.log("Patient auto-created with ID:", newPatientId)
             setPatientId(newPatientId)
             setOriginalEmployeeData({
-              empNo: form.empNo,
+              empNo: upperCaseValue(form.empNo),
               employeeName: form.employeeName,
               emiratesId: form.emiratesId,
               insuranceId: form.insuranceId,
@@ -812,7 +823,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
 
       // Check if any employee field has changed
       const currentData = {
-        empNo: form.empNo,
+        empNo: upperCaseValue(form.empNo),
         employeeName: form.employeeName,
         emiratesId: form.emiratesId,
         insuranceId: form.insuranceId,
@@ -860,7 +871,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
 
         // Update the original data to reflect what's now saved
         setOriginalEmployeeData({
-          empNo: form.empNo,
+          empNo: upperCaseValue(form.empNo),
           employeeName: form.employeeName,
           emiratesId: form.emiratesId,
           insuranceId: form.insuranceId,
@@ -942,7 +953,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         slNo: Number(form.slNo),
         date: form.date,
         time: form.time,
-        empNo: form.empNo,
+        empNo: upperCaseValue(form.empNo),
         employeeName: form.employeeName,
         emiratesId: form.emiratesId,
         insuranceId: form.insuranceId || undefined,
@@ -1050,6 +1061,11 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         return
       }
 
+      if (isEndBeforeStart) {
+        toast.error("End Date cannot be before Start Date.")
+        return
+      }
+
       if (isEditMode && !clinicRecordId) {
         toast.error("Clinic record not found.")
         return
@@ -1070,7 +1086,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
             }
 
             const patientPayload = {
-              empNo: form.empNo,
+              empNo: upperCaseValue(form.empNo),
               PatientName: form.employeeName,
               emiratesId: form.emiratesId,
               insuranceId: form.insuranceId,
@@ -1104,7 +1120,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
               setPatientId(finalPatientId)
               // Update original data to reflect the newly created patient
               setOriginalEmployeeData({
-                empNo: form.empNo,
+                empNo: upperCaseValue(form.empNo),
                 employeeName: form.employeeName,
                 emiratesId: form.emiratesId,
                 insuranceId: form.insuranceId,
@@ -1433,11 +1449,12 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   className="mt-2"
                   value={form.empNo}
                   onChange={(e) => {
-                    updateForm("empNo", e.target.value)
-                    if (lastFetchedEmpNo.current === e.target.value.trim()) {
+                    const upper = upperCaseValue(e.target.value)
+                    updateForm("empNo", upper)
+                    if (lastFetchedEmpNo.current === upper.trim()) {
                       lastFetchedEmpNo.current = null
                     }
-                    if (lastSummaryEmpNo.current === e.target.value.trim()) {
+                    if (lastSummaryEmpNo.current === upper.trim()) {
                       lastSummaryEmpNo.current = null
                     }
                   }}
@@ -2004,6 +2021,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
                   type="date"
                   className="mt-2"
                   value={form.sickLeaveEndDate}
+                  min={form.sickLeaveStartDate || undefined}
                   onChange={(e) => updateForm("sickLeaveEndDate", e.target.value)}
                 />
               </div>
