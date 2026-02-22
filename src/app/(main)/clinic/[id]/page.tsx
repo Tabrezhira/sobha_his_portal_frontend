@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api"
-import UpdateClinicVisitForm from "../_components/form/UpdateClinicVisitForm"
-import { ClinicVisitFormInitialData } from "../_components/form/ClinicVisitForm"
+import ClinicEditForm from "../_components/form/ClinicEditForm"
+import { ClinicEditFormInitialData } from "../_components/form/ClinicEditForm"
 
 export default function ClinicVisitEdit() {
   const params = useParams<{ id: string }>()
   const clinicId = params?.id
-  const [initialData, setInitialData] = useState<ClinicVisitFormInitialData | null>(null)
+  const [initialData, setInitialData] = useState<ClinicEditFormInitialData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,7 +20,9 @@ export default function ClinicVisitEdit() {
       .get(`/clinic/${clinicId}`)
       .then((response) => {
         if (!isMounted) return
-        setInitialData(response.data?.data ?? response.data)
+        const data = response.data?.data ?? response.data
+        console.log("Fetched initialData:", data)
+        setInitialData(data)
       })
       .catch(() => {
         if (!isMounted) return
@@ -52,6 +54,10 @@ export default function ClinicVisitEdit() {
   }
 
   return (
-    <UpdateClinicVisitForm initialData={initialData || undefined} />
+    <div className="space-y-6">
+      {!loading && !error && (
+        <ClinicEditForm mode="edit" initialData={initialData || undefined} />
+      )}
+    </div>
   )
 }

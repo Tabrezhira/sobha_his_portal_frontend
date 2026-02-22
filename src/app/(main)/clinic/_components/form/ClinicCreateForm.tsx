@@ -37,6 +37,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import type { ClinicVisit } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
+import { useAuthStore } from "@/store/auth"
 import { useDropdownStore } from "@/store/dropdown"
 import EmployeeSummary from "@/components/forms/EmployeeSummary"
 
@@ -232,7 +233,7 @@ const SuggestionInput = ({
   )
 }
 
-interface ClinicVisitFormProps {
+interface ClinicCreateFormProps {
   onIpAdmissionChange?: (value: boolean) => void
   onCaseCategoryChange?: (value: string) => void
   onClinicSaved?: (payload: {
@@ -251,23 +252,23 @@ interface ClinicVisitFormProps {
   conditionMet?: boolean
   clinicSaved?: boolean
   mode?: "create" | "edit"
-  initialData?: ClinicVisitFormInitialData
+  initialData?: ClinicCreateFormInitialData
   hideActions?: boolean
 }
 
-export type ClinicVisitFormRef = {
+export type ClinicCreateFormRef = {
   getPayload: () => Record<string, unknown>
   isValid: () => boolean
 }
 
-export type ClinicVisitFormInitialData = Partial<ClinicVisit> & {
+export type ClinicCreateFormInitialData = Partial<ClinicVisit> & {
   _id?: string
   id?: string
   slNo?: string | number
 }
 
-const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
-  function ClinicVisitForm(
+const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
+  function ClinicCreateForm(
     {
       onIpAdmissionChange,
       onCaseCategoryChange,
@@ -282,6 +283,7 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
     },
     ref,
   ) {
+    const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -371,8 +373,10 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
         slNo: prev.slNo || generateSlNo(),
         date: prev.date || getLocalDate(),
         time: prev.time || getLocalTime(),
+        locationId: prev.locationId || (user?.locationId ?? ""),
+        trLocation: prev.trLocation || (user?.locationId ?? ""),
       }))
-    }, [])
+    }, [user?.locationId])
 
     useEffect(() => {
       if (!initialData) return
@@ -744,7 +748,6 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
           employeeName: employeeData.employeeName,
           emiratesId: employeeData.emiratesId,
           insuranceId: employeeData.insuranceId,
-          trLocation: employeeData.trLocation,
           mobileNumber: employeeData.mobileNumber,
         }))
         lastFetchedEmpNo.current = trimmed
@@ -2445,4 +2448,4 @@ const ClinicVisitForm = forwardRef<ClinicVisitFormRef, ClinicVisitFormProps>(
   }
 )
 
-export default ClinicVisitForm
+export default ClinicCreateForm
