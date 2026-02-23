@@ -103,11 +103,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
     const isolationRecordId = initialData?._id ?? initialData?.id
     const [submitting, setSubmitting] = useState(false)
 
-    const trLocationDisplayOptions = useMemo(() => {
-      const current = form.trLocation?.trim()
-      const items = current ? [...trLocationOptions, current] : trLocationOptions
-      return Array.from(new Set(items)).filter(Boolean)
-    }, [trLocationOptions, form.trLocation])
+
 
     useEffect(() => {
       if (clinicVisitId) {
@@ -297,6 +293,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="empNo"
                   name="empNo"
+                  disabled
                   type="text"
                   value={form.empNo}
                   onChange={(e) => updateForm("empNo", e.target.value)}
@@ -310,6 +307,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="employeeName"
                   name="employeeName"
+                  disabled
                   type="text"
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
@@ -323,6 +321,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="emiratesId"
                   name="emiratesId"
+                  disabled
                   type="text"
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
@@ -337,6 +336,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="insuranceId"
                   name="insuranceId"
+                  disabled
                   type="text"
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
@@ -358,23 +358,14 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Label htmlFor="trLocation" className="font-medium">
                   TR Location
                 </Label>
-                <Select
+                <Input
+                  id="trLocation"
+                  name="trLocation"
+                  disabled
+                  type="text"
                   value={form.trLocation}
-                  onValueChange={(value) => updateForm("trLocation", value)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select TR location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <ScrollArea className="h-[200px]">
-                      {trLocationDisplayOptions.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </ScrollArea>
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => updateForm("trLocation", e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="nationality" className="font-medium">
@@ -383,6 +374,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="nationality"
                   name="nationality"
+                  disabled
                   type="text"
                   value={form.nationality}
                   onChange={(e) => updateForm("nationality", e.target.value)}
@@ -393,7 +385,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                   Types
                 </Label>
                 <Select
-                  value={form.type}
+                  value={form.type || undefined}
                   onValueChange={(value) => updateForm("type", value)}
                 >
                   <SelectTrigger className="">
@@ -422,7 +414,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                   Isolated In
                 </Label>
                 <Select
-                  value={form.isolatedIn}
+                  value={form.isolatedIn || undefined}
                   onValueChange={(value) => updateForm("isolatedIn", value)}
                 >
                   <SelectTrigger className="mt-2">
