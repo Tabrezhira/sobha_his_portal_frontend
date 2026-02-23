@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { api } from "@/lib/api"
-import IsolationForm, { IsolationFormInitialData } from "../_components/form/IsolationForm"
+import IsolationEditForm, { IsolationFormInitialData } from "../_components/form/IsolationEditForm"
 
 export default function IsolationEdit() {
   const params = useParams<{ id: string }>()
@@ -51,6 +51,6 @@ export default function IsolationEdit() {
   }
 
   return (
-    <IsolationForm mode="edit" initialData={initialData || undefined} />
+    <IsolationEditForm initialData={initialData || undefined} />
   )
 }
