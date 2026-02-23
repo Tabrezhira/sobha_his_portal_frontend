@@ -626,9 +626,9 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
     const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
     const lastFetchedEmpNo = useRef<string | null>(null)
     const lastSummaryEmpNo = useRef<string | null>(null)
-    const [leaveLoading, setLeaveLoading] = useState(false)
+    const [, setLeaveLoading] = useState(false)
     const lastFetchedLeaveEmpNo = useRef<string | null>(null)
-
+    
     const canSubmit = useMemo(() => {
       return Boolean(
         form.slNo &&
