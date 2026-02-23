@@ -81,6 +81,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
     const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
     const [form, setForm] = useState({
       locationId: "",
+      clinicVisitToken: "",
       clinicVisitId: clinicVisitId ?? "",
       empNo: "",
       type: "",
@@ -126,6 +127,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
       setForm((prev) => ({
         ...prev,
         locationId: initialData.locationId ?? "",
+        clinicVisitToken: initialData.clinicVisitToken ?? "",
         clinicVisitId:
           clinicVisitId ?? initialData.clinicVisitId ?? prev.clinicVisitId,
         empNo: initialData.empNo ?? "",
@@ -138,7 +140,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
         isolatedIn: initialData.isolatedIn ?? "",
         isolationReason: initialData.isolationReason ?? "",
         nationality: initialData.nationality ?? "",
-        slUpto: toDateInput(initialData.slUpto),
+        slUpto: initialData.slUpto ?? "",
         dateFrom: toDateInput(initialData.dateFrom),
         dateTo: toDateInput(initialData.dateTo),
         currentStatus: initialData.currentStatus ?? "",
@@ -195,6 +197,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
     const buildPayload = () => {
       return {
         locationId: form.locationId || undefined,
+        clinicVisitToken: form.clinicVisitToken || undefined,
         clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
         empNo: form.empNo,
         type: form.type || undefined,
@@ -281,6 +284,18 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <Label htmlFor="clinicVisitToken" className="font-medium">
+                  Clinic Visit Token
+                </Label>
+                <Input
+                  id="clinicVisitToken"
+                  name="clinicVisitToken"
+                  type="text"
+                  value={form.clinicVisitToken}
+                  onChange={(e) => updateForm("clinicVisitToken", e.target.value)}
+                />
+              </div>
               <div>
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
@@ -466,7 +481,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 <Input
                   id="slUpto"
                   name="slUpto"
-                  type="date"
+                  type="text"
                   value={form.slUpto}
                   onChange={(e) => updateForm("slUpto", e.target.value)}
                 />

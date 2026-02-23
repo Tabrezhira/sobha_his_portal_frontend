@@ -92,6 +92,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     const lastSummaryEmpNo = useRef<string | null>(null)
     const [form, setForm] = useState({
       locationId: "",
+      clinicVisitToken: "",
       clinicVisitId: clinicVisitId ?? "",
       empNo: "",
       type: "",
@@ -229,6 +230,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     const buildPayload = () => {
       return {
         locationId: form.locationId || undefined,
+        clinicVisitToken: form.clinicVisitToken || undefined,
         clinicVisitId: clinicVisitId || form.clinicVisitId || undefined,
         empNo: form.empNo,
         type: form.type || undefined,
@@ -314,6 +316,18 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <Label htmlFor="clinicVisitToken" className="font-medium">
+                  Clinic Visit Token
+                </Label>
+                <Input
+                  id="clinicVisitToken"
+                  name="clinicVisitToken"
+                  type="text"
+                  value={form.clinicVisitToken}
+                  onChange={(e) => updateForm("clinicVisitToken", e.target.value)}
+                />
+              </div>
               <div>
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
@@ -530,7 +544,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                 <Input
                   id="slUpto"
                   name="slUpto"
-                  type="date"
+                  type="text"
                   value={form.slUpto}
                   onChange={(e) => updateForm("slUpto", e.target.value)}
                 />

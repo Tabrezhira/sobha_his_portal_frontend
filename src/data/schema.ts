@@ -164,7 +164,7 @@ export type Isolation = {
 
 	nationality?: string
 
-	slUpto?: string | Date
+	slUpto?: string
 
 	dateFrom?: string | Date
 	dateTo?: string | Date
