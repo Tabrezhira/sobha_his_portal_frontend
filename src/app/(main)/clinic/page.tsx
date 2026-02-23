@@ -1,6 +1,6 @@
 "use client"
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -27,12 +27,18 @@ export default function ClinicPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuthStore()
-  const [searchTerm, setSearchTerm] = useState("")
+  // raw input shown in the UI
+  const [searchInput, setSearchInput] = useState("")
   const [visitStatus, setVisitStatus] = useState<string>("OPEN") // Default to OPEN cases
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 20
+  // normalized search used for querying
+  const searchTerm = searchInput.trim()
+  const isValidSearch = searchTerm.length >= 6 && searchTerm === searchTerm.toUpperCase()
+
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["clinic", user?.role, searchTerm, visitStatus, pageIndex, pageSize],
+    // include the searchTerm in the key only when it meets the 6+ uppercase requirement
+    queryKey: ["clinic", user?.role, isValidSearch ? searchTerm : null, visitStatus, pageIndex, pageSize],
     queryFn: async () => {
       const page = pageIndex + 1
 
@@ -41,7 +47,8 @@ export default function ClinicPage() {
         limit: pageSize,
       }
 
-      if (searchTerm) {
+      // only send empNo when search is valid (6+ chars and all uppercase)
+      if (isValidSearch) {
         params.empNo = searchTerm
       }
       if (visitStatus !== "ALL") {
@@ -56,8 +63,9 @@ export default function ClinicPage() {
       const meta = response.data?.meta
       return { items, meta }
     },
-    placeholderData: keepPreviousData,
-    staleTime: 5 * 60 * 1000,
+    // when performing a search we want fresh data
+    staleTime: isValidSearch ? 0 : 5 * 60 * 1000,
+    refetchOnMount: isValidSearch ? true : false,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
@@ -69,8 +77,9 @@ export default function ClinicPage() {
 
   useEffect(() => {
     const empNo = searchParams.get("empNo")?.trim() ?? ""
-    if (empNo && empNo !== searchTerm) {
-      setSearchTerm(empNo)
+    if (empNo && empNo !== searchInput) {
+      // set the UI input; query will run only if empNo meets the 6+ uppercase rule
+      setSearchInput(empNo.toUpperCase())
       setPageIndex(0)
     }
   }, [searchParams, searchTerm])
@@ -118,9 +127,9 @@ export default function ClinicPage() {
               <DataTable
                 data={tableData}
                 columns={columns}
-                searchValue={searchTerm}
+                searchValue={searchInput}
                 onSearchChange={(value) => {
-                  setSearchTerm(value)
+                  setSearchInput(value.toUpperCase())
                   setPageIndex(0)
                 }}
                 pageIndex={pageIndex}
