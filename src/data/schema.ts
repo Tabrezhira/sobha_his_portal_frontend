@@ -317,3 +317,13 @@ export type HappinessSurveyEligibility = {
 		nextEligibleDate: string
 	}
 }
+
+export type LeaveEligibility = {
+	success: boolean
+	data: {
+		empNo: string
+		doj: string
+		leave: "eligible" | "not_eligible" | string
+	}
+}
+
