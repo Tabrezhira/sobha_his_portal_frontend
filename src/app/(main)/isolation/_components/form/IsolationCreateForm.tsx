@@ -7,12 +7,21 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/Dialog"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
 import {
@@ -26,6 +35,8 @@ import { Textarea } from "@/components/Textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
+import EmployeeSummary from "@/components/forms/EmployeeSummary"
+import { useAuthStore } from "@/store/auth"
 import { useDropdownStore } from "@/store/dropdown"
 
 type ClinicEmployeeDetails = {
@@ -66,10 +77,19 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     ref,
   ) {
     const router = useRouter()
+    const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
     const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
+
+    // Track employee lookup
+    const [employeeLookupError, setEmployeeLookupError] = useState<string | null>(null)
+    const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
+    const lastFetchedEmpNo = useRef<string | null>(null)
+    const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
+    const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
+    const lastSummaryEmpNo = useRef<string | null>(null)
     const [form, setForm] = useState({
       locationId: "",
       clinicVisitId: clinicVisitId ?? "",
@@ -128,6 +148,62 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
 
     const updateForm = (key: keyof typeof form, value: string) => {
       setForm((prev) => ({ ...prev, [key]: value }))
+    }
+
+    const openSummaryForEmpNo = (empNo: string) => {
+      const trimmed = empNo.trim()
+      if (!trimmed) return
+      if (lastSummaryEmpNo.current === trimmed && summaryDialogOpen) return
+      lastSummaryEmpNo.current = trimmed
+      setSummaryEmpId(trimmed)
+      setSummaryDialogOpen(true)
+    }
+
+    const handleEmployeeLookup = async (empNo: string) => {
+      const trimmed = empNo.trim().toUpperCase()
+      if (!trimmed) return
+
+      if (lastFetchedEmpNo.current === trimmed) return
+
+      setEmployeeLookupError(null)
+      setEmployeeLookupLoading(true)
+
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+        if (!baseUrl) {
+          setEmployeeLookupError("Dropdown API URL is not configured.")
+          return
+        }
+
+        const response = await fetch(`${baseUrl}/patients/emp/${trimmed}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch employee details.")
+        }
+        const data = await response.json()
+
+        const employeeData = {
+          empNo: trimmed,
+          employeeName: data.PatientName ?? "",
+          emiratesId: data.emiratesId ?? "",
+          insuranceId: data.insuranceId ?? "",
+          trLocation: user?.locationId ?? "",
+          mobileNumber: data.mobileNumber ?? "",
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          employeeName: employeeData.employeeName,
+          emiratesId: employeeData.emiratesId,
+          insuranceId: employeeData.insuranceId,
+          mobileNumber: employeeData.mobileNumber,
+          trLocation: employeeData.trLocation || prev.trLocation,
+        }))
+        lastFetchedEmpNo.current = trimmed
+      } catch (lookupError) {
+        setEmployeeLookupError("Unable to load employee details.")
+      } finally {
+        setEmployeeLookupLoading(false)
+      }
     }
 
     useEffect(() => {
@@ -242,14 +318,41 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
                 </Label>
-                <Input
-                  id="empNo"
-                  name="empNo"
-                  type="text"
-                  value={form.empNo}
-                  onChange={(e) => updateForm("empNo", e.target.value)}
-                  required
-                />
+                <div className="mt-0 flex gap-2">
+                  <Input
+                    id="empNo"
+                    name="empNo"
+                    type="text"
+                    value={form.empNo}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase()
+                      updateForm("empNo", val)
+                      if (val.length === 6) {
+                        handleEmployeeLookup(val)
+                      }
+                    }}
+                    required
+                  />
+                  {form.empNo && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => openSummaryForEmpNo(form.empNo)}
+                    >
+                      Summary
+                    </Button>
+                  )}
+                </div>
+                {employeeLookupLoading && (
+                  <p className="mt-1 text-xs text-blue-600">
+                    Looking up employee...
+                  </p>
+                )}
+                {employeeLookupError && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {employeeLookupError}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="employeeName" className="font-medium">
@@ -259,6 +362,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="employeeName"
                   name="employeeName"
                   type="text"
+                  disabled
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
                   required
@@ -272,6 +376,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="emiratesId"
                   name="emiratesId"
                   type="text"
+                  disabled
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
                   required
@@ -286,6 +391,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="insuranceId"
                   name="insuranceId"
                   type="text"
+                  disabled
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
                 />
@@ -308,9 +414,10 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                 </Label>
                 <Select
                   value={form.trLocation}
+                  disabled
                   onValueChange={(value) => updateForm("trLocation", value)}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger >
                     <SelectValue placeholder="Select TR location" />
                   </SelectTrigger>
                   <SelectContent>
@@ -478,6 +585,32 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
             </div>
           )}
         </form>
+
+        <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Employee Summary</DialogTitle>
+              <DialogDescription>
+                Complete clinical history for employee {summaryEmpId}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              {summaryEmpId ? (
+                <EmployeeSummary empId={summaryEmpId} />
+              ) : (
+                <p className="text-sm text-gray-500">No employee number provided</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="secondary"
+                onClick={() => setSummaryDialogOpen(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
