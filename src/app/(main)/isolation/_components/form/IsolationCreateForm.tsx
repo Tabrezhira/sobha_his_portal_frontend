@@ -140,12 +140,11 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
 
     const canSubmit = useMemo(() => {
       return (
-        (clinicVisitId || form.clinicVisitId) &&
         form.empNo &&
         form.employeeName &&
         form.emiratesId
       )
-    }, [clinicVisitId, form])
+    }, [form])
 
     const updateForm = (key: keyof typeof form, value: string) => {
       setForm((prev) => ({ ...prev, [key]: value }))
@@ -257,11 +256,6 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-
-      if (!clinicVisitId && !form.clinicVisitId) {
-        toast.error("Clinic visit is required. Please save clinic visit first.")
-        return
-      }
 
       if (!canSubmit) {
         toast.error("Please fill all required fields.")
