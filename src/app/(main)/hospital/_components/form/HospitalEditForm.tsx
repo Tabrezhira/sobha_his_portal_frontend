@@ -52,11 +52,8 @@ const getDisplayOptions = (options: string[], current?: string) => {
   return Array.from(new Set(items)).filter(Boolean)
 }
 
-
 type HospitalEditFormProps = {
   clinicVisitId?: string
-
-
   initialData?: HospitalEditFormInitialData
   hideActions?: boolean
   onSaveSuccess?: () => void
@@ -73,6 +70,7 @@ export type HospitalEditFormInitialData = Partial<Hospital> & {
   clinicVisitId?: string
   sno?: string | number
   followUp?: Array<{ date?: string; remarks?: string }>
+  createdBy?: string | { _id?: string; name?: string }
 }
 
 const useDropdownSearch = (
@@ -142,6 +140,7 @@ type SuggestionInputProps = {
   category: string
   required?: boolean
   type?: string
+  disabled?: boolean
 }
 
 const SuggestionInput = ({
@@ -152,6 +151,7 @@ const SuggestionInput = ({
   category,
   required,
   type = "text",
+  disabled,
 }: SuggestionInputProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
   const { items, loading } = useDropdownSearch(baseUrl, category, value)
@@ -170,7 +170,7 @@ const SuggestionInput = ({
     setOpen(false)
   }
 
-  const showMenu = open && (loading || items.length > 0)
+  const showMenu = open && !disabled && (loading || items.length > 0)
 
   return (
     <div className="relative">
@@ -188,6 +188,7 @@ const SuggestionInput = ({
         onBlur={closeWithDelay}
         required={required}
         autoComplete="off"
+        disabled={disabled}
       />
       {showMenu && (
         <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
@@ -219,7 +220,6 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
   function HospitalEditForm(
     {
       clinicVisitId,
-
       initialData,
       hideActions = false,
       onSaveSuccess,
@@ -261,7 +261,6 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       createdBy: "",
     })
 
-
     const hospitalRecordId = initialData?._id ?? initialData?.id
 
     const [followUp, setFollowUp] = useState([emptyFollowUp])
@@ -288,6 +287,15 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         if (!value) return ""
         if (typeof value === "string") return value.slice(0, 10)
         return value.toISOString().slice(0, 10)
+      }
+
+      // Handle createdBy being either a string or an object { _id, name }
+      const resolveCreatedBy = (
+        value?: string | { _id?: string; name?: string },
+      ): string => {
+        if (!value) return ""
+        if (typeof value === "string") return value
+        return value.name ?? value._id ?? ""
       }
 
       setForm((prev) => ({
@@ -322,7 +330,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         fitnessStatus: initialData.fitnessStatus ?? "",
         isolationRequired: Boolean(initialData.isolationRequired),
         finalRemarks: initialData.finalRemarks ?? "",
-        createdBy: initialData.createdBy ?? "",
+        createdBy: resolveCreatedBy(initialData.createdBy),
       }))
 
       setSecondaryDiagnoses(
@@ -367,8 +375,6 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         })
       }
     }, [form.dateOfAdmission, form.dateOfDischarge])
-
-
 
     const canSubmit = useMemo(() => {
       return (
@@ -471,7 +477,11 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         return
       }
 
-      if (form.dateOfAdmission && form.dateOfDischarge && new Date(form.dateOfDischarge) < new Date(form.dateOfAdmission)) {
+      if (
+        form.dateOfAdmission &&
+        form.dateOfDischarge &&
+        new Date(form.dateOfDischarge) < new Date(form.dateOfAdmission)
+      ) {
         toast.error("Date of Discharge cannot be before Date of Admission.")
         return
       }
@@ -532,6 +542,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ── Admission details ── */}
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -562,6 +573,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 <Input
                   id="dateOfAdmission"
                   type="date"
+                  disabled
                   className="mt-2"
                   value={form.dateOfAdmission}
                   onChange={(e) =>
@@ -576,13 +588,16 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   value={form.hospitalName}
                   onChange={(value) => updateForm("hospitalName", value)}
                   category={dropdownCategories.externalProvider}
+                  disabled={true}
                 />
               </div>
+              {/* ✅ FIX: key prop forces re-mount when form.status changes */}
               <div>
                 <Label htmlFor="status" className="font-medium">
                   Status
                 </Label>
                 <Select
+                  key={form.status}
                   value={form.status}
                   onValueChange={(value) => updateForm("status", value)}
                 >
@@ -600,6 +615,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
             </div>
           </Card>
 
+          {/* ── Employee details ── */}
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -613,6 +629,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 </Label>
                 <Input
                   id="empNo"
+                  disabled
                   className="mt-2"
                   value={form.empNo}
                   onChange={(e) => updateForm("empNo", e.target.value)}
@@ -626,6 +643,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 <Input
                   id="employeeName"
                   className="mt-2"
+                  disabled
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
                   required
@@ -641,6 +659,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
                   required
+                  disabled
                 />
               </div>
               <div>
@@ -650,6 +669,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 <Input
                   id="insuranceId"
                   className="mt-2"
+                  disabled
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
                 />
@@ -665,11 +685,13 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   onChange={(e) => updateForm("mobileNumber", e.target.value)}
                 />
               </div>
+              {/* ✅ FIX: key prop forces re-mount when form.trLocation changes */}
               <div>
                 <Label htmlFor="trLocation" className="font-medium">
                   TR Location
                 </Label>
                 <Select
+                  key={form.trLocation}
                   value={form.trLocation}
                   onValueChange={(value) => updateForm("trLocation", value)}
                 >
@@ -690,6 +712,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
             </div>
           </Card>
 
+          {/* ── Case details ── */}
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -697,11 +720,13 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* ✅ FIX: key prop forces re-mount when form.natureOfCase changes */}
               <div>
                 <Label htmlFor="natureOfCase" className="font-medium">
                   Nature of Case
                 </Label>
                 <Select
+                  key={form.natureOfCase}
                   value={form.natureOfCase}
                   onValueChange={(value) => updateForm("natureOfCase", value)}
                 >
@@ -722,11 +747,13 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   </SelectContent>
                 </Select>
               </div>
+              {/* ✅ FIX: key prop forces re-mount when form.caseCategory changes */}
               <div>
                 <Label htmlFor="caseCategory" className="font-medium">
                   Case Category
                 </Label>
                 <Select
+                  key={form.caseCategory}
                   value={form.caseCategory}
                   onValueChange={(value) => updateForm("caseCategory", value)}
                 >
@@ -764,7 +791,9 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={() => setSecondaryDiagnoses((prev) => [...prev, ""])}
+                    onClick={() =>
+                      setSecondaryDiagnoses((prev) => [...prev, ""])
+                    }
                   >
                     Add diagnosis
                   </Button>
@@ -811,10 +840,11 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
             </div>
           </Card>
 
+          {/* ── Discharge & fitness ── */}
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Discharge & fitness
+                Discharge &amp; fitness
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -849,11 +879,13 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   }
                 />
               </div>
+              {/* ✅ FIX: key prop forces re-mount when form.fitnessStatus changes */}
               <div>
                 <Label htmlFor="fitnessStatus" className="font-medium">
                   Fitness Status
                 </Label>
                 <Select
+                  key={form.fitnessStatus}
                   value={form.fitnessStatus}
                   onValueChange={(value) => updateForm("fitnessStatus", value)}
                 >
@@ -862,17 +894,26 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Fit to Work">Fit to Work</SelectItem>
-                    <SelectItem value="Fit with Restriction">Fit with Restriction</SelectItem>
-                    <SelectItem value="Not Fit to Work">Not Fit to Work</SelectItem>
+                    <SelectItem value="Fit with Restriction">
+                      Fit with Restriction
+                    </SelectItem>
+                    <SelectItem value="Not Fit to Work">
+                      Not Fit to Work
+                    </SelectItem>
                     <SelectItem value="Not Decided">Not Decided</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              {/* ✅ FIX: key prop forces re-mount when dischargeSummaryReceived changes */}
               <div>
-                <Label htmlFor="dischargeSummaryReceived" className="font-medium">
+                <Label
+                  htmlFor="dischargeSummaryReceived"
+                  className="font-medium"
+                >
                   Discharge Summary Received
                 </Label>
                 <Select
+                  key={String(form.dischargeSummaryReceived)}
                   value={form.dischargeSummaryReceived ? "Yes" : "No"}
                   onValueChange={(value) =>
                     updateForm("dischargeSummaryReceived", value === "Yes")
@@ -887,11 +928,13 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                   </SelectContent>
                 </Select>
               </div>
+              {/* ✅ FIX: key prop forces re-mount when isolationRequired changes */}
               <div>
                 <Label htmlFor="isolationRequired" className="font-medium">
                   Isolation Required
                 </Label>
                 <Select
+                  key={String(form.isolationRequired)}
                   value={form.isolationRequired ? "Yes" : "No"}
                   onValueChange={(value) =>
                     updateForm("isolationRequired", value === "Yes")
@@ -909,6 +952,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
             </div>
           </Card>
 
+          {/* ── Follow up visits ── */}
           <Card className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -917,7 +961,9 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setFollowUp((prev) => [...prev, emptyFollowUp])}
+                onClick={() =>
+                  setFollowUp((prev) => [...prev, emptyFollowUp])
+                }
               >
                 Add follow up
               </Button>
@@ -971,6 +1017,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
           <Divider />
 
+          {/* ── Final notes ── */}
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
@@ -1005,7 +1052,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         </form>
       </div>
     )
-  }
+  },
 )
 
 export default HospitalEditForm
