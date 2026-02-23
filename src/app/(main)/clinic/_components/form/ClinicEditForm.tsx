@@ -12,6 +12,7 @@ import {
 } from "react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -284,6 +285,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
     ref,
   ) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -887,6 +889,8 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
           }
 
           toast.success("Clinic visit updated successfully.")
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
           if (onSaveSuccess) {
             onSaveSuccess()
           }
@@ -928,7 +932,9 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
               : null,
           )
           setTokenDialogOpen(true)
-          // Don't reset form when condition is met
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
+           // Don't reset form when condition is met
         } else {
           // Reset form only if no conditions are met
           setCreatedTokenNo(
@@ -937,6 +943,8 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
               : null,
           )
           setTokenDialogOpen(true)
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
         }
       } catch (err) {
         setError(

@@ -11,6 +11,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -286,6 +287,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
     const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
+    const queryClient = useQueryClient()
 
     const [natureOfCaseOptions, setNatureOfCaseOptions] = useState<string[]>([])
     const [caseCategoryOptions, setCaseCategoryOptions] = useState<string[]>([])
@@ -1174,6 +1176,8 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
         if (isEditMode && clinicRecordId) {
           await api.put(`/clinic/${clinicRecordId}`, buildPayload())
           toast.success("Clinic visit updated successfully.")
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
           if (onSaveSuccess) {
             onSaveSuccess()
           }
@@ -1214,7 +1218,9 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               : null,
           )
           setTokenDialogOpen(true)
-          // Don't reset form when condition is met
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
+           // Don't reset form when condition is met
         } else {
           // Reset form only if no conditions are met
           setCreatedTokenNo(
@@ -1223,6 +1229,8 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               : null,
           )
           setTokenDialogOpen(true)
+          // refresh clinic table data
+          queryClient.invalidateQueries({ queryKey: ["clinic"] })
         }
       } catch (err) {
         setError(
