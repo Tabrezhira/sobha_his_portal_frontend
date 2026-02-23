@@ -11,6 +11,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -227,6 +228,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
     ref,
   ) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -495,6 +497,9 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       try {
         if (hospitalRecordId) {
           await api.put(`/hospital/${hospitalRecordId}`, buildPayload())
+
+          await queryClient.invalidateQueries({ queryKey: ["hospital"] })
+
           toast.success("Hospital record updated successfully.")
           if (onSaveSuccess) {
             onSaveSuccess()

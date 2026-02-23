@@ -12,6 +12,7 @@ import {
   useCallback,
 } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -243,13 +244,13 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
     {
       clinicVisitId,
       employee,
-
       hideActions = false,
       onSaveSuccess,
     },
     ref,
   ) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
@@ -704,6 +705,8 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         }
 
         await api.post("/hospital", buildPayload())
+
+        await queryClient.invalidateQueries({ queryKey: ["hospital"] })
 
         toast.success("Hospital record saved successfully.")
         if (onSaveSuccess) {

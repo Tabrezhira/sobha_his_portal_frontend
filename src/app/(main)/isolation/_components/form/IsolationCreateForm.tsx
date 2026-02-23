@@ -11,6 +11,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -77,6 +78,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     ref,
   ) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const user = useAuthStore((state) => state.user)
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
@@ -265,9 +267,11 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
       setSubmitting(true)
       try {
         const response = await api.post("/isolation", buildPayload())
+
+        await queryClient.invalidateQueries({ queryKey: ["isolation"] })
+
         toast.success("Isolation record saved successfully.")
 
-        // Redirect to the detail page if we get an ID back
         if (onSaveSuccess) {
           onSaveSuccess()
         } else if (response.data?._id) {

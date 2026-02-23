@@ -18,16 +18,29 @@ export default function IsolationPage() {
   const router = useRouter()
   const { user } = useAuthStore()
   const [searchTerm, setSearchTerm] = useState("")
+  const [searchRequestId, setSearchRequestId] = useState(0)
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 20
+
+  const normalizedSearchTerm = searchTerm.trim()
+  const shouldSearch = normalizedSearchTerm.length >= 6
+
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["isolation", user?.role, searchTerm, pageIndex, pageSize],
+    queryKey: [
+      "isolation",
+      user?.role,
+      shouldSearch ? normalizedSearchTerm : "",
+      pageIndex,
+      pageSize,
+      shouldSearch ? searchRequestId : 0,
+    ],
     queryFn: async () => {
       const page = pageIndex + 1
-      if (searchTerm) {
+
+      if (shouldSearch) {
         const response = await api.get("/isolation", {
           params: {
-            empNo: searchTerm,
+            empNo: normalizedSearchTerm,
             page,
             limit: pageSize,
           },
@@ -54,9 +67,9 @@ export default function IsolationPage() {
       const meta = response.data?.meta
       return { items, meta }
     },
-    placeholderData: keepPreviousData,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    placeholderData: shouldSearch ? undefined : keepPreviousData,
+    staleTime: shouldSearch ? 0 : 5 * 60 * 1000,
+    gcTime: shouldSearch ? 0 : 30 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 
@@ -97,6 +110,9 @@ export default function IsolationPage() {
               onSearchChange={(value) => {
                 setSearchTerm(value)
                 setPageIndex(0)
+                if (value.trim().length >= 6) {
+                  setSearchRequestId((prev) => prev + 1)
+                }
               }}
               pageIndex={pageIndex}
               pageSize={pageSize}

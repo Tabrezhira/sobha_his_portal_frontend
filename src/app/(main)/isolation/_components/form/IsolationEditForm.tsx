@@ -10,6 +10,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -75,6 +76,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
     ref,
   ) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
     const fetchDropdownData = useDropdownStore((state) => state.fetchDropdownData)
 
@@ -231,6 +233,9 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
       setSubmitting(true)
       try {
         await api.put(`/isolation/${isolationRecordId}`, buildPayload())
+
+        await queryClient.invalidateQueries({ queryKey: ["isolation"] })
+
         toast.success("Isolation record updated successfully.")
         if (onSaveSuccess) {
           onSaveSuccess()
