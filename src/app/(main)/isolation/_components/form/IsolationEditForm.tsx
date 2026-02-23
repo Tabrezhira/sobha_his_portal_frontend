@@ -103,8 +103,6 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
     const isolationRecordId = initialData?._id ?? initialData?.id
     const [submitting, setSubmitting] = useState(false)
 
-
-
     useEffect(() => {
       if (clinicVisitId) {
         setForm((prev) => ({ ...prev, clinicVisitId }))
@@ -180,7 +178,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
 
         const trLocation = await fetchDropdownData(
           dropdownCategories.trLocation,
-          baseUrl
+          baseUrl,
         )
 
         setTrLocationOptions(trLocation)
@@ -328,7 +326,6 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                   required
                 />
               </div>
-
               <div>
                 <Label htmlFor="insuranceId" className="font-medium">
                   Insurance ID
@@ -380,12 +377,15 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                   onChange={(e) => updateForm("nationality", e.target.value)}
                 />
               </div>
+
+              {/* ✅ FIX: key prop forces re-mount when form.type changes */}
               <div>
                 <Label htmlFor="type" className="font-medium">
                   Types
                 </Label>
                 <Select
-                  value={form.type || undefined}
+                  key={form.type}
+                  value={form.type}
                   onValueChange={(value) => updateForm("type", value)}
                 >
                   <SelectTrigger className="">
@@ -409,12 +409,14 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* ✅ FIX: key prop forces re-mount when form.isolatedIn changes */}
               <div>
                 <Label htmlFor="isolatedIn" className="font-medium">
                   Isolated In
                 </Label>
                 <Select
-                  value={form.isolatedIn || undefined}
+                  key={form.isolatedIn}
+                  value={form.isolatedIn}
                   onValueChange={(value) => updateForm("isolatedIn", value)}
                 >
                   <SelectTrigger className="mt-2">
@@ -493,7 +495,9 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 id="isolationReason"
                 name="isolationReason"
                 value={form.isolationReason}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateForm("isolationReason", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  updateForm("isolationReason", e.target.value)
+                }
                 rows={3}
               />
             </div>
@@ -505,7 +509,9 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
                 id="remarks"
                 name="remarks"
                 value={form.remarks}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateForm("remarks", e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  updateForm("remarks", e.target.value)
+                }
                 rows={3}
               />
             </div>
@@ -524,7 +530,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
         </form>
       </div>
     )
-  }
+  },
 )
 
 export default IsolationEditForm
