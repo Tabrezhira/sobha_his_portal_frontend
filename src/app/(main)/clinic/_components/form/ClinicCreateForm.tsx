@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/Select"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type { ClinicVisit } from "@/data/schema"
+import type { ClinicVisit, LeaveEligibility } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
@@ -624,6 +624,8 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
     const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
     const lastFetchedEmpNo = useRef<string | null>(null)
     const lastSummaryEmpNo = useRef<string | null>(null)
+    const [leaveLoading, setLeaveLoading] = useState(false)
+    const lastFetchedLeaveEmpNo = useRef<string | null>(null)
 
     const canSubmit = useMemo(() => {
       return Boolean(
@@ -754,6 +756,38 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
         setEmployeeLookupError("Unable to load employee details.")
       } finally {
         setEmployeeLookupLoading(false)
+      }
+    }
+
+    const fetchLeaveEligibility = async (empNo: string) => {
+      const trimmed = empNo.trim().toUpperCase()
+      if (!trimmed) return
+      if (lastFetchedLeaveEmpNo.current === trimmed) return
+
+      setLeaveLoading(true)
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+        if (!baseUrl) return
+
+        const response = await fetch(`${baseUrl}/emp-doj/emp/${trimmed}/leave-eligibility`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch leave eligibility")
+        }
+
+        const payload = (await response.json()) as LeaveEligibility
+        if (payload?.success && payload.data) {
+          setForm((prev) => ({
+            ...prev,
+            dateOfJoining: payload.data.doj ? String(payload.data.doj).slice(0, 10) : prev.dateOfJoining,
+            eligibilityForSickLeave: String(payload.data.leave).toLowerCase() === "eligible",
+          }))
+        }
+
+        lastFetchedLeaveEmpNo.current = trimmed
+      } catch (err) {
+        // ignore errors silently for now
+      } finally {
+        setLeaveLoading(false)
       }
     }
 
@@ -1459,6 +1493,13 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
                     }
                     if (lastSummaryEmpNo.current === upper.trim()) {
                       lastSummaryEmpNo.current = null
+                    }
+                    const trimmed = upper.trim()
+                    if (trimmed.length === 6) {
+                      void fetchLeaveEligibility(trimmed)
+                    } else if (trimmed.length < 6) {
+                      setForm((prev) => ({ ...prev, dateOfJoining: "", eligibilityForSickLeave: false }))
+                      lastFetchedLeaveEmpNo.current = null
                     }
                   }}
                   onBlur={(e) => {
