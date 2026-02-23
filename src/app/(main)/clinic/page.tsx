@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 import Link from "next/link"
@@ -25,6 +25,7 @@ import { useAuthStore } from "@/store/auth"
  */
 export default function ClinicPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { user } = useAuthStore()
   // raw input shown in the UI
@@ -77,12 +78,16 @@ export default function ClinicPage() {
 
   useEffect(() => {
     const empNo = searchParams.get("empNo")?.trim() ?? ""
-    if (empNo && empNo !== searchInput) {
-      // set the UI input; query will run only if empNo meets the 6+ uppercase rule
-      setSearchInput(empNo.toUpperCase())
-      setPageIndex(0)
+    if (empNo) {
+      // Sync from URL only when query params change, avoiding overwrite during local clear
+      const upperEmpNo = empNo.toUpperCase()
+      setSearchInput((prev) => {
+        if (prev === upperEmpNo) return prev
+        setPageIndex(0)
+        return upperEmpNo
+      })
     }
-  }, [searchParams, searchTerm])
+  }, [searchParams])
 
   return (
     <>
@@ -129,7 +134,15 @@ export default function ClinicPage() {
                 columns={columns}
                 searchValue={searchInput}
                 onSearchChange={(value) => {
-                  setSearchInput(value.toUpperCase())
+                  const upper = value.toUpperCase()
+                  const normalized = upper.trim()
+                  if (!normalized && searchParams.has("empNo")) {
+                    const params = new URLSearchParams(searchParams.toString())
+                    params.delete("empNo")
+                    const next = params.toString()
+                    router.replace(next ? `${pathname}?${next}` : pathname)
+                  }
+                  setSearchInput(upper)
                   setPageIndex(0)
                 }}
                 pageIndex={pageIndex}

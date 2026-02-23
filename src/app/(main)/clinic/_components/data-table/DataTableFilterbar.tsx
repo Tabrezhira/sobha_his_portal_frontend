@@ -35,8 +35,9 @@ export function Filterbar<TData>({
 
   useEffect(() => {
     if (typeof searchValue !== "string") return
-    setSearchTerm(searchValue)
-    table.setGlobalFilter(searchValue)
+    const upper = searchValue.toUpperCase()
+    setSearchTerm(upper)
+    table.setGlobalFilter(upper)
   }, [searchValue, table])
 
   const debouncedSetFilterValue = useDebouncedCallback((value) => {
@@ -49,7 +50,7 @@ export function Filterbar<TData>({
   }, 300)
 
   const handleSearchChange = (event: any) => {
-    const value = event.target.value
+    const value = String(event.target.value ?? "").toUpperCase()
     setSearchTerm(value)
     debouncedSetFilterValue(value)
   }
