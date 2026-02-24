@@ -288,7 +288,7 @@ export default function Page() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		
+
 		if (!formData.empNo || !formData.empName) {
 			setNotification({
 				type: "error",
@@ -297,10 +297,10 @@ export default function Page() {
 			return;
 		}
 
-		if (typeof formData.q1 !== "number" || typeof formData.q2 !== "number" || 
-		    typeof formData.q3 !== "number" || typeof formData.q4 !== "number" || 
-		    typeof formData.q5 !== "number" || typeof formData.q6 !== "number" || 
-		    typeof formData.overallRating !== "number") {
+		if (typeof formData.q1 !== "number" || typeof formData.q2 !== "number" ||
+			typeof formData.q3 !== "number" || typeof formData.q4 !== "number" ||
+			typeof formData.q5 !== "number" || typeof formData.q6 !== "number" ||
+			typeof formData.overallRating !== "number") {
 			setNotification({
 				type: "error",
 				message: "Please answer all survey questions (Q1-Q7).",
@@ -335,7 +335,7 @@ export default function Page() {
 					type: "success",
 					message: "Survey submitted successfully!",
 				});
-				
+
 				// Reset form
 				setFormData({
 					date: new Date(),
@@ -362,7 +362,7 @@ export default function Page() {
 				});
 				setPhotoPreview("");
 				clearSignature();
-				
+
 				// Refresh today's count
 				const countResponse = await fetch(`${curdUrl}/happiness-survey/count/surveyor/${encodeURIComponent(surveyorName)}`, {
 					headers: {
@@ -407,11 +407,10 @@ export default function Page() {
 			<form className="space-y-6" onSubmit={handleSubmit}>
 				{notification && (
 					<div
-						className={`rounded-lg p-4 ${
-							notification.type === "success"
+						className={`rounded-lg p-4 ${notification.type === "success"
 								? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
 								: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-						}`}
+							}`}
 					>
 						{notification.message}
 					</div>
@@ -629,6 +628,7 @@ export default function Page() {
 					</div>
 					{photoPreview && (
 						<div className="mt-4">
+							{/* eslint-disable-next-line @next/next/no-img-element */}
 							<img
 								src={photoPreview}
 								alt="Uploaded preview"
@@ -665,6 +665,7 @@ export default function Page() {
 						</div>
 						{formData.signatureUrl && (
 							<div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+								{/* eslint-disable-next-line @next/next/no-img-element */}
 								<img
 									src={formData.signatureUrl}
 									alt="Signature preview"

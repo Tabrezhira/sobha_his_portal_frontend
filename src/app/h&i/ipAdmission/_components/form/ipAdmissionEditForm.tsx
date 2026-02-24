@@ -400,6 +400,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
             }))
             : [emptyFollowUp],
       )
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData, clinicVisitId])
 
     useEffect(() => {

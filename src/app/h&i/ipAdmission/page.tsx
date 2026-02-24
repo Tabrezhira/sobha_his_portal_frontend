@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/Card"
 import { Button } from "@/components/Button"
-import { RiAddLine, RiArrowRightSLine, RiArrowLeftSLine, RiCheckLine, RiEdit2Line } from "@remixicon/react"
+import { RiAddLine, RiArrowLeftSLine, RiEdit2Line } from "@remixicon/react"
 import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"

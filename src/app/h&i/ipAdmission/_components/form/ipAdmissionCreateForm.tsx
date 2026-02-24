@@ -385,6 +385,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
           }))
           : [emptyFollowUp],
       )
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData, clinicVisitId])
 
     useEffect(() => {

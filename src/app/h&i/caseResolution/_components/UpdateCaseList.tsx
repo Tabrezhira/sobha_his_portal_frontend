@@ -23,6 +23,7 @@ export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
 
   useEffect(() => {
     fetchCases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCases = async () => {

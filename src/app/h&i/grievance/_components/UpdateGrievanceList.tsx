@@ -21,6 +21,7 @@ export default function UpdateGrievanceList({ onBack }: UpdateGrievanceListProps
 
   useEffect(() => {
     fetchGrievances();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchGrievances = async () => {
@@ -129,11 +130,10 @@ export default function UpdateGrievanceList({ onBack }: UpdateGrievanceListProps
       {/* Notification */}
       {notification && (
         <div
-          className={`rounded-lg p-4 ${
-            notification.type === "success"
+          className={`rounded-lg p-4 ${notification.type === "success"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}
+            }`}
         >
           {notification.message}
         </div>
