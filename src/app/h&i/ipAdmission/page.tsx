@@ -9,6 +9,8 @@ import { IIpAdmission } from "@/data/h&Ischema"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
+import HospitalCreateForm from "./_components/form/ipAdmissionCreateForm"
+import HospitalEditForm from "./_components/form/ipAdmissionEditForm"
 
 const options = [
 	{
@@ -56,7 +58,8 @@ const options = [
 export default function Page() {
 	const [activeAction, setActiveAction] = useState<string | null>(null)
 	const [search, setSearch] = useState("")
-	const {  token } = useAuthStore()
+	const [selectedAdmission, setSelectedAdmission] = useState<IIpAdmission | null>(null)
+	const { token } = useAuthStore()
 
 	const { data: admissions = [], isLoading } = useQuery<IIpAdmission[]>({
 		queryKey: ["ipAdmissions", search, token],
@@ -75,12 +78,12 @@ export default function Page() {
 
 	const handleActionClick = (action: string) => {
 		setActiveAction(action)
+		setSelectedAdmission(null)
 		setSearch("")
 	}
 
 	const handleSelectAdmission = (admission: IIpAdmission) => {
-		// Handle selection - navigate to form or pass data
-		console.log("Selected admission:", admission)
+		setSelectedAdmission(admission)
 	}
 
 	const formatDate = (date?: Date | string) => {
@@ -92,6 +95,55 @@ export default function Page() {
 		return options.find((opt) => opt.action === activeAction)?.title || ""
 	}
 
+	// Show form after selecting a row
+	if (activeAction && selectedAdmission) {
+		const isNewVisit = activeAction === "new-visit"
+		const employee = {
+			empNo: selectedAdmission.empNo ?? "",
+			employeeName: selectedAdmission.employeeName || selectedAdmission.name || "",
+			emiratesId: selectedAdmission.emiratesId || "",
+			insuranceId: selectedAdmission.insuranceId || "",
+			mobileNumber: selectedAdmission.mobileNumber || "",
+			trLocation: selectedAdmission.trLocation || "",
+		}
+
+		return (
+			<div className="space-y-6">
+				<div className="flex items-center gap-3">
+					<Button
+						variant="ghost"
+						onClick={() => setSelectedAdmission(null)}
+						className="gap-2"
+					>
+						<RiArrowLeftSLine className="size-4" />
+						Back to list
+					</Button>
+					<h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
+						{getActionTitle()}
+					</h2>
+				</div>
+
+				{isNewVisit ? (
+					<HospitalCreateForm
+						employee={employee}
+						onSaveSuccess={() => {
+							setSelectedAdmission(null)
+							setSearch("")
+						}}
+					/>
+				) : (
+					<HospitalEditForm
+						initialData={selectedAdmission}
+						onSaveSuccess={() => {
+							setSelectedAdmission(null)
+							setSearch("")
+						}}
+					/>
+				)}
+			</div>
+		)
+	}
+
 	// Show table view
 	if (activeAction) {
 		return (
@@ -101,6 +153,7 @@ export default function Page() {
 						variant="ghost"
 						onClick={() => {
 							setActiveAction(null)
+							setSelectedAdmission(null)
 							setSearch("")
 						}}
 						className="gap-2"
