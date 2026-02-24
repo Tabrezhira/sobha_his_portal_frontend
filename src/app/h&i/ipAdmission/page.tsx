@@ -9,7 +9,7 @@ import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
 import { DataTable } from "./_components/table/DataTable"
 import { columns } from "./_components/table/columns"
-import HospitalEditForm, { HospitalEditFormInitialData } from "./_components/form/HospitalEditForm"
+import HospitalEditForm, { HospitalEditFormInitialData } from "./_components/form/ipAdmissionCreateForm"
 
 type IpAdmissionRow = {
     _id?: string
