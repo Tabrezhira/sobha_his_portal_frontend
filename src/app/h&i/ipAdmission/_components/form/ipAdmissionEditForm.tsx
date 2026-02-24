@@ -277,6 +277,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       caseTypeChange: "",
       dischargeComments: "",
       caseTypeChangeComments: "",
+      technicianVisits: [] as { technicianFeedback?: string; physicianFeedback?: string }[],
     })
 
     const hospitalRecordId = initialData?._id ?? initialData?.id
@@ -373,6 +374,9 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         caseTypeChange: initialData.caseTypeChange ?? "",
         dischargeComments: initialData.dischargeComments ?? "",
         caseTypeChangeComments: initialData.caseTypeChangeComments ?? "",
+        technicianVisits: initialData.technicianVisits?.length
+          ? initialData.technicianVisits
+          : [{ technicianFeedback: "", physicianFeedback: "" }],
       }))
 
       setSecondaryDiagnoses(
@@ -453,6 +457,19 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       setFollowUp((prev) =>
         prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
       )
+    }
+
+    const handleTechnicianVisitChange = (
+      index: number,
+      key: "technicianFeedback" | "physicianFeedback",
+      value: string,
+    ) => {
+      setForm((prev) => ({
+        ...prev,
+        technicianVisits: prev.technicianVisits.map((item, i) =>
+          i === index ? { ...item, [key]: value } : item,
+        ),
+      }))
     }
 
     const buildPayload = () => {
@@ -558,6 +575,9 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         caseTypeChange: form.caseTypeChange || undefined,
         dischargeComments: form.dischargeComments || undefined,
         caseTypeChangeComments: form.caseTypeChangeComments || undefined,
+        technicianVisits: form.technicianVisits.filter(
+          (visit) => visit.technicianFeedback?.trim() || visit.physicianFeedback?.trim()
+        ).length ? form.technicianVisits : undefined,
       }
 
       try {
@@ -1146,6 +1166,74 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                   onChange={(e) => updateForm("technicianFeedbackForm", e.target.value)}
                 />
               </div>
+            </div>
+
+            <Divider />
+
+            <div className="col-span-full flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-50">
+                Technician Visits
+              </h3>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    technicianVisits: [
+                      ...prev.technicianVisits,
+                      { technicianFeedback: "", physicianFeedback: "" },
+                    ],
+                  }))
+                }
+              >
+                Add Visit
+              </Button>
+            </div>
+            <div className="col-span-full space-y-4">
+              {form.technicianVisits.map((visit, index) => (
+                <div
+                  key={`technician-visit-${index}`}
+                  className="grid grid-cols-1 gap-4 rounded-md border border-gray-200 p-4 sm:grid-cols-2 dark:border-gray-900"
+                >
+                  <div>
+                    <Label className="font-medium">Technician Feedback</Label>
+                    <Input
+                      className="mt-2"
+                      value={visit.technicianFeedback || ""}
+                      onChange={(e) =>
+                        handleTechnicianVisitChange(index, "technicianFeedback", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label className="font-medium">Physician Feedback</Label>
+                    <Input
+                      className="mt-2"
+                      value={visit.physicianFeedback || ""}
+                      onChange={(e) =>
+                        handleTechnicianVisitChange(index, "physicianFeedback", e.target.value)
+                      }
+                    />
+                  </div>
+                  {form.technicianVisits.length > 1 && (
+                    <div className="sm:col-span-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setForm((prev) => ({
+                            ...prev,
+                            technicianVisits: prev.technicianVisits.filter((_, i) => i !== index),
+                          }))
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
             <Divider />
