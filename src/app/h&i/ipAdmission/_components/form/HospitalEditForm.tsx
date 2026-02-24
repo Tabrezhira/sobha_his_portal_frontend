@@ -11,6 +11,7 @@ import {
   useState,
 } from "react"
 import { toast } from "sonner"
+import { useAuthStore } from "@/store/auth"
 
 import { Button } from "@/components/Button"
 import { Card } from "@/components/Card"
@@ -220,6 +221,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
     ref,
   ) {
     const router = useRouter()
+    const { token } = useAuthStore()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
 
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
@@ -538,15 +540,64 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       }
 
       setSubmitting(true)
+
+      const payload = {
+        hospitalCase: hospitalRecordId,
+        hiManagers: form.hiManagers || undefined,
+        admissionMode: form.admissionMode || undefined,
+        admissionType: form.admissionType || undefined,
+        insuranceApprovalStatus: form.insuranceApprovalStatus || undefined,
+        treatmentUndergone: form.treatmentUndergone || undefined,
+        imVisitStatus: form.imVisitStatus || undefined,
+        noOfVisits: form.noOfVisits ? Number(form.noOfVisits) : undefined,
+        treatmentLocation: form.treatmentLocation || undefined,
+        placeOfLocation: form.placeOfLocation || undefined,
+        postRecoveryLocation: form.postRecoveryLocation || undefined,
+        fitToTravel: form.fitToTravel,
+        postRehabRequired: form.postRehabRequired,
+        durationOfRehab: form.durationOfRehab ? Number(form.durationOfRehab) : undefined,
+        followUpRequired: form.followUpRequired,
+        rehabExtension: form.rehabExtension,
+        rehabExtensionDuration: form.rehabExtensionDuration ? Number(form.rehabExtensionDuration) : undefined,
+        memberResumeToWork: form.memberResumeToWork || undefined,
+        technicianFeedbackForm: form.technicianFeedbackForm || undefined,
+        dischargedHI: form.dischargedHI,
+        dodHI: form.dodHI || undefined,
+        source: form.source || undefined,
+        caseTypeChange: form.caseTypeChange || undefined,
+        dischargeComments: form.dischargeComments || undefined,
+        caseTypeChangeComments: form.caseTypeChangeComments || undefined,
+      }
+
       try {
-        console.log("Payload to be sent (PUT disabled):", buildPayload())
-        toast.success("Manager details ready (API submission is disabled).")
-        // Trigger save success locally since backend PUT is disabled
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_CURD_API_URL}/ip-admission/from-hospital-case`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error("Failed to save manager details")
+        }
+
+        toast.success("Manager details saved successfully.")
+
         if (onSaveSuccess) {
           onSaveSuccess()
+        } else {
+          setTimeout(() => {
+            router.push("/hospital")
+          }, 1000)
         }
-      } catch {
+      } catch (error) {
         toast.error("Failed to update hospital record.")
+        console.error(error)
       } finally {
         setSubmitting(false)
       }
