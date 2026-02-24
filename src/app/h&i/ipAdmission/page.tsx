@@ -2,14 +2,28 @@
 
 import { Card } from "@/components/Card"
 import { Button } from "@/components/Button"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/Dialog"
 import { RiAddLine, RiArrowRightSLine, RiArrowLeftSLine, RiCheckLine, RiEdit2Line } from "@remixicon/react"
 import { useState } from "react"
-import { IIpAdmission } from "@/data/h&Ischema"
+import { CaseTypeChange, IpNewVisitsPopup } from "@/data/h&Ischema"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
 import { DataTable } from "./_components/table/DataTable"
 import { columns } from "./_components/table/columns"
+
+type IpAdmissionRow = {
+    _id?: string
+    empNo?: string
+    employeeName?: string
+    locationId?: string
+}
 
 const options = [
 	{
@@ -57,9 +71,11 @@ const options = [
 export default function Page() {
     const [activeAction, setActiveAction] = useState<string | null>(null)
     const [search, setSearch] = useState("")
-    const { token } = useAuthStore()
+    const [isDetailOpen, setIsDetailOpen] = useState(false)
+    const [selectedVisit, setSelectedVisit] = useState<IpNewVisitsPopup | null>(null)
+    const { token, user } = useAuthStore()
 
-    const { data: admissions = [], isLoading } = useQuery<IIpAdmission[]>({
+    const { data: admissions = [], isLoading } = useQuery<IpAdmissionRow[]>({
         queryKey: ["ipAdmissions", search, token],
         queryFn: async () => {
             const response = await api.get("/hospital/manager/discharge-status", {
@@ -77,6 +93,35 @@ export default function Page() {
     const handleActionClick = (action: string) => {
         setActiveAction(action)
         setSearch("")
+        setIsDetailOpen(false)
+        setSelectedVisit(null)
+    }
+
+    const mapAdmissionToPopup = (admission: IpAdmissionRow): IpNewVisitsPopup => {
+        return {
+            hospitalCase: admission._id || "-",
+            empNo: admission.empNo || "-",
+            empName: admission.employeeName || "-",
+            trlocation: admission.locationId || "-",
+            hiManagers: user?.name || user?.empId || user?.email || "-",
+            caseTypeChange: "Normal",
+        }
+    }
+
+    const handleRowClick = (admission: IpAdmissionRow) => {
+        if (activeAction !== "new-visit") return
+        setSelectedVisit(mapAdmissionToPopup(admission))
+        setIsDetailOpen(true)
+    }
+
+    const handleCaseTypeSelect = (caseType: CaseTypeChange) => {
+        setSelectedVisit((prev) => {
+            if (!prev) return prev
+            return {
+                ...prev,
+                caseTypeChange: caseType,
+            }
+        })
     }
 
     const getActionTitle = () => {
@@ -93,6 +138,8 @@ export default function Page() {
                         onClick={() => {
                             setActiveAction(null)
                             setSearch("")
+                            setIsDetailOpen(false)
+                            setSelectedVisit(null)
                         }}
                         className="gap-2"
                     >
@@ -117,11 +164,71 @@ export default function Page() {
                                     columns={columns}
                                     data={admissions}
                                     onSearch={setSearch}
+                                    onRowClick={handleRowClick}
                                 />
                             )}
                         </div>
                     </div>
                 </div>
+
+                <Dialog
+                    open={isDetailOpen && activeAction === "new-visit"}
+                    onOpenChange={(open) => {
+                        setIsDetailOpen(open)
+                        if (!open) {
+                            setSelectedVisit(null)
+                        }
+                    }}
+                >
+                    <DialogContent className="rounded-3xl border-0 bg-gray-100 p-5 shadow-2xl sm:max-w-[620px] sm:p-6 dark:bg-gray-900">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold uppercase tracking-wide text-gray-900 dark:text-white">
+                                Select Case Type
+                            </DialogTitle>
+                            <DialogDescription className="pt-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                                EMP NO: {selectedVisit?.empNo || "-"} | NAME: {selectedVisit?.empName || "-"} | TR: {selectedVisit?.trlocation || "-"}
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {selectedVisit ? (
+                            <div className="mt-5">
+                                <div className="flex flex-wrap gap-3">
+                                    {(["Normal", "Critical", "High Critical"] as CaseTypeChange[]).map((type) => (
+                                        <Button
+                                            key={type}
+                                            type="button"
+                                            variant="secondary"
+                                            className={`h-12 min-w-[120px] rounded-2xl px-5 text-lg font-semibold transition-all ${
+                                                selectedVisit.caseTypeChange === type
+                                                    ? "border-transparent bg-white text-gray-900 shadow-md"
+                                                    : "border-rose-200 bg-white text-gray-900 shadow-sm hover:bg-gray-50"
+                                            }`}
+                                            onClick={() => handleCaseTypeSelect(type)}
+                                        >
+                                            {type}
+                                        </Button>
+                                    ))}
+                                </div>
+
+                                <div className="mt-5 flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        className="rounded-2xl border-0 bg-white px-5 py-2 text-lg font-semibold text-gray-900 shadow-sm hover:bg-gray-50"
+                                        onClick={() => {
+                                            setIsDetailOpen(false)
+                                            setSelectedVisit(null)
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="mt-4 text-sm text-gray-500">No details available.</p>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         )
     }

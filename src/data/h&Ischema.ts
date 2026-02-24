@@ -154,7 +154,9 @@ export interface IpNewVisitsPopup {
   empNo: string;
   empName: string;
   trlocation: string;
+   hiManagers: string;
   caseTypeChange: CaseTypeChange;
+
 }
 
 export interface TechnicianVisit {

@@ -11,8 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/Dropdown"
 
-import { IIpAdmission } from "@/data/h&Ischema"
-
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
@@ -20,7 +18,7 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const admission = row.original as IIpAdmission
+  const admission = row.original as { _id?: string }
 
   return (
     <div className="flex items-center justify-end gap-2">

@@ -1,11 +1,21 @@
 "use client"
 
-import { IIpAdmission } from "@/data/h&Ischema"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "./DataTableColumnHeader"
 import { DataTableRowActions } from "./DataTableRowActions"
 
-const columnHelper = createColumnHelper<IIpAdmission>()
+type IpAdmissionTableRow = {
+  _id?: string
+  empNo?: string
+  employeeName?: string
+  name?: string
+  trLocation?: string
+  hospitalName?: string
+  dateOfAdmission?: string | Date
+  doa?: string | Date
+}
+
+const columnHelper = createColumnHelper<IpAdmissionTableRow>()
 
 export const columns = [
   columnHelper.accessor("empNo", {
@@ -67,7 +77,7 @@ export const columns = [
     cell: ({ getValue }) => {
       const date = getValue()
       if (!date) return "-"
-      return new Date(date).toLocaleDateString()
+      return new Date(date as string | number | Date).toLocaleDateString()
     },
     meta: {
       className: "text-left",
@@ -85,4 +95,4 @@ export const columns = [
     },
     cell: ({ row }) => <DataTableRowActions row={row} />,
   }),
-] as ColumnDef<IIpAdmission>[]
+] as ColumnDef<IpAdmissionTableRow>[]

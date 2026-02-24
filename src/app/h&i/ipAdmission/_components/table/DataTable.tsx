@@ -28,6 +28,7 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
   onSearch?: (value: string) => void
+  onRowClick?: (row: TData) => void
   pagination?: {
     pageIndex: number
     pageSize: number
@@ -37,7 +38,13 @@ interface DataTableProps<TData> {
   }
 }
 
-export function DataTable<TData>({ columns, data, onSearch, pagination }: DataTableProps<TData>) {
+export function DataTable<TData>({
+  columns,
+  data,
+  onSearch,
+  onRowClick,
+  pagination,
+}: DataTableProps<TData>) {
   const defaultPageSize = 20
   const [rowSelection, setRowSelection] = React.useState({})
   const isServerSide = Boolean(pagination)
@@ -101,7 +108,10 @@ export function DataTable<TData>({ columns, data, onSearch, pagination }: DataTa
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    onClick={() => row.toggleSelected(!row.getIsSelected())}
+                    onClick={() => {
+                      row.toggleSelected(!row.getIsSelected())
+                      onRowClick?.(row.original)
+                    }}
                     className="group select-none hover:bg-gray-50 hover:dark:bg-gray-900"
                   >
                     {row.getVisibleCells().map((cell, index) => (
