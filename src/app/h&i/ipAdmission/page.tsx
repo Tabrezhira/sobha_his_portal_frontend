@@ -9,8 +9,6 @@ import { IIpAdmission } from "@/data/h&Ischema"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/auth"
-import HospitalCreateForm from "./_components/form/ipAdmissionCreateForm"
-import HospitalEditForm from "./_components/form/ipAdmissionEditForm"
 
 const options = [
 	{
@@ -56,241 +54,175 @@ const options = [
 ]
 
 export default function Page() {
-	const [activeAction, setActiveAction] = useState<string | null>(null)
-	const [search, setSearch] = useState("")
-	const [selectedAdmission, setSelectedAdmission] = useState<IIpAdmission | null>(null)
-	const { token } = useAuthStore()
+    const [activeAction, setActiveAction] = useState<string | null>(null)
+    const [search, setSearch] = useState("")
+    const { token } = useAuthStore()
 
-	const { data: admissions = [], isLoading } = useQuery<IIpAdmission[]>({
-		queryKey: ["ipAdmissions", search, token],
-		queryFn: async () => {
-			const response = await api.get("/hospital/manager/discharge-status", {
-				params: { q: search || undefined },
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})
-			return Array.isArray(response?.data?.data) ? response.data.data : []
-		},
-		enabled: !!activeAction && !!token,
-		staleTime: 5 * 60 * 1000,
-	})
+    const { data: admissions = [], isLoading } = useQuery<IIpAdmission[]>({
+        queryKey: ["ipAdmissions", search, token],
+        queryFn: async () => {
+            const response = await api.get("/hospital/manager/discharge-status", {
+                params: { q: search || undefined },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            return Array.isArray(response?.data?.data) ? response.data.data : []
+        },
+        enabled: !!activeAction && !!token,
+        staleTime: 5 * 60 * 1000,
+    })
 
-	const handleActionClick = (action: string) => {
-		setActiveAction(action)
-		setSelectedAdmission(null)
-		setSearch("")
-	}
+    const handleActionClick = (action: string) => {
+        setActiveAction(action)
+        setSearch("")
+    }
 
-	const handleSelectAdmission = (admission: IIpAdmission) => {
-		setSelectedAdmission(admission)
-	}
+    const formatDate = (date?: Date | string) => {
+        if (!date) return "-"
+        return new Date(date).toLocaleDateString()
+    }
 
-	const formatDate = (date?: Date | string) => {
-		if (!date) return "-"
-		return new Date(date).toLocaleDateString()
-	}
+    const getActionTitle = () => {
+        return options.find((opt) => opt.action === activeAction)?.title || ""
+    }
 
-	const getActionTitle = () => {
-		return options.find((opt) => opt.action === activeAction)?.title || ""
-	}
+    // Show table view
+    if (activeAction) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        onClick={() => {
+                            setActiveAction(null)
+                            setSearch("")
+                        }}
+                        className="gap-2"
+                    >
+                        <RiArrowLeftSLine className="size-4" />
+                        Back
+                    </Button>
+                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
+                        {getActionTitle()}
+                    </h2>
+                </div>
 
-	// Show form after selecting a row
-	if (activeAction && selectedAdmission) {
-		const isNewVisit = activeAction === "new-visit"
-		const employee = {
-			empNo: selectedAdmission.empNo ?? "",
-			employeeName: selectedAdmission.employeeName || selectedAdmission.name || "",
-			emiratesId: selectedAdmission.emiratesId || "",
-			insuranceId: selectedAdmission.insuranceId || "",
-			mobileNumber: selectedAdmission.mobileNumber || "",
-			trLocation: selectedAdmission.trLocation || "",
-		}
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="search" className="text-sm font-medium">
+                            Search by Employee No or Name
+                        </label>
+                        <Input
+                            id="search"
+                            placeholder="Search..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="mt-2"
+                        />
+                    </div>
 
-		return (
-			<div className="space-y-6">
-				<div className="flex items-center gap-3">
-					<Button
-						variant="ghost"
-						onClick={() => setSelectedAdmission(null)}
-						className="gap-2"
-					>
-						<RiArrowLeftSLine className="size-4" />
-						Back to list
-					</Button>
-					<h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
-						{getActionTitle()}
-					</h2>
-				</div>
+                    <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+                                            EMP NO
+                                        </th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+                                            EMPLOYEE NAME
+                                        </th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+                                            TR LOCATION
+                                        </th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+                                            HOSPITAL NAME
+                                        </th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
+                                            DATE OF ADMISSION
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                                    {isLoading ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                                <div className="flex items-center justify-center">
+                                                    <div className="size-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 dark:border-gray-700 dark:border-t-gray-50"></div>
+                                                    <span className="ml-2">Loading...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : admissions.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                                No admissions found
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        admissions.map((admission) => (
+                                            <tr
+                                                key={admission._id}
+                                                className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                                            >
+                                                <td className="px-4 py-3 text-gray-900 dark:text-gray-50">
+                                                    {admission.empNo}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-900 dark:text-gray-50">
+                                                    {admission.employeeName || admission.name}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                                                    {admission.trLocation || "-"}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                                                    {admission.hospitalName || "-"}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                                                    {formatDate(admission.dateOfAdmission || admission.doa)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
-				{isNewVisit ? (
-					<HospitalCreateForm
-						employee={employee}
-						onSaveSuccess={() => {
-							setSelectedAdmission(null)
-							setSearch("")
-						}}
-					/>
-				) : (
-					<HospitalEditForm
-						initialData={selectedAdmission}
-						onSaveSuccess={() => {
-							setSelectedAdmission(null)
-							setSearch("")
-						}}
-					/>
-				)}
-			</div>
-		)
-	}
-
-	// Show table view
-	if (activeAction) {
-		return (
-			<div className="space-y-6">
-				<div className="flex items-center gap-3">
-					<Button
-						variant="ghost"
-						onClick={() => {
-							setActiveAction(null)
-							setSelectedAdmission(null)
-							setSearch("")
-						}}
-						className="gap-2"
-					>
-						<RiArrowLeftSLine className="size-4" />
-						Back
-					</Button>
-					<h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
-						{getActionTitle()}
-					</h2>
-				</div>
-
-				<div className="space-y-4">
-					<div>
-						<label htmlFor="search" className="text-sm font-medium">
-							Search by Employee No or Name
-						</label>
-						<Input
-							id="search"
-							placeholder="Search..."
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="mt-2"
-						/>
-					</div>
-
-					<div className="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
-						<div className="overflow-x-auto">
-							<table className="w-full text-sm">
-								<thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
-									<tr>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											EMP NO
-										</th>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											EMPLOYEE NAME
-										</th>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											TR LOCATION
-										</th>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											HOSPITAL NAME
-										</th>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											DATE OF ADMISSION
-										</th>
-										<th className="px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50">
-											ACTION
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-									{isLoading ? (
-										<tr>
-											<td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-												<div className="flex items-center justify-center">
-													<div className="size-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 dark:border-gray-700 dark:border-t-gray-50"></div>
-													<span className="ml-2">Loading...</span>
-												</div>
-											</td>
-										</tr>
-									) : admissions.length === 0 ? (
-										<tr>
-											<td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-												No admissions found
-											</td>
-										</tr>
-									) : (
-										admissions.map((admission) => (
-											<tr
-												key={admission._id}
-												className="hover:bg-gray-50 dark:hover:bg-gray-900"
-											>
-												<td className="px-4 py-3 text-gray-900 dark:text-gray-50">
-													{admission.empNo}
-												</td>
-												<td className="px-4 py-3 text-gray-900 dark:text-gray-50">
-													{admission.employeeName || admission.name}
-												</td>
-												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-													{admission.trLocation || "-"}
-												</td>
-												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-													{admission.hospitalName || "-"}
-												</td>
-												<td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-													{formatDate(admission.dateOfAdmission || admission.doa)}
-												</td>
-												<td className="px-4 py-3">
-													<Button
-														onClick={() => handleSelectAdmission(admission)}
-													>
-														Select
-													</Button>
-												</td>
-											</tr>
-										))
-									)}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		)
-	}
-
-	// Show options grid
-	return (
-		<div className="space-y-6">
-			<div>
-				<h2 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-gray-50">
-					IP Admission
-				</h2>
-				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-					{options.map((option) => (
-						<button
-							key={option.title}
-							type="button"
-							className="group"
-							onClick={() => handleActionClick(option.action)}
-						>
-							<Card className={option.cardClass}>
-								<span className={option.iconClass}>
-									<option.icon className="size-7" />
-								</span>
-								<h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
-									{option.title}
-								</h3>
-								<p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-									{option.description}
-								</p>
-							</Card>
-						</button>
-					))}
-				</div>
-			</div>
-		</div>
-	)
+    // Show options grid
+    return (
+        <div className="space-y-6">
+            <div>
+                <h2 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-gray-50">
+                    IP Admission
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {options.map((option) => (
+                        <button
+                            key={option.title}
+                            type="button"
+                            className="group"
+                            onClick={() => handleActionClick(option.action)}
+                        >
+                            <Card className={option.cardClass}>
+                                <span className={option.iconClass}>
+                                    <option.icon className="size-7" />
+                                </span>
+                                <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+                                    {option.title}
+                                </h3>
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    {option.description}
+                                </p>
+                            </Card>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
 }
