@@ -46,19 +46,19 @@ type DropdownApiResponse = {
 
 const DEFAULT_DROPDOWN_LIMIT = 5
 
-type HospitalEditFormProps = {
+type IpAdmissionEditFormProps = {
   clinicVisitId?: string
-  initialData?: HospitalEditFormInitialData
+  initialData?: IpAdmissionEditFormInitialData
   hideActions?: boolean
   onSaveSuccess?: () => void
 }
 
-export type HospitalEditFormRef = {
+export type IpAdmissionEditFormRef = {
   getPayload: () => Record<string, unknown>
   isValid: () => boolean
 }
 
-export type HospitalEditFormInitialData = Partial<Hospital> & IpRepeatVisitFormManagerPart & {
+export type IpAdmissionEditFormInitialData = Partial<Hospital> & IpRepeatVisitFormManagerPart & {
   _id?: string
   id?: string
   clinicVisitId?: string
@@ -210,8 +210,8 @@ const SuggestionInput = ({
   )
 }
 
-const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
-  function HospitalEditForm(
+const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFormProps>(
+  function IpAdmissionEditForm(
     {
       clinicVisitId,
       initialData,
@@ -1376,4 +1376,4 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
   },
 )
 
-export default HospitalEditForm
+export default IpAdmissionEditForm
