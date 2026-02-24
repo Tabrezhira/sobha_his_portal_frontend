@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/Card"
 import { Button } from "@/components/Button"
-import { Input } from "@/components/Input"
 import { RiAddLine, RiArrowRightSLine, RiArrowLeftSLine, RiCheckLine, RiEdit2Line } from "@remixicon/react"
 import { useState } from "react"
 import { IIpAdmission } from "@/data/h&Ischema"
@@ -78,11 +77,6 @@ export default function Page() {
     const handleActionClick = (action: string) => {
         setActiveAction(action)
         setSearch("")
-    }
-
-    const formatDate = (date?: Date | string) => {
-        if (!date) return "-"
-        return new Date(date).toLocaleDateString()
     }
 
     const getActionTitle = () => {

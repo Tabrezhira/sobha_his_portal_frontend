@@ -11,7 +11,6 @@ import {
 import { cx } from "@/lib/utils"
 import * as React from "react"
 
-import { DataTableBulkEditor } from "./DataTableBulkEditor"
 import { Filterbar } from "./DataTableFilterbar"
 import { DataTablePagination } from "./DataTablePagination"
 
@@ -139,7 +138,6 @@ export function DataTable<TData>({ columns, data, onSearch, pagination }: DataTa
               )}
             </TableBody>
           </Table>
-          <DataTableBulkEditor table={table} rowSelection={rowSelection} />
         </div>
         <DataTablePagination
           table={table}
