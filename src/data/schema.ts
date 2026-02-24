@@ -182,7 +182,7 @@ export type User = (
 		empId?: string
 		email?: string
 		password?: string
-		role: "manager"
+		role: "Manager" | "manager"
 		locationId: string
 		managerLocation: string[] // Required for managers
 		createdAt?: Date | string
@@ -194,7 +194,7 @@ export type User = (
 		empId?: string
 		email?: string
 		password?: string
-		role?: "maleNurse" | "superadmin" | "CSR" | undefined
+		role?: "maleNurse" | "superadmin" | "CSR" 
 		locationId: string
 		managerLocation?: never
 		createdAt?: Date | string

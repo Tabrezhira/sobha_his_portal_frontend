@@ -32,7 +32,7 @@ export function LoginForm({
   const [, startTransition] = useTransition()
 
   useEffect(() => {
-    router.prefetch("/overview")
+    // router.prefetch("/overview")
     router.prefetch("/employee")
   }, [router])
 
@@ -42,17 +42,22 @@ export function LoginForm({
 
     // Get the updated user from the store
     const currentUser = useAuthStore.getState().user
-
+    console.log("Current User after login:", currentUser) // Debugging log
     // Redirect based on role
     if (currentUser?.role === "maleNurse") {
       setIsRedirecting(true)
       startTransition(() => {
         router.replace("/employee")
       })
+    } else if (currentUser?.role === "Manager" || currentUser?.role === "manager" || currentUser?.role === "CSR") {
+      setIsRedirecting(true)
+      startTransition(() => {
+        router.replace("/h&i")
+      })
     } else {
       setIsRedirecting(true)
       startTransition(() => {
-        router.replace("/overview")
+        router.replace("/employee")
       })
     }
   }
