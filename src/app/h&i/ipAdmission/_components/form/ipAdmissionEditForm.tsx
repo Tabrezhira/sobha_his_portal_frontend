@@ -61,6 +61,7 @@ export type IpAdmissionEditFormRef = {
 export type IpAdmissionEditFormInitialData = Partial<Hospital> & IpRepeatVisitFormManagerPart & {
   _id?: string
   id?: string
+  hospitalCase?: { _id: string;[key: string]: any }
   clinicVisitId?: string
   sno?: string | number
   followUp?: Array<{ date?: string; remarks?: string }>
@@ -309,39 +310,43 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         return value.name ?? value._id ?? ""
       }
 
+      const hospital = initialData.hospitalCase || initialData;
+
       setForm((prev) => ({
         ...prev,
-        locationId: initialData.locationId ?? "",
-        clinicVisitToken: initialData.clinicVisitToken ?? "",
-        clinicVisitId:
-          clinicVisitId ?? initialData.clinicVisitId ?? prev.clinicVisitId,
+        locationId: hospital.locationId ?? initialData.locationId ?? "",
+        clinicVisitToken: hospital.clinicVisitToken ?? initialData.clinicVisitToken ?? "",
+        clinicVisitId: clinicVisitId ?? hospital.clinicVisitId ?? initialData.clinicVisitId ?? prev.clinicVisitId,
         sno:
-          initialData.sno !== undefined && initialData.sno !== null
-            ? String(initialData.sno)
-            : prev.sno,
-        empNo: initialData.empNo ?? "",
-        employeeName: initialData.employeeName ?? "",
-        emiratesId: initialData.emiratesId ?? "",
-        insuranceId: initialData.insuranceId ?? "",
-        trLocation: initialData.trLocation ?? "",
-        mobileNumber: initialData.mobileNumber ?? "",
-        hospitalName: initialData.hospitalName ?? "",
-        dateOfAdmission: toDateInput(initialData.dateOfAdmission),
-        natureOfCase: initialData.natureOfCase ?? "",
-        caseCategory: initialData.caseCategory ?? "",
-        primaryDiagnosis: initialData.primaryDiagnosis ?? "",
-        status: initialData.status ?? "Admit",
-        dischargeSummaryReceived: Boolean(initialData.dischargeSummaryReceived),
-        dateOfDischarge: toDateInput(initialData.dateOfDischarge),
+          hospital.sno !== undefined && hospital.sno !== null
+            ? String(hospital.sno)
+            : initialData.sno !== undefined && initialData.sno !== null
+              ? String(initialData.sno)
+              : prev.sno,
+        empNo: initialData.empNo ?? hospital.empNo ?? "",
+        employeeName: hospital.employeeName ?? initialData.employeeName ?? "",
+        emiratesId: hospital.emiratesId ?? initialData.emiratesId ?? "",
+        insuranceId: hospital.insuranceId ?? initialData.insuranceId ?? "",
+        trLocation: initialData.trLocation ?? hospital.trLocation ?? "",
+        mobileNumber: hospital.mobileNumber ?? initialData.mobileNumber ?? "",
+        hospitalName: initialData.hospitalName ?? hospital.hospitalName ?? "",
+        dateOfAdmission: toDateInput(initialData.dateOfAdmission ?? hospital.dateOfAdmission),
+        natureOfCase: hospital.natureOfCase ?? initialData.natureOfCase ?? "",
+        caseCategory: hospital.caseCategory ?? initialData.caseCategory ?? "",
+        primaryDiagnosis: hospital.primaryDiagnosis ?? initialData.primaryDiagnosis ?? "",
+        status: hospital.status ?? initialData.status ?? "Admit",
+        dischargeSummaryReceived: Boolean(hospital.dischargeSummaryReceived ?? initialData.dischargeSummaryReceived),
+        dateOfDischarge: toDateInput(hospital.dateOfDischarge ?? initialData.dateOfDischarge),
         daysHospitalized:
-          initialData.daysHospitalized !== undefined &&
-            initialData.daysHospitalized !== null
-            ? String(initialData.daysHospitalized)
-            : "",
-        fitnessStatus: initialData.fitnessStatus ?? "",
-        isolationRequired: Boolean(initialData.isolationRequired),
-        finalRemarks: initialData.finalRemarks ?? "",
-        createdBy: resolveCreatedBy(initialData.createdBy),
+          hospital.daysHospitalized !== undefined && hospital.daysHospitalized !== null
+            ? String(hospital.daysHospitalized)
+            : initialData.daysHospitalized !== undefined && initialData.daysHospitalized !== null
+              ? String(initialData.daysHospitalized)
+              : "",
+        fitnessStatus: hospital.fitnessStatus ?? initialData.fitnessStatus ?? "",
+        isolationRequired: Boolean(hospital.isolationRequired ?? initialData.isolationRequired),
+        finalRemarks: hospital.finalRemarks ?? initialData.finalRemarks ?? "",
+        createdBy: resolveCreatedBy(initialData.createdBy ?? hospital.createdBy),
 
         // Manager fields
         hiManagers: initialData.hiManagers ?? "",
@@ -371,18 +376,25 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       }))
 
       setSecondaryDiagnoses(
-        initialData.secondaryDiagnosis?.length
-          ? initialData.secondaryDiagnosis
-          : [],
+        hospital.secondaryDiagnosis?.length
+          ? hospital.secondaryDiagnosis
+          : initialData.secondaryDiagnosis?.length
+            ? initialData.secondaryDiagnosis
+            : [],
       )
 
       setFollowUp(
-        initialData.followUp?.length
-          ? initialData.followUp.map((item) => ({
+        hospital.followUp?.length
+          ? hospital.followUp.map((item: any) => ({
             date: item.date ? String(item.date).slice(0, 10) : "",
             remarks: item.remarks ?? "",
           }))
-          : [emptyFollowUp],
+          : initialData.followUp?.length
+            ? initialData.followUp.map((item: any) => ({
+              date: item.date ? String(item.date).slice(0, 10) : "",
+              remarks: item.remarks ?? "",
+            }))
+            : [emptyFollowUp],
       )
     }, [initialData, clinicVisitId])
 
@@ -481,32 +493,6 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         isolationRequired: form.isolationRequired,
         finalRemarks: form.finalRemarks || undefined,
         createdBy: form.createdBy,
-
-        // Manager fields
-        hiManagers: form.hiManagers || undefined,
-        admissionMode: form.admissionMode || undefined,
-        admissionType: form.admissionType || undefined,
-        insuranceApprovalStatus: form.insuranceApprovalStatus || undefined,
-        treatmentUndergone: form.treatmentUndergone || undefined,
-        imVisitStatus: form.imVisitStatus || undefined,
-        noOfVisits: toNumber(form.noOfVisits),
-        treatmentLocation: form.treatmentLocation || undefined,
-        placeOfLocation: form.placeOfLocation || undefined,
-        postRecoveryLocation: form.postRecoveryLocation || undefined,
-        fitToTravel: form.fitToTravel,
-        postRehabRequired: form.postRehabRequired,
-        durationOfRehab: toNumber(form.durationOfRehab),
-        followUpRequired: form.followUpRequired,
-        rehabExtension: form.rehabExtension,
-        rehabExtensionDuration: toNumber(form.rehabExtensionDuration),
-        memberResumeToWork: form.memberResumeToWork || undefined,
-        technicianFeedbackForm: form.technicianFeedbackForm || undefined,
-        dischargedHI: form.dischargedHI,
-        dodHI: form.dodHI || undefined,
-        source: form.source || undefined,
-        caseTypeChange: form.caseTypeChange || undefined,
-        dischargeComments: form.dischargeComments || undefined,
-        caseTypeChangeComments: form.caseTypeChangeComments || undefined,
       }
     }
 
@@ -541,7 +527,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
 
       setSubmitting(true)
 
-      const payload = {
+      const managerPayload = {
         hospitalCase: hospitalRecordId,
         empNo: form.empNo,
         dateOfAdmission: form.dateOfAdmission || undefined,
@@ -575,23 +561,27 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       }
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_CURD_API_URL}/ip-admission/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(payload),
-          }
-        )
+        const ipAdmissionId = initialData?._id;
 
-        if (!response.ok) {
-          throw new Error("Failed to save manager details")
+        if (ipAdmissionId) {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_CURD_API_URL}/ip-admission/${ipAdmissionId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(managerPayload),
+            }
+          )
+
+          if (!response.ok) {
+            throw new Error("Failed to save manager details")
+          }
         }
 
-        toast.success("Manager details saved successfully.")
+        toast.success("Details updated successfully.")
 
         if (onSaveSuccess) {
           onSaveSuccess()
@@ -601,7 +591,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
           }, 1000)
         }
       } catch (error) {
-        toast.error("Failed to update hospital record.")
+        toast.error("Failed to update records.")
         console.error(error)
       } finally {
         setSubmitting(false)

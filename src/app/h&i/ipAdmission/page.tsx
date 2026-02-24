@@ -10,6 +10,7 @@ import { useAuthStore } from "@/store/auth"
 import { DataTable } from "./_components/table/DataTable"
 import { columns } from "./_components/table/columns"
 import HospitalEditForm, { HospitalEditFormInitialData } from "./_components/form/ipAdmissionCreateForm"
+import IpAdmissionEditForm from "./_components/form/ipAdmissionEditForm"
 
 type IpAdmissionRow = {
     _id?: string
@@ -69,8 +70,34 @@ export default function Page() {
     const queryClient = useQueryClient()
 
     const { data: admissions = [], isLoading } = useQuery<IpAdmissionRow[]>({
-        queryKey: ["ipAdmissions", search, token],
+        queryKey: ["ipAdmissions", activeAction, search, token],
         queryFn: async () => {
+            if (activeAction === "repeat-visit") {
+                const url = new URL(`${process.env.NEXT_PUBLIC_CURD_API_URL}/ip-admission/`)
+                if (search) url.searchParams.set("q", search)
+
+                const response = await fetch(url.toString(), {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch repeat visit data")
+                }
+
+                const result = await response.json()
+                const dataArray = Array.isArray(result?.data) ? result.data : []
+                return dataArray.map((item: any) => ({
+                    ...item,
+                    employeeName: item.hospitalCase?.employeeName ?? item.employeeName,
+                    empNo: item.hospitalCase?.empNo ?? item.empNo,
+                    locationId: item.hospitalCase?.locationId ?? item.locationId,
+                }))
+            }
+
             const response = await api.get("/hospital/manager/discharge-status", {
                 params: { q: search || undefined },
                 headers: {
@@ -112,14 +139,25 @@ export default function Page() {
                             Back to Table
                         </Button>
                     </div>
-                    <HospitalEditForm
-                        initialData={selectedAdmissionRow}
-                        hideActions
-                        onSaveSuccess={() => {
-                            setSelectedAdmissionRow(null)
-                            queryClient.invalidateQueries({ queryKey: ["ipAdmissions"] })
-                        }}
-                    />
+                    {activeAction === "repeat-visit" ? (
+                        <IpAdmissionEditForm
+                            initialData={selectedAdmissionRow as any}
+                            hideActions
+                            onSaveSuccess={() => {
+                                setSelectedAdmissionRow(null)
+                                queryClient.invalidateQueries({ queryKey: ["ipAdmissions"] })
+                            }}
+                        />
+                    ) : (
+                        <HospitalEditForm
+                            initialData={selectedAdmissionRow}
+                            hideActions
+                            onSaveSuccess={() => {
+                                setSelectedAdmissionRow(null)
+                                queryClient.invalidateQueries({ queryKey: ["ipAdmissions"] })
+                            }}
+                        />
+                    )}
                 </div>
             )
         }
