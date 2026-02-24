@@ -147,83 +147,115 @@ export interface IPatient {
 
 // ========== IP Admission Types ==========
 
-// Follow-up interface
-export interface IFollowUp {
-  followUpDate?: Date;
-  remarks?: string;
+export type CaseTypeChange = "Normal" | "Critical" | "High Critical";
+
+export interface IpNewVisitsPopup {
+  hospitalCase: string;
+  empNo: string;
+  empName: string;
+  trlocation: string;
+  caseTypeChange: CaseTypeChange;
 }
 
-// Technician Visit interface
-export interface ITechnicianVisit {
-  visitNumber?: number;
+export interface TechnicianVisit {
   technicianFeedback?: string;
   physicianFeedback?: string;
 }
 
-// Main IP Admission interface
-export interface IIpAdmission {
-  _id?: string;
-  hospitalCase?: string; // ObjectId reference to Hospital
+export interface IpNewVisitsEmployeeNotInHISForm {
   empNo: string;
-  name: string;
+  hiManagers: string;
+  caseTypeChange: CaseTypeChange;
+  hospitalName: string;
+  dateOfAdmission: Date;
+  technicianVisits: TechnicianVisit[];
+  treatmentUndergone: string;
+}
+
+
+
+export type HospitalFollowUp = {
+  date?: string | Date;
+  remarks?: string;
+};
+
+export interface IpRepeatVisitFormHospitalPart {
+  locationId?: string;
+
+  clinicVisitToken?: string;
+
+  empNo?: string;
+  employeeName?: string;
+
   emiratesId?: string;
   insuranceId?: string;
+
   trLocation?: string;
   mobileNumber?: string;
+
   hospitalName?: string;
-  doa?: Date; // Date of Admission
+  dateOfAdmission?: string | Date;
+
   natureOfCase?: string;
   caseCategory?: string;
-  caseType?: string;
+
   primaryDiagnosis?: string;
-  secondaryDiagnosis?: string;
+  secondaryDiagnosis?: string[];
+
   status?: string;
+
   dischargeSummaryReceived?: boolean;
-  dod?: Date; // Date of Discharge
-  noOfDaysHospitalized?: number;
-  followUps?: IFollowUp[];
+  dateOfDischarge?: string | Date;
+  daysHospitalized?: number;
+
+  followUp?: HospitalFollowUp[];
+
   fitnessStatus?: string;
-  exitStatus?: string;
-  isolationOrRehabilitationRequired?: boolean;
-  remarks?: string;
+
+  isolationRequired?: boolean;
+
+  finalRemarks?: string;
+  createdBy?: string;
+}
+
+export interface IpRepeatVisitFormManagerPart {
   hiManagers?: string;
+
   admissionMode?: string;
   admissionType?: string;
+
   insuranceApprovalStatus?: string;
+
   treatmentUndergone?: string;
+
   imVisitStatus?: string;
   noOfVisits?: number;
-  technicianVisits?: ITechnicianVisit[];
+
+  technicianVisits?: TechnicianVisit[];
+
   treatmentLocation?: string;
   placeOfLocation?: string;
   postRecoveryLocation?: string;
+
   fitToTravel?: boolean;
   postRehabRequired?: boolean;
   durationOfRehab?: number;
+
   followUpRequired?: boolean;
   rehabExtension?: boolean;
   rehabExtensionDuration?: number;
+
   memberResumeToWork?: Date;
+
   technicianFeedbackForm?: string;
+
   dischargedHI?: boolean;
   dodHI?: Date;
+
   source?: string;
+
+  caseTypeChange?: CaseTypeChange;
+
   dischargeComments?: string;
   caseTypeChangeComments?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  dateOfAdmission?: Date; // Alias for doa
-  employeeName?: string; // Alias for name
 }
-
-// Type for creating a new IP admission
-export type CreateIpAdmissionInput = Omit<
-  IIpAdmission,
-  "_id" | "createdAt" | "updatedAt"
->;
-
-// Type for updating an IP admission
-export type UpdateIpAdmissionInput = Partial<
-  Omit<IIpAdmission, "_id" | "createdAt" | "updatedAt">
->;
-
