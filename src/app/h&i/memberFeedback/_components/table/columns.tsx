@@ -31,7 +31,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => {
       const date = getValue()
       if (!date) return "-"
@@ -46,7 +46,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Time" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -57,7 +57,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Emp No" />
     ),
-    enableSorting: true,
+
     meta: {
       className: "text-left",
       displayName: "Emp No",
@@ -67,7 +67,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    enableSorting: true,
+
     meta: {
       className: "text-left",
       displayName: "Name",
@@ -77,7 +77,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="TR LOCATION" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -88,7 +88,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="MOBILE NUMBER" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -99,7 +99,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="NATURE OF CASE" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -110,7 +110,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CASE CATEGORY" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -121,7 +121,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="NURSE ASSESMENT" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => {
       const val = getValue()
       if (Array.isArray(val)) return val.join(", ")
@@ -136,7 +136,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="SENT TO" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -147,7 +147,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="PROVIDER NAME" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -158,7 +158,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="SICK LEAVE STATUS" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -169,7 +169,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="TOTAL SICK LEAVE DAYS" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -180,7 +180,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="REFERRAL" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => {
       const val = getValue()
       if (typeof val === "boolean") return val ? "Yes" : "No"
@@ -195,7 +195,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="REFFERED TO - CLINIC/HOS NAME" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",
@@ -206,7 +206,7 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="VISIT STATUS" />
     ),
-    enableSorting: true,
+
     cell: ({ getValue }) => getValue() || "-",
     meta: {
       className: "text-left",

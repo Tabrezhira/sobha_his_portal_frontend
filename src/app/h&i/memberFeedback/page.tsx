@@ -1,11 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useAuthStore } from "@/store/auth"
 import { DataTable } from "./_components/table/DataTable"
 import { columns, MemberFeedbackTableRow } from "./_components/table/columns"
+import { MemberFeedbackDialog } from "./_components/FeedbackDialog"
 
 export default function Page() {
+	const [selectedRow, setSelectedRow] = useState<MemberFeedbackTableRow | null>(null)
 	const { token } = useAuthStore()
 
 	const { data = [], isLoading } = useQuery<MemberFeedbackTableRow[]>({
@@ -28,6 +31,7 @@ export default function Page() {
 			const dataArray = Array.isArray(result?.data) ? result.data : []
 
 			return dataArray.map((item: any) => ({
+				...item, // Keep all the raw JSON data
 				_id: item._id,
 				date: item.date,
 				time: item.time,
@@ -71,11 +75,19 @@ export default function Page() {
 							<DataTable
 								columns={columns}
 								data={data}
+								hideFilterbar={true}
+								onRowClick={(row) => setSelectedRow(row)}
 							/>
 						)}
 					</div>
 				</div>
 			</div>
+
+			<MemberFeedbackDialog
+				isOpen={!!selectedRow}
+				onClose={() => setSelectedRow(null)}
+				data={selectedRow}
+			/>
 		</div>
 	)
 }
