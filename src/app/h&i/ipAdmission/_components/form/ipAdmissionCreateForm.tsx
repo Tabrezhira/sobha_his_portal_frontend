@@ -221,7 +221,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
     ref,
   ) {
     const router = useRouter()
-    const { token } = useAuthStore()
+    const { token, user } = useAuthStore()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
 
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
@@ -252,7 +252,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
       createdBy: "",
 
       // Manager fields
-      hiManagers: "",
+      hiManagers: user?.name || "",
       admissionMode: "",
       admissionType: "",
       insuranceApprovalStatus: "",
@@ -345,7 +345,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
         createdBy: resolveCreatedBy(initialData.createdBy),
 
         // Manager fields
-        hiManagers: initialData.hiManagers ?? "",
+        hiManagers: initialData.hiManagers || user?.name || "",
         admissionMode: initialData.admissionMode ?? "",
         admissionType: initialData.admissionType ?? "",
         insuranceApprovalStatus: initialData.insuranceApprovalStatus ?? "",

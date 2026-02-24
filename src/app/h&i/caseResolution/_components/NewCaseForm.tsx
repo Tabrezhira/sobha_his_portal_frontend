@@ -29,16 +29,48 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
+  const [natureOfCaseOptions, setNatureOfCaseOptions] = useState<string[]>([]);
+  const [insuranceTypeOptions, setInsuranceTypeOptions] = useState<string[]>([]);
+  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
+  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
+  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
   const { fetchDropdownData } = useDropdownStore();
   const { user, token } = useAuthStore();
 
   useEffect(() => {
-    const loadTrLocationData = async () => {
+    const loadDropdownData = async () => {
       const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-      const data = await fetchDropdownData(dropdown.trLocation, apiUrl);
-      setTrLocationOptions(data);
+      const [
+        trLocationData,
+        natureOfCaseData,
+        insuranceTypeData,
+        typeOfIssueData,
+        statusData,
+        correctiveActionStatusData,
+        preventiveActionStatusData,
+        responsibilityData
+      ] = await Promise.all([
+        fetchDropdownData(dropdown.trLocation, apiUrl),
+        fetchDropdownData(dropdown.natureOfCase, apiUrl),
+        fetchDropdownData(dropdown.insuranceType, apiUrl),
+        fetchDropdownData(dropdown.typeOfIssue, apiUrl),
+        fetchDropdownData(dropdown.status, apiUrl),
+        fetchDropdownData(dropdown.correctiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.preventiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.responsibility, apiUrl),
+      ]);
+      setTrLocationOptions(trLocationData);
+      setNatureOfCaseOptions(natureOfCaseData);
+      setInsuranceTypeOptions(insuranceTypeData);
+      setTypeOfIssueOptions(typeOfIssueData);
+      setStatusOptions(statusData);
+      setCorrectiveActionStatusOptions(correctiveActionStatusData);
+      setPreventiveActionStatusOptions(preventiveActionStatusData);
+      setResponsibilityOptions(responsibilityData);
     };
-    loadTrLocationData();
+    loadDropdownData();
   }, [fetchDropdownData]);
 
   useEffect(() => {
@@ -147,7 +179,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
       };
       const response = await fetch(`${apiUrl}/resolution/`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` })
         },
@@ -209,16 +241,16 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="mx-auto max-w-5xl space-y-8 pb-12 pt-4">
+      <div className="flex items-center gap-4 border-b border-gray-200 pb-6 dark:border-gray-800">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+          className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-50"
         >
-          <RiArrowLeftLine className="size-4" />
+          <RiArrowLeftLine className="size-4 transition-transform group-hover:-translate-x-1" />
           Back
         </button>
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
+        <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
           Register New Case
         </h2>
       </div>
@@ -226,20 +258,20 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
       {/* Notification */}
       {notification && (
         <div
-          className={`rounded-lg p-4 ${
-            notification.type === "success"
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}
+          className={`flex items-center gap-3 rounded-lg border p-4 shadow-sm ${notification.type === "success"
+              ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/10 dark:text-green-300"
+              : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/10 dark:text-red-300"
+            }`}
         >
-          {notification.message}
+          {notification.type === "success" ? <RiCheckLine className="size-5" /> : <RiLoaderLine className="size-5" />}
+          <p className="font-medium">{notification.message}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Card 1: Member Basic Details */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             1. Member Basic Details
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -309,8 +341,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Card 2: H&I Manager & TR Location */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             2. H&I Manager & TR Location
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -346,8 +378,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Card 3: Type of Admission, Provider Name, Insurance Type */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             3. Type of Admission & Provider Details
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -358,9 +390,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="IP">IP (Inpatient)</SelectItem>
-                  <SelectItem value="OP">OP (Outpatient)</SelectItem>
-                  <SelectItem value="Emergency">Emergency</SelectItem>
+                  {natureOfCaseOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -372,13 +406,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select insurance type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="National Insurance">National Insurance</SelectItem>
-                  <SelectItem value="Daman">Daman</SelectItem>
-                  <SelectItem value="Axa">Axa</SelectItem>
-                  <SelectItem value="Allianz">Allianz</SelectItem>
-                  <SelectItem value="Oman Insurance">Oman Insurance</SelectItem>
-                  <SelectItem value="Self Pay">Self Pay</SelectItem>
-                  <SelectItem value="Corporate">Corporate</SelectItem>
+                  {insuranceTypeOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -402,8 +434,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Card 4: Issue Details */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             4. Issue Details
           </h3>
           <div className="space-y-4">
@@ -428,10 +460,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Billing">Billing</SelectItem>
-                    <SelectItem value="Medical">Medical</SelectItem>
-                    <SelectItem value="Administrative">Administrative</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {typeOfIssueOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -490,9 +523,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -501,8 +536,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Card 5: Root Cause & Corrective Action */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             5. Root Cause & Corrective Action
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -538,9 +573,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
+                    {correctiveActionStatusOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -549,8 +586,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Card 6: Preventive Action */}
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-50">
+        <Card className="p-6 sm:p-8">
+          <h3 className="mb-6 border-b border-gray-100 pb-4 text-lg font-medium text-gray-900 dark:border-gray-800 dark:text-gray-50">
             6. Preventive Action
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -573,9 +610,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  {preventiveActionStatusOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -595,12 +634,11 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select responsibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="H&I Manager">H&I Manager</SelectItem>
-                  <SelectItem value="Hospital Admin">Hospital Admin</SelectItem>
-                  <SelectItem value="Insurance Company">Insurance Company</SelectItem>
-                  <SelectItem value="Provider">Provider</SelectItem>
-                  <SelectItem value="Member">Member</SelectItem>
-                  <SelectItem value="Third Party">Third Party</SelectItem>
+                  {responsibilityOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -620,18 +658,19 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
         </Card>
 
         {/* Action Buttons */}
-        <Card className="flex gap-3 border-0 bg-transparent p-0 shadow-none">
+        <div className="flex items-center justify-end gap-3 pt-6 pb-4">
           <Button
             type="button"
             onClick={onBack}
             variant="secondary"
+            className="min-w-28"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2"
+            className="flex min-w-36 items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -645,7 +684,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
               </>
             )}
           </Button>
-        </Card>
+        </div>
       </form>
     </div>
   );

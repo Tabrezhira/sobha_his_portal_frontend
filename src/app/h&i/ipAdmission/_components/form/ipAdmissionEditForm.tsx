@@ -222,7 +222,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
     ref,
   ) {
     const router = useRouter()
-    const { token } = useAuthStore()
+    const { token, user } = useAuthStore()
     const fetchCategories = useDropdownStore((state) => state.fetchCategories)
 
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
@@ -253,7 +253,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       createdBy: "",
 
       // Manager fields
-      hiManagers: "",
+      hiManagers: user?.name || "",
       admissionMode: "",
       admissionType: "",
       insuranceApprovalStatus: "",
@@ -350,7 +350,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         createdBy: resolveCreatedBy(initialData.createdBy ?? hospital.createdBy),
 
         // Manager fields
-        hiManagers: initialData.hiManagers ?? "",
+        hiManagers: initialData.hiManagers || user?.name || "",
         admissionMode: initialData.admissionMode ?? "",
         admissionType: initialData.admissionType ?? "",
         insuranceApprovalStatus: initialData.insuranceApprovalStatus ?? "",

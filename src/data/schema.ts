@@ -194,7 +194,7 @@ export type User = (
 		empId?: string
 		email?: string
 		password?: string
-		role?: "maleNurse" | "superadmin" | "CSR" 
+		role?: "maleNurse" | "superadmin" | "CSR"
 		locationId: string
 		managerLocation?: never
 		createdAt?: Date | string
@@ -243,12 +243,35 @@ export const dropdown = {
 	followUpRequired: "FOLLOW UP  REQUIRED",
 	visitStatus: "VISIT STATUS",
 	ipAdmission: "IP ADMISSION",
+	insuranceType: "INSURANCE TYPE",
+	typeOfIssue: "TYPE OF ISSUE",
+	status: "STATUS",
+	correctiveActionStatus: "CORRECTIVE ACTION STATUS",
+	preventiveActionStatus: "PREVENTIVE ACTION STATUS",
+	responsibility: "RESPONSIBILITY",
+	admissionMode: "ADMISSION MODE",
+	admissionType: "ADMISSION TYPE",
+	insurnaceApprovalStatus: "INSURNACE APPROVAL STATUS",
+	imVisitStatus: "IM VISIT STATUS",
+	fitToTravel: "FIT TO TRAVEL",
+	postRehabRequired: "POST REHAB REQUIRED",
+	followupRequiredImg: "FOLLOWUP REQUIRED",
+	rehabExtension: "REHAB EXTENSION",
+	memberResumeToWork: "MEMBER RESUME TO WORK",
+	dischargedHI: "DISCHARGED-H&I",
+	changeCaseType: "CHANGE CASE TYPE",
+	wasTreatmentEffective: "WAS TREATMENT EFFECTIVE",
+	refferedReqToSpecialist: "REFFERED REQ TO SPECIALIST",
+	wasTreatmentEffective2: "WAS TREATMENT EFFECTIVE 2",
+	sourceOfGrievance: "SOURCE OF GRIEVANCE",
+	responsibilityty: "RESPONSIBILITYTY",
 } as const
 
 export const inputsearch = {
 	nurseAssessment: "NURSE ASSESMENT",
 	primaryDiagnosis: "PRIMARY DIAGNOSIS",
 	medicineName: "medicine Name",
+	providerName: "PROVIDER NAME"
 } as const
 
 export type DropdownCategory = (typeof dropdown)[keyof typeof dropdown]
@@ -277,6 +300,28 @@ export const dropdownData: DropdownGroupsResponse = {
 			"FOLLOW UP  REQUIRED",
 			"VISIT STATUS",
 			"IP ADMISSION",
+			"INSURANCE TYPE",
+			"TYPE OF ISSUE",
+			"STATUS",
+			"CORRECTIVE ACTION STATUS",
+			"PREVENTIVE ACTION STATUS",
+			"RESPONSIBILITY",
+			"ADMISSION MODE",
+			"ADMISSION TYPE",
+			"INSURNACE APPROVAL STATUS",
+			"IM VISIT STATUS",
+			"FIT TO TRAVEL",
+			"POST REHAB REQUIRED",
+			"FOLLOWUP REQUIRED",
+			"REHAB EXTENSION",
+			"MEMBER RESUME TO WORK",
+			"DISCHARGED-H&I",
+			"CHANGE CASE TYPE",
+			"WAS TREATMENT EFFECTIVE",
+			"REFFERED REQ TO SPECIALIST",
+			"WAS TREATMENT EFFECTIVE 2",
+			"SOURCE OF GRIEVANCE",
+			"RESPONSIBILITYTY",
 		],
 		inputsearch: [
 			"NURSE ASSESMENT",
