@@ -90,11 +90,10 @@ export default function Layout({
 												<DrawerClose asChild key={module.href}>
 													<Link
 														href={module.href}
-														className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-															pathname === module.href
+														className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === module.href
 																? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400"
 																: "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900"
-														}`}
+															}`}
 													>
 														<RiArrowRightSLine className="size-4" />
 														{module.name}
@@ -134,11 +133,10 @@ export default function Layout({
 									<Link
 										key={module.href}
 										href={module.href}
-										className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-											isActive
+										className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${isActive
 												? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400"
 												: "text-gray-600 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
-										}`}
+											}`}
 									>
 										<RiArrowRightSLine
 											className={`size-4 ${isActive ? "opacity-100" : "opacity-0"}`}
@@ -152,7 +150,7 @@ export default function Layout({
 				)}
 
 				{/* Main Content */}
-				<div className="flex-1 p-4 sm:px-6 sm:pb-10 sm:pt-10 lg:px-10 lg:pt-7">
+				<div className="flex-1 min-w-0 p-4 sm:px-6 sm:pb-10 sm:pt-10 lg:px-10 lg:pt-7">
 					<div className="pt-4 sm:pt-6">{children}</div>
 				</div>
 			</div>
