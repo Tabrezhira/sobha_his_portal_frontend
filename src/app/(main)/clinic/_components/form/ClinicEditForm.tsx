@@ -934,7 +934,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
           setTokenDialogOpen(true)
           // refresh clinic table data
           queryClient.invalidateQueries({ queryKey: ["clinic"] })
-           // Don't reset form when condition is met
+          // Don't reset form when condition is met
         } else {
           // Reset form only if no conditions are met
           setCreatedTokenNo(

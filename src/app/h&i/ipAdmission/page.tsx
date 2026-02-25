@@ -1,7 +1,7 @@
 "use client"
 
 import { Card } from "@/components/Card"
-import { Button } from "@/components/Button"
+
 import { RiAddLine, RiArrowLeftSLine, RiEdit2Line } from "@remixicon/react"
 import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -129,15 +129,14 @@ export default function Page() {
         if (selectedAdmissionRow) {
             return (
                 <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
+                    <div className="flex items-center gap-4 border-b border-gray-200 pb-6 dark:border-gray-800">
+                        <button
                             onClick={() => setSelectedAdmissionRow(null)}
-                            className="gap-2"
+                            className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-50"
                         >
-                            <RiArrowLeftSLine className="size-4" />
+                            <RiArrowLeftSLine className="size-4 transition-transform group-hover:-translate-x-1" />
                             Back to Table
-                        </Button>
+                        </button>
                     </div>
                     {activeAction === "repeat-visit" ? (
                         <IpAdmissionEditForm
@@ -164,19 +163,18 @@ export default function Page() {
 
         return (
             <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
+                <div className="flex items-center gap-4">
+                    <button
                         onClick={() => {
                             setActiveAction(null)
                             setSearch("")
                             setSelectedAdmissionRow(null)
                         }}
-                        className="gap-2"
+                        className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-50"
                     >
-                        <RiArrowLeftSLine className="size-4" />
+                        <RiArrowLeftSLine className="size-4 transition-transform group-hover:-translate-x-1" />
                         Back
-                    </Button>
+                    </button>
                     <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
                         {getActionTitle()}
                     </h2>

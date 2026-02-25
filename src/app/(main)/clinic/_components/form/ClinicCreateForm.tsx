@@ -628,7 +628,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
     const lastSummaryEmpNo = useRef<string | null>(null)
     const [, setLeaveLoading] = useState(false)
     const lastFetchedLeaveEmpNo = useRef<string | null>(null)
-    
+
     const canSubmit = useMemo(() => {
       return Boolean(
         form.slNo &&
@@ -1220,7 +1220,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
           setTokenDialogOpen(true)
           // refresh clinic table data
           queryClient.invalidateQueries({ queryKey: ["clinic"] })
-           // Don't reset form when condition is met
+          // Don't reset form when condition is met
         } else {
           // Reset form only if no conditions are met
           setCreatedTokenNo(

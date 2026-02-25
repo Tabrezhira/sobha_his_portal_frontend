@@ -982,6 +982,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 <Label htmlFor="hiManagers" className="font-medium">H&amp;I Managers</Label>
                 <Input
                   id="hiManagers"
+                  disabled
                   className="mt-2"
                   value={form.hiManagers}
                   onChange={(e) => updateForm("hiManagers", e.target.value)}
