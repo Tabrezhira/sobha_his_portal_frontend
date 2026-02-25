@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { MemberFeedbackForm as MemberFeedbackFormType } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
 import { Label } from "@/components/Label";
@@ -13,10 +14,12 @@ import { RiCheckLine, RiLoaderLine } from "@remixicon/react";
 interface MemberFeedbackFormProps {
     clinicId: string;
     employeeId: string;
+    onClose?: () => void;
 }
 
-export default function MemberFeedbackForm({ clinicId, employeeId }: MemberFeedbackFormProps) {
+export default function MemberFeedbackForm({ clinicId, employeeId, onClose }: MemberFeedbackFormProps) {
     const { user, token } = useAuthStore();
+    const queryClient = useQueryClient();
     const [loading, setLoading] = useState(false);
     const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
 
@@ -61,7 +64,7 @@ export default function MemberFeedbackForm({ clinicId, employeeId }: MemberFeedb
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_CURD_API_URL;
-            const response = await fetch(`${apiUrl}/memberFeedback/`, {
+            const response = await fetch(`${apiUrl}/member-feedback`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -75,7 +78,11 @@ export default function MemberFeedbackForm({ clinicId, employeeId }: MemberFeedb
                     type: "success",
                     message: "Feedback submitted successfully!",
                 });
-                setTimeout(() => setNotification(null), 3000);
+                queryClient.invalidateQueries({ queryKey: ["memberFeedbackData"] });
+                setTimeout(() => {
+                    setNotification(null);
+                    onClose?.();
+                }, 1000);
             } else {
                 setNotification({
                     type: "error",

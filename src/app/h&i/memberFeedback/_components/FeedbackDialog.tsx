@@ -190,7 +190,7 @@ export function MemberFeedbackDialog({
                                     Member Feedback
                                 </h3>
                                 {/* Feedback Content */}
-                                <MemberFeedbackForm clinicId={data._id} employeeId={data.empNo} />
+                                <MemberFeedbackForm clinicId={data._id} employeeId={data.empNo} onClose={onClose} />
                             </Card>
                         </div>
 
