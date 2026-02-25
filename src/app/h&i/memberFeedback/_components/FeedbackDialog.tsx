@@ -8,7 +8,7 @@ import {
     DialogTitle,
 } from "@/components/Dialog"
 import { Card } from "@/components/Card"
-import EmployeeSummary from "@/components/forms/EmployeeSummary"
+import ClinicHistory from "./ClinicHistory"
 import MemberFeedbackForm from "./MemberFeedbackForm"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -167,7 +167,7 @@ export function MemberFeedbackDialog({
 
                         {/* RIGHT SIDE: Employee Clinic History */}
                         <div className="lg:col-span-1 flex flex-col h-full overflow-hidden">
-                            <EmployeeSummary
+                            <ClinicHistory
                                 empId={data.empNo}
                                 className="flex-1 h-full overflow-y-auto bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800"
                             />
