@@ -13,11 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SuggestionInput } from "@/components/SuggestionInput";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
 import { CreateCaseResolutionTrackerInput, IPatient } from "@/data/h&Ischema";
 import { useDropdownStore } from "@/store/dropdown";
 import { useAuthStore } from "@/store/auth";
-import { dropdown } from "@/data/schema";
+import { dropdown, inputsearch } from "@/data/schema";
 
 interface NewCaseFormProps {
   onBack: () => void;
@@ -400,7 +401,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="insuranceType">Insurance Type *</Label>
+              <Label className="mb-2" htmlFor="insuranceType">Insurance Type *</Label>
               <Select value={formData.insuranceType} onValueChange={(value) => setFormData({ ...formData, insuranceType: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select insurance type" />
@@ -416,19 +417,15 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="providerName">Provider Name *</Label>
-              <Select value={formData.providerName} onValueChange={(value) => setFormData({ ...formData, providerName: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Hospital A">Hospital A</SelectItem>
-                  <SelectItem value="Hospital B">Hospital B</SelectItem>
-                  <SelectItem value="Clinic X">Clinic X</SelectItem>
-                  <SelectItem value="Medical Center Y">Medical Center Y</SelectItem>
-                  <SelectItem value="Healthcare Network Z">Healthcare Network Z</SelectItem>
-                </SelectContent>
-              </Select>
+              <SuggestionInput
+                id="providerName"
+                label="Provider Name"
+                value={formData.providerName || ""}
+                onChange={(value) => setFormData({ ...formData, providerName: value })}
+                category={inputsearch.providerName}
+                required={true}
+                placeholder="Search or enter provider name"
+              />
             </div>
           </div>
         </Card>

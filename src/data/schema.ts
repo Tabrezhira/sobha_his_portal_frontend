@@ -287,7 +287,7 @@ export const inputsearch = {
 	nurseAssessment: "NURSE ASSESMENT",
 	primaryDiagnosis: "PRIMARY DIAGNOSIS",
 	medicineName: "medicine Name",
-	providerName: "PROVIDER NAME"
+	providerName: "CRTPROVIDER NAME"
 } as const
 
 export type DropdownCategory = (typeof dropdown)[keyof typeof dropdown]

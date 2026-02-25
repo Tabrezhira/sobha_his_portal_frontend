@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
@@ -12,10 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SuggestionInput } from "@/components/SuggestionInput";
 import { Textarea } from "@/components/Textarea";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@remixicon/react";
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
+import { useDropdownStore } from "@/store/dropdown";
+import { dropdown, inputsearch } from "@/data/schema";
 
 interface UpdateCaseFormProps {
   caseData: ICaseResolutionTracker;
@@ -27,13 +30,50 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
   const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState<ICaseResolutionTracker>(caseData);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
+
+  const [insuranceTypeOptions, setInsuranceTypeOptions] = useState<string[]>([]);
+  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
+  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
+  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
+
+  const { fetchDropdownData } = useDropdownStore();
   const { token } = useAuthStore();
+
+  useEffect(() => {
+    const loadDropdownData = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
+      const [
+        insuranceTypeData,
+        typeOfIssueData,
+        statusData,
+        correctiveActionStatusData,
+        preventiveActionStatusData,
+        responsibilityData
+      ] = await Promise.all([
+        fetchDropdownData(dropdown.crtInsuranceType, apiUrl),
+        fetchDropdownData(dropdown.crtTypeOfIssue, apiUrl),
+        fetchDropdownData(dropdown.crtStatus, apiUrl),
+        fetchDropdownData(dropdown.crtCorrectiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.crtPreventiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.crtResponsibility, apiUrl),
+      ]);
+      setInsuranceTypeOptions(insuranceTypeData);
+      setTypeOfIssueOptions(typeOfIssueData);
+      setStatusOptions(statusData);
+      setCorrectiveActionStatusOptions(correctiveActionStatusData);
+      setPreventiveActionStatusOptions(preventiveActionStatusData);
+      setResponsibilityOptions(responsibilityData);
+    };
+    loadDropdownData();
+  }, [fetchDropdownData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData((prev: ICaseResolutionTracker) => ({
       ...prev,
       [name]: name.includes("Date") ? new Date(value) : value,
     }));
@@ -46,7 +86,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
       const apiUrl = process.env.NEXT_PUBLIC_CURD_API_URL;
       const response = await fetch(`${apiUrl}/resolution/${formData._id}`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` })
         },
@@ -159,11 +199,10 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
       {/* Notification */}
       {notification && (
         <div
-          className={`rounded-lg p-4 ${
-            notification.type === "success"
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}
+          className={`rounded-lg p-4 ${notification.type === "success"
+            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+            }`}
         >
           {notification.message}
         </div>
@@ -289,25 +328,28 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
 
             <div>
               <Label htmlFor="insuranceType">Insurance Type</Label>
-              <Input
-                id="insuranceType"
-                name="insuranceType"
-                value={formData.insuranceType}
-                onChange={handleChange}
-                disabled
-                placeholder="Insurance type"
-              />
+              <Select value={formData.insuranceType || ""} onValueChange={(value) => setFormData({ ...formData, insuranceType: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Insurance type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {insuranceTypeOptions.map((option: string) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label htmlFor="providerName">Provider Name</Label>
-              <Input
+              <SuggestionInput
                 id="providerName"
-                name="providerName"
-                value={formData.providerName}
-                onChange={handleChange}
-                disabled
-                placeholder="Provider"
+                label="Provider Name"
+                value={formData.providerName || ""}
+                onChange={(value) => setFormData({ ...formData, providerName: value })}
+                category={inputsearch.providerName}
+                placeholder="Search or enter provider name"
               />
             </div>
           </div>
@@ -335,14 +377,18 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="typeOfIssue">Type of Issue</Label>
-                <Input
-                  id="typeOfIssue"
-                  name="typeOfIssue"
-                  value={formData.typeOfIssue}
-                  onChange={handleChange}
-                  disabled
-                  placeholder="Issue type"
-                />
+                <Select value={formData.typeOfIssue || ""} onValueChange={(value) => setFormData({ ...formData, typeOfIssue: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Issue type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {typeOfIssueOptions.map((option: string) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
@@ -400,9 +446,11 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
+                    {statusOptions.map((option: string) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -448,9 +496,11 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
+                    {correctiveActionStatusOptions.map((option: string) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -483,9 +533,11 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  {preventiveActionStatusOptions.map((option: string) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -500,13 +552,18 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="responsibility">Responsibility</Label>
-              <Input
-                id="responsibility"
-                name="responsibility"
-                value={formData.responsibility || ""}
-                onChange={handleChange}
-                placeholder="Who is responsible"
-              />
+              <Select value={formData.responsibility || ""} onValueChange={(value) => setFormData({ ...formData, responsibility: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select responsibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  {responsibilityOptions.map((option: string) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
