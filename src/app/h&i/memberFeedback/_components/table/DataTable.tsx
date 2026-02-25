@@ -38,6 +38,7 @@ interface DataTableProps<TData> {
     totalRows: number
     onPaginationChange: (updater: any) => void
   }
+  highlightCondition?: (row: TData) => boolean
 }
 
 export function DataTable<TData>({
@@ -47,6 +48,7 @@ export function DataTable<TData>({
   hideFilterbar,
   onRowClick,
   pagination,
+  highlightCondition,
 }: DataTableProps<TData>) {
   const defaultPageSize = 20
   const [rowSelection, setRowSelection] = React.useState({})
@@ -114,15 +116,22 @@ export function DataTable<TData>({
                     row.toggleSelected(!row.getIsSelected())
                     onRowClick?.(row.original)
                   }}
-                  className="group select-none hover:bg-gray-50 hover:dark:bg-gray-900"
+                  className={cx(
+                    "group select-none",
+                    highlightCondition?.(row.original)
+                      ? "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 hover:dark:bg-yellow-900/40"
+                      : "hover:bg-gray-50 hover:dark:bg-gray-900"
+                  )}
                 >
                   {row.getVisibleCells().map((cell, index) => (
                     <TableCell
                       key={cell.id}
                       className={cx(
-                        row.getIsSelected()
-                          ? "bg-gray-50 dark:bg-gray-900"
-                          : "",
+                        highlightCondition?.(row.original)
+                          ? "" // Let row background show through
+                          : row.getIsSelected()
+                            ? "bg-gray-50 dark:bg-gray-900"
+                            : "",
                         "relative whitespace-nowrap py-1 text-gray-600 first:w-10 dark:text-gray-400",
                         cell.column.columnDef.meta?.className,
                       )}

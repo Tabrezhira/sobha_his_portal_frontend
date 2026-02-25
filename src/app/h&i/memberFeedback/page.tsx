@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useAuthStore } from "@/store/auth"
 import { DataTable } from "./_components/table/DataTable"
@@ -9,7 +9,50 @@ import { MemberFeedbackDialog } from "./_components/FeedbackDialog"
 
 export default function Page() {
 	const [selectedRow, setSelectedRow] = useState<MemberFeedbackTableRow | null>(null)
+	const [highlightedEmpIds, setHighlightedEmpIds] = useState<Set<string>>(new Set())
 	const { token } = useAuthStore()
+
+	const checkLocalStorage = useCallback(() => {
+		const today = new Date().toISOString().split('T')[0];
+		const existingData = localStorage.getItem("notAnsCalls");
+		const validEmpIds = new Set<string>();
+
+		if (existingData) {
+			try {
+				const notAnsCalls: Record<string, string> = JSON.parse(existingData);
+				let changed = false;
+
+				for (const empId in notAnsCalls) {
+					if (notAnsCalls[empId] === today) {
+						validEmpIds.add(empId);
+					} else {
+						delete notAnsCalls[empId];
+						changed = true;
+					}
+				}
+
+				if (changed) {
+					localStorage.setItem("notAnsCalls", JSON.stringify(notAnsCalls));
+				}
+			} catch (e) {
+				console.error("Error parsing notAnsCalls from localStorage:", e);
+			}
+		}
+
+		// Always update the state, so if something is added, a new Set reference triggers a re-render
+		setHighlightedEmpIds(validEmpIds);
+	}, []);
+
+	useEffect(() => {
+		checkLocalStorage();
+
+		const handleNotAnsCallUpdated = () => checkLocalStorage();
+		window.addEventListener('notAnsCallUpdated', handleNotAnsCallUpdated);
+
+		return () => {
+			window.removeEventListener('notAnsCallUpdated', handleNotAnsCallUpdated);
+		};
+	}, [checkLocalStorage]);
 
 	const { data = [], isLoading } = useQuery<MemberFeedbackTableRow[]>({
 		queryKey: ["memberFeedbackData", token],
@@ -77,6 +120,7 @@ export default function Page() {
 								data={data}
 								hideFilterbar={true}
 								onRowClick={(row) => setSelectedRow(row)}
+								highlightCondition={(row) => !!row.empNo && highlightedEmpIds.has(row.empNo)}
 							/>
 						)}
 					</div>

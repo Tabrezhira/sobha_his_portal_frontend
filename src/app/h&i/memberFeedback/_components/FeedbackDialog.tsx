@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from "@/components/Dialog"
 import { Card } from "@/components/Card"
+import { Button } from "@/components/Button"
 import ClinicHistory from "./ClinicHistory"
 import MemberFeedbackForm from "./MemberFeedbackForm"
 
@@ -38,8 +39,36 @@ export function MemberFeedbackDialog({
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-6xl sm:max-w-[70vw] w-full max-h-[90vh] overflow-hidden flex flex-col p-0">
-                <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+                <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0 flex flex-row items-center justify-between">
                     <DialogTitle>Member Feedback Details</DialogTitle>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            if (!data?.empNo) return;
+                            const today = new Date().toISOString().split('T')[0];
+                            const existingData = localStorage.getItem("notAnsCalls");
+                            let notAnsCalls: Record<string, string> = {};
+                            if (existingData) {
+                                try {
+                                    notAnsCalls = JSON.parse(existingData);
+                                } catch (e) {
+                                    console.error("Error parsing notAnsCalls from localStorage:", e);
+                                }
+                            }
+                            notAnsCalls[data.empNo] = today;
+                            localStorage.setItem("notAnsCalls", JSON.stringify(notAnsCalls));
+
+                            onClose();
+
+                            // Dispatch event to inform main page (delayed so Dialog closure cycle finishes)
+                            setTimeout(() => {
+                                window.dispatchEvent(new Event('notAnsCallUpdated'));
+                            }, 50);
+                        }}
+                        className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:hover:bg-yellow-900/60 dark:border-yellow-800/50"
+                    >
+                        Not Ans Call
+                    </Button>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
