@@ -242,7 +242,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12 pt-4">
+    <Card className="mx-auto max-w-5xl space-y-8 p-6 sm:p-8 mt-0">
       <div className="flex items-center gap-4 border-b border-gray-200 pb-6 dark:border-gray-800">
         <button
           onClick={onBack}
@@ -691,6 +691,6 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
           </Button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 }

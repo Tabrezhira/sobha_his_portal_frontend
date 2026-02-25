@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { Input } from "@/components/Input";
+
 // import { Table } from "@/components/Table";
-import { RiArrowLeftLine, RiEdit2Line, RiLoaderLine, RiSearchLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiEdit2Line, RiLoaderLine } from "@remixicon/react";
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
 import UpdateCaseForm from "./UpdateCaseForm";
@@ -17,7 +17,7 @@ interface UpdateCaseListProps {
 export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
   const [cases, setCases] = useState<ICaseResolutionTracker[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+
   const [selectedCase, setSelectedCase] = useState<ICaseResolutionTracker | null>(null);
   const { token } = useAuthStore();
 
@@ -48,13 +48,6 @@ export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
     }
   };
 
-  const filteredCases = cases.filter(
-    (caseItem) =>
-      caseItem.empName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caseItem.empId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caseItem.issue?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const calculateCaseAge = (issueDate: Date | undefined) => {
     if (!issueDate) return "-";
     const today = new Date();
@@ -81,9 +74,9 @@ export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+          className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-50"
         >
-          <RiArrowLeftLine className="size-4" />
+          <RiArrowLeftLine className="size-4 transition-transform group-hover:-translate-x-1" />
           Back
         </button>
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
@@ -92,22 +85,11 @@ export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
       </div>
 
       <Card className="p-6">
-        <div className="mb-6 flex items-center gap-2">
-          <RiSearchLine className="text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search by employee name, ID, or issue..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-          />
-        </div>
-
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <RiLoaderLine className="animate-spin text-gray-400" size={24} />
           </div>
-        ) : filteredCases.length === 0 ? (
+        ) : cases.length === 0 ? (
           <div className="py-12 text-center">
             <p className="text-gray-500 dark:text-gray-400">No cases found</p>
           </div>
@@ -137,7 +119,7 @@ export default function UpdateCaseList({ onBack }: UpdateCaseListProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredCases.map((caseItem) => (
+                {cases.map((caseItem) => (
                   <tr
                     key={caseItem._id}
                     className="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900/50"

@@ -163,21 +163,21 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <Card className="mx-auto max-w-5xl space-y-8 p-6 sm:p-8 mt-0">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-6 dark:border-gray-800">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+            className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-50"
           >
-            <RiArrowLeftLine className="size-4" />
+            <RiArrowLeftLine className="size-4 transition-transform group-hover:-translate-x-1" />
             Back
           </button>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">
             Update Case
           </h2>
         </div>
-        <button
+        {/* <button
           onClick={handleDelete}
           disabled={deleting}
           className="flex items-center gap-2 rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
@@ -193,7 +193,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
               Delete
             </>
           )}
-        </button>
+        </button> */}
       </div>
 
       {/* Notification */}
@@ -616,6 +616,6 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
           </Button>
         </Card>
       </form>
-    </div>
+    </Card>
   );
 }
