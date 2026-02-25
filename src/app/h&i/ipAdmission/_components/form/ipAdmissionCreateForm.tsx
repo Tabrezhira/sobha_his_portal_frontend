@@ -7,7 +7,6 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
-  useRef,
   useState,
 } from "react"
 import { toast } from "sonner"
@@ -32,20 +31,6 @@ import type { IpRepeatVisitFormManagerPart } from "@/data/h&Ischema"
 
 const emptyFollowUp = { date: "", remarks: "" }
 
-type DropdownApiItem = {
-  _id: string
-  name: string
-  category: string
-}
-
-type DropdownApiResponse = {
-  success: boolean
-  count?: number
-  data: DropdownApiItem[]
-}
-
-const DEFAULT_DROPDOWN_LIMIT = 5
-
 type HospitalEditFormProps = {
   clinicVisitId?: string
   initialData?: HospitalEditFormInitialData
@@ -67,145 +52,69 @@ export type HospitalEditFormInitialData = Partial<Hospital> & IpRepeatVisitFormM
   createdBy?: string | { _id?: string; name?: string }
 }
 
-const useDropdownSearch = (
-  baseUrl: string | undefined,
-  category: string,
-  query: string,
-) => {
-  const [items, setItems] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    const trimmedQuery = query.trim()
-
-    if (!trimmedQuery || !baseUrl) {
-      setItems([])
-      return
-    }
-
-    const controller = new AbortController()
-    const handle = setTimeout(async () => {
-      setLoading(true)
-      try {
-        const url = new URL(`${baseUrl}/professions`)
-        url.searchParams.set("category", category)
-        url.searchParams.set("search", trimmedQuery)
-        url.searchParams.set("limit", String(DEFAULT_DROPDOWN_LIMIT))
-
-        const response = await fetch(url.toString(), {
-          signal: controller.signal,
-        })
-
-        if (!response.ok) {
-          setItems([])
-          return
-        }
-
-        const payload = (await response.json()) as DropdownApiResponse
-        const names = Array.isArray(payload?.data)
-          ? payload.data
-            .map((item) => item?.name)
-            .filter((name): name is string => Boolean(name))
-          : []
-        setItems(names)
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          setItems([])
-        }
-      } finally {
-        setLoading(false)
-      }
-    }, 250)
-
-    return () => {
-      clearTimeout(handle)
-      controller.abort()
-    }
-  }, [query, category, baseUrl])
-
-  return { items, loading }
-}
-
-type SuggestionInputProps = {
+type CategorySelectProps = {
   id: string
   label: string
   value: string
   onChange: (value: string) => void
   category: string
   required?: boolean
-  type?: string
   disabled?: boolean
 }
 
-const SuggestionInput = ({
+const CategorySelect = ({
   id,
   label,
   value,
   onChange,
   category,
   required,
-  type = "text",
   disabled,
-}: SuggestionInputProps) => {
-  const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-  const { items, loading } = useDropdownSearch(baseUrl, category, value)
-  const [open, setOpen] = useState(false)
-  const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+}: CategorySelectProps) => {
+  const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL || ""
+  const { fetchDropdownData } = useDropdownStore()
+  const [items, setItems] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const closeWithDelay = () => {
-    if (blurTimeout.current) {
-      clearTimeout(blurTimeout.current)
+  useEffect(() => {
+    let mounted = true
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        const data = await fetchDropdownData(category, baseUrl)
+        if (mounted) setItems(data)
+      } finally {
+        if (mounted) setLoading(false)
+      }
     }
-    blurTimeout.current = setTimeout(() => setOpen(false), 150)
-  }
-
-  const handleSelect = (item: string) => {
-    onChange(item)
-    setOpen(false)
-  }
-
-  const showMenu = open && !disabled && (loading || items.length > 0)
+    loadData()
+    return () => {
+      mounted = false
+    }
+  }, [category, baseUrl, fetchDropdownData])
 
   return (
-    <div className="relative">
+    <div>
       <Label htmlFor={id} className="font-medium">
         {label}
         {required ? " *" : ""}
       </Label>
-      <Input
-        id={id}
-        type={type}
-        className="mt-2"
+      <Select
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onFocus={() => setOpen(true)}
-        onBlur={closeWithDelay}
-        required={required}
-        autoComplete="off"
-        disabled={disabled}
-      />
-      {showMenu && (
-        <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
-          {loading && (
-            <div className="px-3 py-2 text-xs text-gray-500">
-              Loading suggestions...
-            </div>
-          )}
+        onValueChange={onChange}
+        disabled={disabled || loading}
+      >
+        <SelectTrigger id={id} className="mt-2">
+          <SelectValue placeholder={loading ? "Loading..." : "Select"} />
+        </SelectTrigger>
+        <SelectContent>
           {items.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
-              onMouseDown={(event) => {
-                event.preventDefault()
-                handleSelect(item)
-              }}
-            >
+            <SelectItem key={item} value={item}>
               {item}
-            </button>
+            </SelectItem>
           ))}
-        </div>
-      )}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
@@ -692,7 +601,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="hospitalName"
                   label="Hospital Name"
                   value={form.hospitalName}
@@ -829,7 +738,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div className="col-span-2 lg:col-span-3">
-                <SuggestionInput
+                <CategorySelect
                   id="primaryDiagnosis"
                   label="Primary Diagnosis"
                   value={form.primaryDiagnosis}
@@ -861,7 +770,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                       className="flex gap-2 items-end"
                     >
                       <div className="flex-1">
-                        <SuggestionInput
+                        <CategorySelect
                           id={`secondaryDiagnosis-${index}`}
                           label={index === 0 ? "Diagnosis" : ""}
                           value={diagnosis}
@@ -1079,7 +988,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="admissionMode"
                   label="Admission Mode"
                   value={form.admissionMode}
@@ -1088,7 +997,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="admissionType"
                   label="Admission Type"
                   value={form.admissionType}
@@ -1098,7 +1007,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </div>
 
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="insuranceApprovalStatus"
                   label="Insurance Approval Status"
                   value={form.insuranceApprovalStatus}
@@ -1107,7 +1016,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="imVisitStatus"
                   label="IM Visit Status"
                   value={form.imVisitStatus}
@@ -1293,7 +1202,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="fitToTravel"
                   label="Fit to Travel"
                   value={form.fitToTravel}
@@ -1302,7 +1211,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="memberResumeToWork"
                   label="Member Resume to Work"
                   value={form.memberResumeToWork}
@@ -1311,7 +1220,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                 />
               </div>
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="followUpRequired"
                   label="Follow Up Required"
                   value={form.followUpRequired}
@@ -1321,7 +1230,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </div>
 
               <div>
-                <SuggestionInput
+                <CategorySelect
                   id="postRehabRequired"
                   label="Post Rehab Required"
                   value={form.postRehabRequired}
@@ -1343,7 +1252,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               )}
 
               <div className={form.postRehabRequired !== "Yes" ? "col-span-1" : ""}>
-                <SuggestionInput
+                <CategorySelect
                   id="rehabExtension"
                   label="Rehab Extension"
                   value={form.rehabExtension}
@@ -1366,7 +1275,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
 
               <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <SuggestionInput
+                  <CategorySelect
                     id="dischargedHI"
                     label="Discharged H&I"
                     value={form.dischargedHI}
