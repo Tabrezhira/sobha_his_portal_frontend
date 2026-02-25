@@ -29,16 +29,44 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [sourceOfGrievanceOptions, setSourceOfGrievanceOptions] = useState<string[]>([]);
+  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
+  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
+  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
+  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
   const { fetchDropdownData } = useDropdownStore();
   const { user, token } = useAuthStore();
 
   useEffect(() => {
-    const loadTrLocationData = async () => {
+    const loadDropdownData = async () => {
       const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-      const data = await fetchDropdownData(dropdown.trLocation, apiUrl);
-      setTrLocationOptions(data);
+      const [
+        trLocationData,
+        statusData,
+        sourceOfGrievanceData,
+        typeOfIssueData,
+        correctiveActionStatusData,
+        preventiveActionStatusData,
+        responsibilityData
+      ] = await Promise.all([
+        fetchDropdownData(dropdown.trLocation, apiUrl),
+        fetchDropdownData(dropdown.gStatus, apiUrl),
+        fetchDropdownData(dropdown.gSourceOfGrievance, apiUrl),
+        fetchDropdownData(dropdown.gTypeOfIssue, apiUrl),
+        fetchDropdownData(dropdown.gCorrectiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.gPreventiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.gResponsibility, apiUrl),
+      ]);
+      setTrLocationOptions(trLocationData);
+      setStatusOptions(statusData);
+      setSourceOfGrievanceOptions(sourceOfGrievanceData);
+      setTypeOfIssueOptions(typeOfIssueData);
+      setCorrectiveActionStatusOptions(correctiveActionStatusData);
+      setPreventiveActionStatusOptions(preventiveActionStatusData);
+      setResponsibilityOptions(responsibilityData);
     };
-    loadTrLocationData();
+    loadDropdownData();
   }, [fetchDropdownData]);
 
   useEffect(() => {
@@ -145,7 +173,7 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
       };
       const response = await fetch(`${apiUrl}/grievance/`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` })
         },
@@ -222,11 +250,10 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
       {/* Notification */}
       {notification && (
         <div
-          className={`rounded-lg p-4 ${
-            notification.type === "success"
+          className={`rounded-lg p-4 ${notification.type === "success"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}
+            }`}
         >
           {notification.message}
         </div>
@@ -354,11 +381,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                     <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Email">Email</SelectItem>
-                    <SelectItem value="Phone Call">Phone Call</SelectItem>
-                    <SelectItem value="In Person">In Person</SelectItem>
-                    <SelectItem value="Online Portal">Online Portal</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {sourceOfGrievanceOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -370,11 +397,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Billing">Billing</SelectItem>
-                    <SelectItem value="Medical">Medical</SelectItem>
-                    <SelectItem value="Administrative">Administrative</SelectItem>
-                    <SelectItem value="Service Quality">Service Quality</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {typeOfIssueOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -430,10 +457,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                  <SelectItem value="ON Hold">ON Hold</SelectItem>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -502,9 +530,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
+                    {correctiveActionStatusOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -537,9 +567,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  {preventiveActionStatusOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -559,12 +591,11 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
                   <SelectValue placeholder="Select responsibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="H&I Manager">H&I Manager</SelectItem>
-                  <SelectItem value="Hospital Admin">Hospital Admin</SelectItem>
-                  <SelectItem value="Insurance Company">Insurance Company</SelectItem>
-                  <SelectItem value="Provider">Provider</SelectItem>
-                  <SelectItem value="Member">Member</SelectItem>
-                  <SelectItem value="Third Party">Third Party</SelectItem>
+                  {responsibilityOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

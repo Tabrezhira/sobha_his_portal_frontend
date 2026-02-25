@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useAuthStore } from "@/store/auth"
 import { Button } from "@/components/Button"
 import {
@@ -36,33 +37,26 @@ export function HiNavbar({ mobileMenu }: { mobileMenu?: React.ReactNode }) {
         {/* Left Side - Logo */}
         <div className="flex items-center gap-2">
           {mobileMenu}
-          <div className="hidden size-10 items-center justify-center rounded-lg bg-indigo-600 text-white dark:bg-indigo-500 sm:flex">
-            <span className="text-lg font-bold">M</span>
-          </div>
-          <div className="hidden sm:flex sm:flex-col">
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-50">
-              HAI PORTAL
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Dr MIRSHAD
-            </span>
-          </div>
+          <Image
+            src="/sobha-constructions-original.webp"
+            alt="Sobha Constructions"
+            width={120}
+            height={40}
+            className="hidden h-10 w-auto sm:block"
+            priority
+          />
+
         </div>
 
         {/* Right Side - User Info, Download, Logout */}
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Download Button */}
-          <Button
-            variant="ghost"
-            onClick={handleDownload}
-            className="hidden sm:inline-flex"
-          >
-            <RiDownloadCloud2Line
-              className="size-4 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="ml-2 hidden md:inline">Download</span>
-          </Button>
+          <div className="hidden sm:flex sm:flex-col">
+            <span className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+              H&I PORTAL
+            </span>
+
+          </div>
 
           {/* User Dropdown */}
           <DropdownMenu>

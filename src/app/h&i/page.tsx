@@ -120,7 +120,7 @@ export default function Page() {
               H&amp;I Portal Overview
             </h2>
           </div>
-          <Badge variant="neutral">Yesterday: 16/02/2026</Badge>
+          <Badge variant="neutral">Today: {new Date().toLocaleDateString("en-GB")}</Badge>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
