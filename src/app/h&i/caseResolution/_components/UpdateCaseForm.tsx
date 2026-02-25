@@ -440,6 +440,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                   id="slaTAT"
                   name="slaTAT"
                   type="number"
+                  disabled
                   value={formData.slaTAT || ""}
                   onChange={handleChange}
                   placeholder="Enter SLA TAT"

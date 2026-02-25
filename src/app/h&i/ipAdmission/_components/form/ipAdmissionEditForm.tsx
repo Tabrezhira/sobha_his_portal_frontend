@@ -263,15 +263,15 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       treatmentLocation: "",
       placeOfLocation: "",
       postRecoveryLocation: "",
-      fitToTravel: false,
-      postRehabRequired: false,
+      fitToTravel: "",
+      postRehabRequired: "",
       durationOfRehab: "",
-      followUpRequired: false,
-      rehabExtension: false,
+      followUpRequired: "",
+      rehabExtension: "",
       rehabExtensionDuration: "",
       memberResumeToWork: "",
       technicianFeedbackForm: "",
-      dischargedHI: false,
+      dischargedHI: "",
       dodHI: "",
       source: "",
       caseTypeChange: "",
@@ -360,15 +360,15 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         treatmentLocation: initialData.treatmentLocation ?? "",
         placeOfLocation: initialData.placeOfLocation ?? "",
         postRecoveryLocation: initialData.postRecoveryLocation ?? "",
-        fitToTravel: Boolean(initialData.fitToTravel),
-        postRehabRequired: Boolean(initialData.postRehabRequired),
+        fitToTravel: initialData.fitToTravel !== undefined ? String(initialData.fitToTravel) : "",
+        postRehabRequired: initialData.postRehabRequired !== undefined ? String(initialData.postRehabRequired) : "",
         durationOfRehab: initialData.durationOfRehab !== undefined ? String(initialData.durationOfRehab) : "",
-        followUpRequired: Boolean(initialData.followUpRequired),
-        rehabExtension: Boolean(initialData.rehabExtension),
+        followUpRequired: initialData.followUpRequired !== undefined ? String(initialData.followUpRequired) : "",
+        rehabExtension: initialData.rehabExtension !== undefined ? String(initialData.rehabExtension) : "",
         rehabExtensionDuration: initialData.rehabExtensionDuration !== undefined ? String(initialData.rehabExtensionDuration) : "",
-        memberResumeToWork: toDateInput(initialData.memberResumeToWork),
+        memberResumeToWork: initialData.memberResumeToWork !== undefined ? String(initialData.memberResumeToWork) : "",
         technicianFeedbackForm: initialData.technicianFeedbackForm ?? "",
-        dischargedHI: Boolean(initialData.dischargedHI),
+        dischargedHI: initialData.dischargedHI !== undefined ? String(initialData.dischargedHI) : "",
         dodHI: toDateInput(initialData.dodHI),
         source: initialData.source ?? "",
         caseTypeChange: initialData.caseTypeChange ?? "",
@@ -562,15 +562,15 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
         treatmentLocation: form.treatmentLocation || undefined,
         placeOfLocation: form.placeOfLocation || undefined,
         postRecoveryLocation: form.postRecoveryLocation || undefined,
-        fitToTravel: form.fitToTravel,
-        postRehabRequired: form.postRehabRequired,
+        fitToTravel: form.fitToTravel || undefined,
+        postRehabRequired: form.postRehabRequired || undefined,
         durationOfRehab: form.durationOfRehab ? Number(form.durationOfRehab) : undefined,
-        followUpRequired: form.followUpRequired,
-        rehabExtension: form.rehabExtension,
+        followUpRequired: form.followUpRequired || undefined,
+        rehabExtension: form.rehabExtension || undefined,
         rehabExtensionDuration: form.rehabExtensionDuration ? Number(form.rehabExtensionDuration) : undefined,
         memberResumeToWork: form.memberResumeToWork || undefined,
         technicianFeedbackForm: form.technicianFeedbackForm || undefined,
-        dischargedHI: form.dischargedHI,
+        dischargedHI: form.dischargedHI || undefined,
         dodHI: form.dodHI || undefined,
         source: form.source || undefined,
         caseTypeChange: form.caseTypeChange || undefined,
@@ -1073,53 +1073,40 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                 />
               </div>
               <div>
-                <Label htmlFor="admissionMode" className="font-medium">Admission Mode</Label>
-                <Select
+                <SuggestionInput
+                  id="admissionMode"
+                  label="Admission Mode"
                   value={form.admissionMode}
-                  onValueChange={(val) => updateForm("admissionMode", val)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Planned">Planned</SelectItem>
-                    <SelectItem value="Emergency">Emergency</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(val) => updateForm("admissionMode", val)}
+                  category={dropdownCategories.ipAdmissionMode}
+                />
               </div>
               <div>
-                <Label htmlFor="admissionType" className="font-medium">Admission Type</Label>
-                <Input
+                <SuggestionInput
                   id="admissionType"
-                  className="mt-2"
+                  label="Admission Type"
                   value={form.admissionType}
-                  onChange={(e) => updateForm("admissionType", e.target.value)}
+                  onChange={(val) => updateForm("admissionType", val)}
+                  category={dropdownCategories.ipAdmissionType}
                 />
               </div>
 
               <div>
-                <Label htmlFor="insuranceApprovalStatus" className="font-medium">Insurance Approval Status</Label>
-                <Select
+                <SuggestionInput
+                  id="insuranceApprovalStatus"
+                  label="Insurance Approval Status"
                   value={form.insuranceApprovalStatus}
-                  onValueChange={(val) => updateForm("insuranceApprovalStatus", val)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(val) => updateForm("insuranceApprovalStatus", val)}
+                  category={dropdownCategories.ipInsuranceApprovalStatus}
+                />
               </div>
               <div>
-                <Label htmlFor="imVisitStatus" className="font-medium">IM Visit Status</Label>
-                <Input
+                <SuggestionInput
                   id="imVisitStatus"
-                  className="mt-2"
+                  label="IM Visit Status"
                   value={form.imVisitStatus}
-                  onChange={(e) => updateForm("imVisitStatus", e.target.value)}
+                  onChange={(val) => updateForm("imVisitStatus", val)}
+                  category={dropdownCategories.ipImVisitStatus}
                 />
               </div>
               <div>
@@ -1248,12 +1235,18 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="sm:col-span-3 lg:col-span-full">
                 <Label htmlFor="treatmentUndergone" className="font-medium">Treatment Undergone</Label>
-                <Input
-                  id="treatmentUndergone"
-                  className="mt-2"
+                <Select
                   value={form.treatmentUndergone}
-                  onChange={(e) => updateForm("treatmentUndergone", e.target.value)}
-                />
+                  onValueChange={(val) => updateForm("treatmentUndergone", val)}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="treatmentLocation" className="font-medium">Treatment Location</Label>
@@ -1294,62 +1287,43 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <Label htmlFor="fitToTravel" className="font-medium">Fit to Travel</Label>
-                <Select
-                  value={form.fitToTravel ? "Yes" : "No"}
-                  onValueChange={(val) => updateForm("fitToTravel", val === "Yes")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="memberResumeToWork" className="font-medium">Member Resume to Work</Label>
-                <Input
-                  id="memberResumeToWork"
-                  type="date"
-                  className="mt-2"
-                  value={form.memberResumeToWork}
-                  onChange={(e) => updateForm("memberResumeToWork", e.target.value)}
+                <SuggestionInput
+                  id="fitToTravel"
+                  label="Fit to Travel"
+                  value={form.fitToTravel}
+                  onChange={(val) => updateForm("fitToTravel", val)}
+                  category={dropdownCategories.ipFitToTravel}
                 />
               </div>
               <div>
-                <Label htmlFor="followUpRequired" className="font-medium">Follow Up Required</Label>
-                <Select
-                  value={form.followUpRequired ? "Yes" : "No"}
-                  onValueChange={(val) => updateForm("followUpRequired", val === "Yes")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SuggestionInput
+                  id="memberResumeToWork"
+                  label="Member Resume to Work"
+                  value={form.memberResumeToWork}
+                  onChange={(val) => updateForm("memberResumeToWork", val)}
+                  category={dropdownCategories.ipMemberResumeToWork}
+                />
+              </div>
+              <div>
+                <SuggestionInput
+                  id="followUpRequired"
+                  label="Follow Up Required"
+                  value={form.followUpRequired}
+                  onChange={(val) => updateForm("followUpRequired", val)}
+                  category={dropdownCategories.ipFollowUpRequired}
+                />
               </div>
 
               <div>
-                <Label htmlFor="postRehabRequired" className="font-medium">Post Rehab Required</Label>
-                <Select
-                  value={form.postRehabRequired ? "Yes" : "No"}
-                  onValueChange={(val) => updateForm("postRehabRequired", val === "Yes")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SuggestionInput
+                  id="postRehabRequired"
+                  label="Post Rehab Required"
+                  value={form.postRehabRequired}
+                  onChange={(val) => updateForm("postRehabRequired", val)}
+                  category={dropdownCategories.ipPostRehabRequired}
+                />
               </div>
-              {form.postRehabRequired && (
+              {form.postRehabRequired === "Yes" && (
                 <div>
                   <Label htmlFor="durationOfRehab" className="font-medium">Duration of Rehab (days)</Label>
                   <Input
@@ -1362,22 +1336,16 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                 </div>
               )}
 
-              <div className={!form.postRehabRequired ? "col-span-1" : ""}>
-                <Label htmlFor="rehabExtension" className="font-medium">Rehab Extension</Label>
-                <Select
-                  value={form.rehabExtension ? "Yes" : "No"}
-                  onValueChange={(val) => updateForm("rehabExtension", val === "Yes")}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className={form.postRehabRequired !== "Yes" ? "col-span-1" : ""}>
+                <SuggestionInput
+                  id="rehabExtension"
+                  label="Rehab Extension"
+                  value={form.rehabExtension}
+                  onChange={(val) => updateForm("rehabExtension", val)}
+                  category={dropdownCategories.ipRehabExtension}
+                />
               </div>
-              {form.rehabExtension && (
+              {form.rehabExtension === "Yes" && (
                 <div>
                   <Label htmlFor="rehabExtensionDuration" className="font-medium">Rehab Extension Duration (days)</Label>
                   <Input
@@ -1392,21 +1360,15 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
 
               <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="dischargedHI" className="font-medium">Discharged H&amp;I</Label>
-                  <Select
-                    value={form.dischargedHI ? "Yes" : "No"}
-                    onValueChange={(val) => updateForm("dischargedHI", val === "Yes")}
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <SuggestionInput
+                    id="dischargedHI"
+                    label="Discharged H&I"
+                    value={form.dischargedHI}
+                    onChange={(val) => updateForm("dischargedHI", val)}
+                    category={dropdownCategories.ipDischargedHI}
+                  />
                 </div>
-                {form.dischargedHI && (
+                {form.dischargedHI && form.dischargedHI !== "No" && form.dischargedHI !== "false" && (
                   <div>
                     <Label htmlFor="dodHI" className="font-medium">Date of Discharge H&amp;I</Label>
                     <Input

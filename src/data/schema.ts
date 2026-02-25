@@ -274,6 +274,7 @@ export const dropdown = {
 	ipMemberResumeToWork: "IPMEMBER RESUME TO WORK",
 	ipPostRehabRequired: "IPPOST REHAB REQUIRED",
 	ipRehabExtension: "IPREHAB EXTENSION",
+	ipAdmissionType: "ADMISSION TYPE",
 
 	// ---- MB ----
 	mbReferredReqToSpecialist: "MBREFFERED REQ TO SPECIALIST",

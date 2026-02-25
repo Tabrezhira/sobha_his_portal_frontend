@@ -247,7 +247,7 @@ export interface IpRepeatVisitFormManagerPart {
   rehabExtension?: boolean;
   rehabExtensionDuration?: number;
 
-  memberResumeToWork?: Date;
+  memberResumeToWork?: string;
 
   technicianFeedbackForm?: string;
 
