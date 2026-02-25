@@ -9,8 +9,7 @@ import {
 } from "@/components/Dialog"
 import { Card } from "@/components/Card"
 import EmployeeSummary from "@/components/forms/EmployeeSummary"
-import { Textarea } from "@/components/Textarea"
-import { Button } from "@/components/Button"
+import MemberFeedbackForm from "./MemberFeedbackForm"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -162,16 +161,7 @@ export function MemberFeedbackDialog({
                                     Member Feedback
                                 </h3>
                                 {/* Feedback Content */}
-                                <div className="space-y-4">
-                                    <Textarea
-                                        placeholder="Enter member feedback here..."
-                                        rows={5}
-                                        className="w-full resize-none"
-                                    />
-                                    <div className="flex justify-end">
-                                        <Button type="button">Save Feedback</Button>
-                                    </div>
-                                </div>
+                                <MemberFeedbackForm clinicId={data._id} employeeId={data.empNo} />
                             </Card>
                         </div>
 

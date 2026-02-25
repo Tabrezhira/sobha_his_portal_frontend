@@ -154,7 +154,7 @@ export interface IpNewVisitsPopup {
   empNo: string;
   empName: string;
   trlocation: string;
-   hiManagers: string;
+  hiManagers: string;
   caseTypeChange: CaseTypeChange;
 
 }
@@ -261,3 +261,22 @@ export interface IpRepeatVisitFormManagerPart {
   dischargeComments?: string;
   caseTypeChangeComments?: string;
 }
+
+// ========== Member Feedback Forms ==========
+
+export type MemberFeedbackForm = {
+  id?: string;
+  clinicId: string;
+  employeeId: string;
+
+  manager: string;
+  dateOfCall: Date;
+
+  wasTreatmentEffective: boolean;
+  technicianFeedback: string;
+
+  wasTreatmentEffective1: boolean;
+  technicianFeedback1: string;
+
+  refReqToSpecialist: boolean;
+};

@@ -54,12 +54,12 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
       ] = await Promise.all([
         fetchDropdownData(dropdown.trLocation, apiUrl),
         fetchDropdownData(dropdown.natureOfCase, apiUrl),
-        fetchDropdownData(dropdown.insuranceType, apiUrl),
-        fetchDropdownData(dropdown.typeOfIssue, apiUrl),
-        fetchDropdownData(dropdown.status, apiUrl),
-        fetchDropdownData(dropdown.correctiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.preventiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.responsibility, apiUrl),
+        fetchDropdownData(dropdown.crtInsuranceType, apiUrl),
+        fetchDropdownData(dropdown.crtTypeOfIssue, apiUrl),
+        fetchDropdownData(dropdown.crtStatus, apiUrl),
+        fetchDropdownData(dropdown.crtCorrectiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.crtPreventiveActionStatus, apiUrl),
+        fetchDropdownData(dropdown.crtResponsibility, apiUrl),
       ]);
       setTrLocationOptions(trLocationData);
       setNatureOfCaseOptions(natureOfCaseData);
@@ -259,8 +259,8 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
       {notification && (
         <div
           className={`flex items-center gap-3 rounded-lg border p-4 shadow-sm ${notification.type === "success"
-              ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/10 dark:text-green-300"
-              : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/10 dark:text-red-300"
+            ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/10 dark:text-green-300"
+            : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/10 dark:text-red-300"
             }`}
         >
           {notification.type === "success" ? <RiCheckLine className="size-5" /> : <RiLoaderLine className="size-5" />}
