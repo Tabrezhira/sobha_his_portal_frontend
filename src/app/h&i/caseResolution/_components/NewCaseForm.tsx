@@ -18,7 +18,7 @@ import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
 import { CreateCaseResolutionTrackerInput, IPatient } from "@/data/h&Ischema";
 import { useDropdownStore } from "@/store/dropdown";
 import { useAuthStore } from "@/store/auth";
-import { dropdown, inputsearch } from "@/data/schema";
+import { dropdown, inputsearch, issueSlaMinutes } from "@/data/schema";
 
 interface NewCaseFormProps {
   onBack: () => void;
@@ -401,7 +401,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
             </div>
 
             <div>
-              <Label className="mb-2" htmlFor="insuranceType">Insurance Type *</Label>
+              <Label htmlFor="insuranceType">Insurance Type *</Label>
               <Select value={formData.insuranceType} onValueChange={(value) => setFormData({ ...formData, insuranceType: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select insurance type" />
@@ -452,7 +452,14 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="typeOfIssue">Type of Issue *</Label>
-                <Select value={formData.typeOfIssue} onValueChange={(value) => setFormData({ ...formData, typeOfIssue: value })}>
+                <Select value={formData.typeOfIssue} onValueChange={(value) => {
+                  const mappedSla = issueSlaMinutes[value as keyof typeof issueSlaMinutes];
+                  setFormData({
+                    ...formData,
+                    typeOfIssue: value,
+                    ...(mappedSla !== undefined ? { slaTAT: mappedSla } : {})
+                  });
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
@@ -506,6 +513,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                 <Input
                   id="slaTAT"
                   name="slaTAT"
+                  disabled
                   type="number"
                   value={formData.slaTAT || ""}
                   onChange={handleChange}

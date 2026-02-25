@@ -396,3 +396,24 @@ export type LeaveEligibility = {
 	}
 }
 
+export const issueSlaMinutes = {
+	"Insurance Activation Issue": 360,
+	"Approval Delay Issue": 120,
+	"Billing / Payment Issue": 720,
+	"Provider Acceptance Issue": 30,
+	"Medication Formulary Issue": 30,
+	"Medication Rejected issue": 30,
+	"Appointment / Referral Issue": 30,
+	"Insurance Eligibility / System Issue": 360,
+	"Approval Issue/ Wrong Rejection": 30,
+	"System / Technical Issue": 30,
+	"Provider Negligence": 30,
+	"Non-covered medication prescribed": 30,
+	"Member Treatment refusal": 1440,
+	"Visa Medical Query": 1440,
+	"TR Team Operational Non compliance": 1440,
+	"Patient bystander Issue": 1440,
+	"Member Related Issues": 1440,
+	"DHA Audit Concerns": 1440,
+	"Sick leave Concerns": 1440,
+};

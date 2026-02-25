@@ -18,7 +18,7 @@ import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@re
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
 import { useDropdownStore } from "@/store/dropdown";
-import { dropdown, inputsearch } from "@/data/schema";
+import { dropdown, inputsearch, issueSlaMinutes } from "@/data/schema";
 
 interface UpdateCaseFormProps {
   caseData: ICaseResolutionTracker;
@@ -377,7 +377,14 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="typeOfIssue">Type of Issue</Label>
-                <Select value={formData.typeOfIssue || ""} onValueChange={(value) => setFormData({ ...formData, typeOfIssue: value })}>
+                <Select value={formData.typeOfIssue || ""} onValueChange={(value) => {
+                  const mappedSla = issueSlaMinutes[value as keyof typeof issueSlaMinutes];
+                  setFormData({
+                    ...formData,
+                    typeOfIssue: value,
+                    ...(mappedSla !== undefined ? { slaTAT: mappedSla } : {})
+                  });
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Issue type" />
                   </SelectTrigger>
