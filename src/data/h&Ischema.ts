@@ -280,3 +280,17 @@ export type MemberFeedbackForm = {
 
   refReqToSpecialist: boolean;
 };
+
+export type ClinicHistoryResponse = {
+  data: ClinicHistoryItem[];
+};
+
+export type ClinicHistoryItem = {
+  date: string | Date;
+  providerName: string;
+  primaryDiagnosis: string;
+  secondaryDiagnosis: string[];
+  referral: boolean;
+  referralType?: string;
+  visitDateReferral?: string | Date;
+};
