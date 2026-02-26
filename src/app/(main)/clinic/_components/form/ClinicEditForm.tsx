@@ -1848,10 +1848,12 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   </Label>
                   <Input
                     id="referralCode"
+
                     className="mt-2"
                     value={referralDetails.referralCode}
                     onChange={(e) => handleReferralChange("referralCode", e.target.value)}
-                    disabled={!form.referral}
+                    // disabled={!form.referral}
+                    disabled
                   />
                 </div>
                 <div>
