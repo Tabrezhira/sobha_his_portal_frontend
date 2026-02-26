@@ -39,6 +39,10 @@ interface DataTableProps<TData> {
   onSearchChange?: (value: string) => void
   /** The current search value. */
   searchValue?: string
+  /** Callback function when the date picker value changes. */
+  onDateChange?: (value: string) => void
+  /** The current date filter value. */
+  dateFilter?: string
   /** The current page index (0-indexed). */
   pageIndex?: number
   /** The number of items per page. */
@@ -64,6 +68,8 @@ export function DataTable<TData>({
   onRowClick,
   onSearchChange,
   searchValue,
+  onDateChange,
+  dateFilter,
   pageIndex,
   pageSize = 20,
   pageCount,
@@ -130,6 +136,8 @@ export function DataTable<TData>({
           table={table}
           onSearchChange={onSearchChange}
           searchValue={searchValue}
+          onDateChange={onDateChange}
+          dateFilter={dateFilter}
         />
         <div className="relative overflow-hidden overflow-x-auto">
           <Table>

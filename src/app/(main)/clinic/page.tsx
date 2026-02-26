@@ -30,16 +30,18 @@ export default function ClinicPage() {
   const { user } = useAuthStore()
   // raw input shown in the UI
   const [searchInput, setSearchInput] = useState("")
+  const [filterDate, setFilterDate] = useState("")
   const [visitStatus, setVisitStatus] = useState<string>("OPEN") // Default to OPEN cases
   const [pageIndex, setPageIndex] = useState(0)
   const pageSize = 20
   // normalized search used for querying
-  const searchTerm = searchInput.trim()
-  const isValidSearch = searchTerm.length >= 6 && searchTerm === searchTerm.toUpperCase()
+  const searchTerm = searchInput.trim().toUpperCase()
+  const isValidSearch = searchTerm.length > 0
+  const isSearchEndpoint = isValidSearch || !!filterDate
 
   const { data, isLoading, isFetching, error } = useQuery({
     // include the searchTerm in the key only when it meets the 6+ uppercase requirement
-    queryKey: ["clinic", user?.role, isValidSearch ? searchTerm : null, visitStatus, pageIndex, pageSize],
+    queryKey: ["clinic", user?.role, isValidSearch ? searchTerm : null, filterDate, visitStatus, pageIndex, pageSize],
     queryFn: async () => {
       const page = pageIndex + 1
 
@@ -48,15 +50,18 @@ export default function ClinicPage() {
         limit: pageSize,
       }
 
-      // only send empNo when search is valid (6+ chars and all uppercase)
       if (isValidSearch) {
         params.empNo = searchTerm
+      }
+      if (filterDate) {
+        params.date = filterDate
       }
       if (visitStatus !== "ALL") {
         params.visitStatus = visitStatus
       }
 
-      const response = await api.get("/clinic", { params })
+      const endpoint = isSearchEndpoint ? "/clinic/search" : "/clinic"
+      const response = await api.get(endpoint, { params })
       const payload = Array.isArray(response.data)
         ? response.data
         : response.data?.data ?? response.data?.items ?? []
@@ -65,8 +70,8 @@ export default function ClinicPage() {
       return { items, meta }
     },
     // when performing a search we want fresh data
-    staleTime: isValidSearch ? 0 : 5 * 60 * 1000,
-    refetchOnMount: isValidSearch ? true : false,
+    staleTime: isSearchEndpoint ? 0 : 5 * 60 * 1000,
+    refetchOnMount: isSearchEndpoint ? true : false,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
@@ -143,6 +148,11 @@ export default function ClinicPage() {
                     router.replace(next ? `${pathname}?${next}` : pathname)
                   }
                   setSearchInput(upper)
+                  setPageIndex(0)
+                }}
+                dateFilter={filterDate}
+                onDateChange={(val) => {
+                  setFilterDate(val)
                   setPageIndex(0)
                 }}
                 pageIndex={pageIndex}

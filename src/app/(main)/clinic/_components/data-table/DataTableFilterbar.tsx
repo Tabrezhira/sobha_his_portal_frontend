@@ -6,11 +6,18 @@ import { Table } from "@tanstack/react-table"
 import { useEffect, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { ViewOptions } from "./DataTableViewOptions"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { Button as ShadcnButton } from "@/components/ui/button"
+import { format, parse } from "date-fns"
+import { RiCalendarEventLine } from "@remixicon/react"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
   onSearchChange?: (value: string) => void
   searchValue?: string
+  dateFilter?: string
+  onDateChange?: (value: string) => void
 }
 
 /**
@@ -25,10 +32,13 @@ export function Filterbar<TData>({
   table,
   onSearchChange,
   searchValue,
+  dateFilter,
+  onDateChange,
 }: DataTableToolbarProps<TData>) {
   const isFiltered =
     table.getState().columnFilters.length > 0 ||
-    Boolean(table.getState().globalFilter)
+    Boolean(table.getState().globalFilter) ||
+    Boolean(dateFilter)
   const [searchTerm, setSearchTerm] = useState<string>(
     (table.getState().globalFilter as string) ?? "",
   )
@@ -65,6 +75,30 @@ export function Filterbar<TData>({
           onChange={handleSearchChange}
           className="w-full sm:max-w-[250px] sm:[&>input]:h-[30px]"
         />
+        {onDateChange && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <ShadcnButton
+                variant="outline"
+                className={`w-full justify-start text-left font-normal sm:w-[220px] sm:max-w-none sm:h-[30px] border-gray-300 dark:border-gray-800 ${!dateFilter ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-50"
+                  }`}
+              >
+                <RiCalendarEventLine className="mr-2 size-4 shrink-0" />
+                {dateFilter ? format(parse(dateFilter, "yyyy-MM-dd", new Date()), "PPP") : "Pick a date"}
+              </ShadcnButton>
+            </PopoverTrigger>
+            <PopoverContent className="auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter ? parse(dateFilter, "yyyy-MM-dd", new Date()) : undefined}
+                onSelect={(date) => {
+                  onDateChange(date ? format(date, "yyyy-MM-dd") : "")
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        )}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -73,6 +107,7 @@ export function Filterbar<TData>({
               table.setGlobalFilter("")
               setSearchTerm("")
               onSearchChange?.("")
+              onDateChange?.("")
             }}
             className="border border-gray-200 px-2 font-semibold text-indigo-600 sm:border-none sm:py-1 dark:border-gray-800 dark:text-indigo-500"
           >
