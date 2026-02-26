@@ -55,7 +55,7 @@ const emptyReferral = {
   primaryDiagnosisReferral: "",
   secondaryDiagnosisReferral: [] as string[],
   nurseRemarksReferral: "",
-  insuranceApprovalRequested: false,
+  insuranceApprovalRequested: "",
   followUpRequired: false,
   followUpVisits: [emptyFollowUp],
 }
@@ -505,7 +505,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
           ? initialData.secondaryDiagnosisReferral
           : [],
         nurseRemarksReferral: initialData.nurseRemarksReferral ?? "",
-        insuranceApprovalRequested: Boolean(initialData.insuranceApprovalRequested),
+        insuranceApprovalRequested: (initialData.insuranceApprovalRequested as unknown as string) ?? "",
         followUpRequired: Boolean(initialData.followUpRequired),
         followUpVisits: initialData.followUpVisits?.length
           ? initialData.followUpVisits.map((visit) => ({
@@ -1061,7 +1061,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
           ? referralDetails.secondaryDiagnosisReferral.filter(Boolean)
           : undefined,
         nurseRemarksReferral: hasReferralDetails ? referralDetails.nurseRemarksReferral || undefined : undefined,
-        insuranceApprovalRequested: hasReferralDetails ? referralDetails.insuranceApprovalRequested : undefined,
+        insuranceApprovalRequested: hasReferralDetails ? referralDetails.insuranceApprovalRequested || undefined : undefined,
         followUpRequired: hasReferralDetails ? referralDetails.followUpRequired : undefined,
         followUpVisits: hasReferralDetails && filteredFollowUps.length ? filteredFollowUps : undefined,
         visitStatus: form.visitStatus || undefined,
@@ -2337,17 +2337,16 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Checkbox
-                    checked={referralDetails.insuranceApprovalRequested}
-                    onCheckedChange={(checked) =>
-                      handleReferralChange("insuranceApprovalRequested", Boolean(checked))
-                    }
+                <div>
+                  <Label className="font-medium">Insurance approval requested</Label>
+                  <Input
+                    className="mt-2"
+                    value={referralDetails.insuranceApprovalRequested as string}
+                    onChange={(e) => handleReferralChange("insuranceApprovalRequested", e.target.value)}
                     disabled={!form.referral}
                   />
-                  Insurance approval requested
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                </div>
+                <label className="flex items-center gap-2 mt-6 text-sm text-gray-600 dark:text-gray-400">
                   <Checkbox
                     checked={referralDetails.followUpRequired}
                     onCheckedChange={(checked) =>
@@ -2359,88 +2358,92 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
                 </label>
               </div>
 
-              <Divider />
+              {referralDetails.followUpRequired && (
+                <>
+                  <Divider />
 
-              <Card className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
-                    Follow up visits
-                  </h3>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() =>
-                      setReferralDetails((prev) => ({
-                        ...prev,
-                        followUpVisits: [...prev.followUpVisits, emptyFollowUp],
-                      }))
-                    }
-                    disabled={!form.referral}
-                  >
-                    Add follow up
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {referralDetails.followUpVisits.map((visit, followIndex) => (
-                    <div
-                      key={`follow-${followIndex}`}
-                      className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
-                    >
-                      <div>
-                        <Label className="font-medium">Visit Date</Label>
-                        <Input
-                          type="date"
-                          className="mt-2"
-                          value={visit.visitDate}
-                          onChange={(e) =>
-                            handleFollowUpChange(
-                              followIndex,
-                              "visitDate",
-                              e.target.value,
-                            )
-                          }
-                          disabled={!form.referral}
-                        />
-                      </div>
-                      <div>
-                        <Label className="font-medium">Remarks</Label>
-                        <Input
-                          className="mt-2"
-                          value={visit.visitRemarks}
-                          onChange={(e) =>
-                            handleFollowUpChange(
-                              followIndex,
-                              "visitRemarks",
-                              e.target.value,
-                            )
-                          }
-                          disabled={!form.referral}
-                        />
-                      </div>
-                      {referralDetails.followUpVisits.length > 1 && (
-                        <div className="sm:justify-self-end">
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() =>
-                              setReferralDetails((prev) => ({
-                                ...prev,
-                                followUpVisits: prev.followUpVisits.filter(
-                                  (_, vIndex) => vIndex !== followIndex,
-                                ),
-                              }))
-                            }
-                            disabled={!form.referral}
-                          >
-                            Remove follow up
-                          </Button>
-                        </div>
-                      )}
+                  <Card className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-50">
+                        Follow up visits
+                      </h3>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          setReferralDetails((prev) => ({
+                            ...prev,
+                            followUpVisits: [...prev.followUpVisits, emptyFollowUp],
+                          }))
+                        }
+                        disabled={!form.referral}
+                      >
+                        Add follow up
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </Card>
+
+                    <div className="space-y-3">
+                      {referralDetails.followUpVisits.map((visit, followIndex) => (
+                        <div
+                          key={`follow-${followIndex}`}
+                          className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+                        >
+                          <div>
+                            <Label className="font-medium">Visit Date</Label>
+                            <Input
+                              type="date"
+                              className="mt-2"
+                              value={visit.visitDate}
+                              onChange={(e) =>
+                                handleFollowUpChange(
+                                  followIndex,
+                                  "visitDate",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={!form.referral}
+                            />
+                          </div>
+                          <div>
+                            <Label className="font-medium">Remarks</Label>
+                            <Input
+                              className="mt-2"
+                              value={visit.visitRemarks}
+                              onChange={(e) =>
+                                handleFollowUpChange(
+                                  followIndex,
+                                  "visitRemarks",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={!form.referral}
+                            />
+                          </div>
+                          {referralDetails.followUpVisits.length > 1 && (
+                            <div className="sm:justify-self-end">
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() =>
+                                  setReferralDetails((prev) => ({
+                                    ...prev,
+                                    followUpVisits: prev.followUpVisits.filter(
+                                      (_, vIndex) => vIndex !== followIndex,
+                                    ),
+                                  }))
+                                }
+                                disabled={!form.referral}
+                              >
+                                Remove follow up
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </>
+              )}
             </div>
           </Card>
 
