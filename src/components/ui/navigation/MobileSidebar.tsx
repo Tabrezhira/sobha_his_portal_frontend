@@ -12,7 +12,6 @@ import {
 import { cx, focusRing } from "@/lib/utils"
 import {
   RiBarChart2Line,
-  RiHome2Line,
   RiHospitalLine,
   RiLinkM,
   RiMenuLine,
@@ -26,7 +25,6 @@ import { usePathname } from "next/navigation"
 import { useAuthStore } from "@/store/auth"
 
 const navigation = [
-  { name: "Overview", href: siteConfig.baseLinks.overview, icon: RiHome2Line },
   { name: "H&I Portal", href: "/h&i", icon: RiBarChart2Line },
   { name: "Employee", href: "/employee", icon: RiTeamLine },
   { name: "Staff", href: "/staff", icon: RiUserLine },
@@ -72,9 +70,6 @@ export default function MobileSidebar() {
   const { user } = useAuthStore()
 
   const filteredNavigation = navigation.filter(item => {
-    if (item.name === "Overview") {
-      return user?.role === "manager"
-    }
     if (item.name === "H&I Portal") {
       return user?.role === "manager"
     }

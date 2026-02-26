@@ -4,7 +4,6 @@ export const siteConfig = {
   description: "The only dashboard you will ever need.",
   baseLinks: {
     home: "/",
-    overview: "/overview",
     details: "/details",
     clinic: "/clinic",
     hospital: "/hospital",

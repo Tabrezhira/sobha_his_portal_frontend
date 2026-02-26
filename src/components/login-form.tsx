@@ -32,7 +32,6 @@ export function LoginForm({
   const [, startTransition] = useTransition()
 
   useEffect(() => {
-    // router.prefetch("/overview")
     router.prefetch("/employee")
   }, [router])
 
