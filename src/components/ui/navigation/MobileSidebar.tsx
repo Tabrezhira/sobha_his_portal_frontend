@@ -15,6 +15,7 @@ import {
   RiHospitalLine,
   RiLinkM,
   RiMenuLine,
+  RiSearchLine,
   RiShieldCrossLine,
   RiStethoscopeLine,
   RiTeamLine,
@@ -27,6 +28,7 @@ import { useAuthStore } from "@/store/auth"
 const navigation = [
   { name: "H&I Portal", href: "/h&i", icon: RiBarChart2Line },
   { name: "Employee", href: "/employee", icon: RiTeamLine },
+  { name: "Employee Search", href: "/employeeSearch", icon: RiSearchLine },
   { name: "Staff", href: "/staff", icon: RiUserLine },
   { name: "Clinic", href: siteConfig.baseLinks.clinic, icon: RiStethoscopeLine },
   { name: "Hospital", href: siteConfig.baseLinks.hospital, icon: RiHospitalLine },
@@ -70,7 +72,7 @@ export default function MobileSidebar() {
   const { user } = useAuthStore()
 
   const filteredNavigation = navigation.filter(item => {
-    if (item.name === "H&I Portal") {
+    if (item.name === "H&I Portal" || item.name === "Employee") {
       return user?.role === "manager"
     }
     if (item.name === "Staff") {

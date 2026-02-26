@@ -33,6 +33,7 @@ export function LoginForm({
 
   useEffect(() => {
     router.prefetch("/employee")
+    router.prefetch("/clinic")
   }, [router])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -46,7 +47,7 @@ export function LoginForm({
     if (currentUser?.role === "maleNurse") {
       setIsRedirecting(true)
       startTransition(() => {
-        router.replace("/employee")
+        router.replace("/clinic")
       })
     } else if (currentUser?.role === "Manager" || currentUser?.role === "manager" || currentUser?.role === "CSR") {
       setIsRedirecting(true)

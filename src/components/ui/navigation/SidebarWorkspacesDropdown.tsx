@@ -66,7 +66,7 @@ export const WorkspacesDropdownDesktop = () => {
                 <p className="truncate whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-50">
                   {displayName}
                 </p>
-                <p className="whitespace-nowrap text-left text-xs text-gray-700 dark:text-gray-300">
+                <p className="whitespace-nowrap text-left text-xs text-gray-700 dark:text-gray-300 capitalize">
                   {displayRole} · {displayLocation}
                 </p>
               </div>
@@ -107,7 +107,7 @@ export const WorkspacesDropdownDesktop = () => {
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
                       {displayName || workspace.name}
                     </p>
-                    <p className="text-xs text-gray-700 dark:text-gray-400">
+                    <p className="text-xs text-gray-700 dark:text-gray-400 capitalize">
                       {displayRole} · {displayLocation}
                     </p>
                   </div>
@@ -207,7 +207,7 @@ export const WorkspacesDropdownMobile = () => {
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-50">
                       {displayName || workspace.name}
                     </p>
-                    <p className="text-xs text-gray-700 dark:text-gray-300">
+                    <p className="text-xs text-gray-700 dark:text-gray-300 capitalize">
                       {displayRole} · {displayLocation}
                     </p>
                   </div>
