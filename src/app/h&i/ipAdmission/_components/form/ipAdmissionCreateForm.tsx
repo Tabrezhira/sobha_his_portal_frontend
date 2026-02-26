@@ -17,17 +17,12 @@ import { Card } from "@/components/Card"
 import { Divider } from "@/components/Divider"
 import { Input } from "@/components/Input"
 import { Label } from "@/components/Label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/Select"
+
 import type { Hospital } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
 import { useDropdownDataQuery } from "@/hooks/useDropdownDataQuery"
 import type { IpRepeatVisitFormManagerPart } from "@/data/h&Ischema"
+import ReactSelect from "react-select"
 
 const emptyFollowUp = { date: "", remarks: "" }
 
@@ -73,28 +68,47 @@ const CategorySelect = ({
 }: CategorySelectProps) => {
   const { data: items = [], isLoading: loading } = useDropdownDataQuery(category)
 
+  const displayOptions = items.map((item) => ({ label: item, value: item }))
+  const selectedOption = value ? { label: value, value } : null
+
   return (
     <div>
       <Label htmlFor={id} className="font-medium">
         {label}
         {required ? " *" : ""}
       </Label>
-      <Select
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled || loading}
-      >
-        <SelectTrigger id={id} className="mt-2">
-          <SelectValue placeholder={loading ? "Loading..." : "Select"} />
-        </SelectTrigger>
-        <SelectContent>
-          {items.map((item) => (
-            <SelectItem key={item} value={item}>
-              {item}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="mt-2 text-left">
+        <ReactSelect
+          inputId={id}
+          value={selectedOption}
+          onChange={(opt: any) => onChange(opt ? opt.value : "")}
+          options={displayOptions}
+          isDisabled={disabled || loading}
+          isLoading={loading}
+          isClearable
+          placeholder={loading ? "Loading..." : "Select"}
+          unstyled
+          components={{ IndicatorSeparator: () => null }}
+          classNames={{
+            control: (state: any) =>
+              `flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-transparent dark:ring-offset-gray-950 dark:focus-within:ring-gray-800 ${state.isFocused ? 'ring-2 ring-gray-400 ring-offset-2 dark:ring-gray-800 dark:ring-offset-gray-950 border-transparent' : ''
+              }`,
+            placeholder: () => "text-gray-500 dark:text-gray-400 truncate",
+            singleValue: () => "text-gray-900 dark:text-gray-50 truncate",
+            valueContainer: () => "flex flex-1 items-center gap-1 overflow-hidden",
+            input: () => "text-gray-900 dark:text-gray-50 m-0 p-0",
+            indicatorsContainer: () => "flex items-center gap-1",
+            clearIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+            dropdownIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+            menu: () => "mt-1 overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-md dark:border-gray-800 dark:bg-gray-950 z-50",
+            menuList: () => "p-1",
+            option: (state: any) =>
+              `relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${state.isFocused ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50' : ''
+              } ${state.isSelected ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50 font-medium' : ''}`,
+            noOptionsMessage: () => "text-sm text-gray-500 dark:text-gray-400 p-2",
+          }}
+        />
+      </div>
     </div>
   )
 }
@@ -1026,19 +1040,40 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </div>
               <div>
                 <Label htmlFor="caseTypeChange" className="font-medium">Case Type Change</Label>
-                <Select
-                  value={form.caseTypeChange}
-                  onValueChange={(val) => updateForm("caseTypeChange", val)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select case type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Normal">Normal</SelectItem>
-                    <SelectItem value="Critical">Critical</SelectItem>
-                    <SelectItem value="High Critical">High Critical</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="text-left mt-2">
+                  <ReactSelect
+                    inputId="caseTypeChange"
+                    value={form.caseTypeChange ? { label: form.caseTypeChange, value: form.caseTypeChange } : null}
+                    onChange={(opt: any) => updateForm("caseTypeChange", opt ? opt.value : "")}
+                    options={[
+                      { label: "Normal", value: "Normal" },
+                      { label: "Critical", value: "Critical" },
+                      { label: "High Critical", value: "High Critical" },
+                    ]}
+                    isClearable
+                    placeholder="Select case type"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={{
+                      control: (state: any) =>
+                        `flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-transparent dark:ring-offset-gray-950 dark:focus-within:ring-gray-800 ${state.isFocused ? 'ring-2 ring-gray-400 ring-offset-2 dark:ring-gray-800 dark:ring-offset-gray-950 border-transparent' : ''
+                        }`,
+                      placeholder: () => "text-gray-500 dark:text-gray-400 truncate",
+                      singleValue: () => "text-gray-900 dark:text-gray-50 truncate",
+                      valueContainer: () => "flex flex-1 items-center gap-1 overflow-hidden",
+                      input: () => "text-gray-900 dark:text-gray-50 m-0 p-0",
+                      indicatorsContainer: () => "flex items-center gap-1",
+                      clearIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+                      dropdownIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+                      menu: () => "mt-1 overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-md dark:border-gray-800 dark:bg-gray-950 z-50",
+                      menuList: () => "p-1",
+                      option: (state: any) =>
+                        `relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${state.isFocused ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50' : ''
+                        } ${state.isSelected ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50 font-medium' : ''}`,
+                      noOptionsMessage: () => "text-sm text-gray-500 dark:text-gray-400 p-2",
+                    }}
+                  />
+                </div>
               </div>
               <div>
                 <Label htmlFor="technicianFeedbackForm" className="font-medium">Technician Feedback Form</Label>
@@ -1130,18 +1165,39 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="sm:col-span-3 lg:col-span-full">
                 <Label htmlFor="treatmentUndergone" className="font-medium">Treatment Undergone</Label>
-                <Select
-                  value={form.treatmentUndergone}
-                  onValueChange={(val) => updateForm("treatmentUndergone", val)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="text-left mt-2">
+                  <ReactSelect
+                    inputId="treatmentUndergone"
+                    value={form.treatmentUndergone ? { label: form.treatmentUndergone, value: form.treatmentUndergone } : null}
+                    onChange={(opt: any) => updateForm("treatmentUndergone", opt ? opt.value : "")}
+                    options={[
+                      { label: "Yes", value: "Yes" },
+                      { label: "No", value: "No" },
+                    ]}
+                    isClearable
+                    placeholder="Select"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={{
+                      control: (state: any) =>
+                        `flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-transparent dark:ring-offset-gray-950 dark:focus-within:ring-gray-800 ${state.isFocused ? 'ring-2 ring-gray-400 ring-offset-2 dark:ring-gray-800 dark:ring-offset-gray-950 border-transparent' : ''
+                        }`,
+                      placeholder: () => "text-gray-500 dark:text-gray-400 truncate",
+                      singleValue: () => "text-gray-900 dark:text-gray-50 truncate",
+                      valueContainer: () => "flex flex-1 items-center gap-1 overflow-hidden",
+                      input: () => "text-gray-900 dark:text-gray-50 m-0 p-0",
+                      indicatorsContainer: () => "flex items-center gap-1",
+                      clearIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+                      dropdownIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+                      menu: () => "mt-1 overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-md dark:border-gray-800 dark:bg-gray-950 z-50",
+                      menuList: () => "p-1",
+                      option: (state: any) =>
+                        `relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${state.isFocused ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50' : ''
+                        } ${state.isSelected ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50 font-medium' : ''}`,
+                      noOptionsMessage: () => "text-sm text-gray-500 dark:text-gray-400 p-2",
+                    }}
+                  />
+                </div>
               </div>
               <div>
                 <Label htmlFor="treatmentLocation" className="font-medium">Treatment Location</Label>

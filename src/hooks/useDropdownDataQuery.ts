@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueries } from "@tanstack/react-query"
 
 const DROPDOWN_API_URL =
   process.env.NEXT_PUBLIC_DROPDOWN_API_URL || "http://localhost:2000/api"
@@ -24,7 +24,7 @@ export const useDropdownDataQuery = (
       if (!dropdownName) {
         return []
       }
-      
+
       try {
         const response = await fetch(
           `${DROPDOWN_API_URL}/professions/category/${encodeURIComponent(dropdownName)}`,
@@ -65,19 +65,42 @@ export const useMultipleDropdowns = (
   dropdownNames: string[],
   enabled: boolean = true,
 ) => {
-  const queries = dropdownNames.map((name) =>
-    useDropdownDataQuery(name, enabled),
-  )
+  const queryResults = useQueries({
+    queries: dropdownNames.map((name) => ({
+      queryKey: ["dropdown", name],
+      queryFn: async () => {
+        if (!name) return []
+        const response = await fetch(
+          `${DROPDOWN_API_URL}/professions/category/${encodeURIComponent(name)}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+        if (!response.ok) {
+          throw new Error(`Failed to load data for ${name}`)
+        }
+        const payload: DropdownResponse = await response.json()
+        return Array.isArray(payload?.data) ? payload.data : []
+      },
+      staleTime: 3600000,
+      gcTime: 3600000,
+      enabled: enabled && Boolean(name),
+      retry: 2,
+      retryDelay: 1000,
+    }))
+  })
 
   const data: Record<string, string[]> = {}
   let isLoading = false
   let error: Error | null = null
 
-  queries.forEach((query, index) => {
-    data[dropdownNames[index]] = query.data || []
+  queryResults.forEach((query, index) => {
+    data[dropdownNames[index]] = (query.data as string[]) || []
     if (query.isLoading) isLoading = true
-    if (query.error) error = query.error
+    if (query.error) error = query.error as Error
   })
 
-  return { data, isLoading, error, queries }
+  return { data, isLoading, error, queries: queryResults }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { SuggestionInput } from "@/components/SuggestionInput";
 import { Textarea } from "@/components/Textarea";
-import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
 import { dropdown, inputsearch, issueSlaMinutes } from "@/data/schema";
@@ -27,7 +27,7 @@ interface UpdateCaseFormProps {
 
 export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps) {
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+
   const [formData, setFormData] = useState<ICaseResolutionTracker>(caseData);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
 
@@ -97,46 +97,6 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this case?")) return;
-
-    setDeleting(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_CURD_API_URL;
-      const response = await fetch(`${apiUrl}/resolution/${formData._id}`, {
-        method: "DELETE",
-        headers: {
-          ...(token && { "Authorization": `Bearer ${token}` })
-        }
-      });
-
-      if (response.ok) {
-        setNotification({
-          type: "success",
-          message: "Case deleted successfully!",
-        });
-        setTimeout(() => {
-          setNotification(null);
-          onBack();
-        }, 2000);
-      } else {
-        setNotification({
-          type: "error",
-          message: "Failed to delete case. Please try again.",
-        });
-        setTimeout(() => setNotification(null), 3000);
-      }
-    } catch (error) {
-      console.error("Error deleting case:", error);
-      setNotification({
-        type: "error",
-        message: "Failed to delete case. Please check your connection.",
-      });
-      setTimeout(() => setNotification(null), 3000);
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   return (
     <Card className="mx-auto max-w-5xl space-y-8 p-6 sm:p-8 mt-0">

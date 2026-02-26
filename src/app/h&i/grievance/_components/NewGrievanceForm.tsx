@@ -41,7 +41,7 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
     dropdown.gResponsibility,
   ];
 
-  const { data: dropdownData, isLoading: isLoadingDropdowns } =
+  const { data: dropdownData } =
     useMultipleDropdowns(dropdownNames);
 
   useEffect(() => {

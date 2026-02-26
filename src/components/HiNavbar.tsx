@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/Dropdown"
-import { RiDownloadCloud2Line, RiLogoutBoxLine, RiUserLine } from "@remixicon/react"
+import { RiLogoutBoxLine, RiUserLine } from "@remixicon/react"
 
 export function HiNavbar({ mobileMenu }: { mobileMenu?: React.ReactNode }) {
   const router = useRouter()
@@ -21,11 +21,6 @@ export function HiNavbar({ mobileMenu }: { mobileMenu?: React.ReactNode }) {
   const handleLogout = () => {
     logout()
     router.push("/login")
-  }
-
-  const handleDownload = () => {
-    // Placeholder for download functionality
-    alert("Download functionality to be implemented")
   }
 
   const userName = user?.name || profile?.name || "User"
@@ -45,17 +40,14 @@ export function HiNavbar({ mobileMenu }: { mobileMenu?: React.ReactNode }) {
             className="hidden h-10 w-auto sm:block"
             priority
           />
-
         </div>
 
         {/* Right Side - User Info, Download, Logout */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {/* Download Button */}
           <div className="hidden sm:flex sm:flex-col">
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-50">
               H&I PORTAL
             </span>
-
           </div>
 
           {/* User Dropdown */}
