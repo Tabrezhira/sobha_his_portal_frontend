@@ -16,9 +16,9 @@ import {
 import { SuggestionInput } from "@/components/SuggestionInput";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
 import { CreateCaseResolutionTrackerInput, IPatient } from "@/data/h&Ischema";
-import { useDropdownStore } from "@/store/dropdown";
 import { useAuthStore } from "@/store/auth";
 import { dropdown, inputsearch, issueSlaMinutes } from "@/data/schema";
+import { useMultipleDropdowns } from "@/hooks/useDropdownDataQuery";
 
 interface NewCaseFormProps {
   onBack: () => void;
@@ -29,50 +29,21 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
   const [searching, setSearching] = useState(false);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
-  const [natureOfCaseOptions, setNatureOfCaseOptions] = useState<string[]>([]);
-  const [insuranceTypeOptions, setInsuranceTypeOptions] = useState<string[]>([]);
-  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
-  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
-  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
-  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
-  const { fetchDropdownData } = useDropdownStore();
   const { user, token } = useAuthStore();
 
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-      const [
-        trLocationData,
-        natureOfCaseData,
-        insuranceTypeData,
-        typeOfIssueData,
-        statusData,
-        correctiveActionStatusData,
-        preventiveActionStatusData,
-        responsibilityData
-      ] = await Promise.all([
-        fetchDropdownData(dropdown.trLocation, apiUrl),
-        fetchDropdownData(dropdown.natureOfCase, apiUrl),
-        fetchDropdownData(dropdown.crtInsuranceType, apiUrl),
-        fetchDropdownData(dropdown.crtTypeOfIssue, apiUrl),
-        fetchDropdownData(dropdown.crtStatus, apiUrl),
-        fetchDropdownData(dropdown.crtCorrectiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.crtPreventiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.crtResponsibility, apiUrl),
-      ]);
-      setTrLocationOptions(trLocationData);
-      setNatureOfCaseOptions(natureOfCaseData);
-      setInsuranceTypeOptions(insuranceTypeData);
-      setTypeOfIssueOptions(typeOfIssueData);
-      setStatusOptions(statusData);
-      setCorrectiveActionStatusOptions(correctiveActionStatusData);
-      setPreventiveActionStatusOptions(preventiveActionStatusData);
-      setResponsibilityOptions(responsibilityData);
-    };
-    loadDropdownData();
-  }, [fetchDropdownData]);
+  // Fetch all dropdown data using React Query
+  const dropdownNames = [
+    dropdown.trLocation,
+    dropdown.natureOfCase,
+    dropdown.crtInsuranceType,
+    dropdown.crtTypeOfIssue,
+    dropdown.crtStatus,
+    dropdown.crtCorrectiveActionStatus,
+    dropdown.crtPreventiveActionStatus,
+    dropdown.crtResponsibility,
+  ];
+
+  const { data: dropdownData } = useMultipleDropdowns(dropdownNames);
 
   useEffect(() => {
     if (user?.name) {
@@ -354,7 +325,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationOptions.map((location) => (
+                  {(dropdownData[dropdown.trLocation] || []).map((location) => (
                     <SelectItem key={location} value={location}>
                       {location}
                     </SelectItem>
@@ -391,7 +362,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {natureOfCaseOptions.map((option) => (
+                  {(dropdownData[dropdown.natureOfCase] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -407,7 +378,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select insurance type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {insuranceTypeOptions.map((option) => (
+                  {(dropdownData[dropdown.crtInsuranceType] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -464,7 +435,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {typeOfIssueOptions.map((option) => (
+                    {(dropdownData[dropdown.crtTypeOfIssue] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -528,7 +499,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {statusOptions.map((option) => (
+                    {(dropdownData[dropdown.crtStatus] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -578,7 +549,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {correctiveActionStatusOptions.map((option) => (
+                    {(dropdownData[dropdown.crtCorrectiveActionStatus] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -615,7 +586,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {preventiveActionStatusOptions.map((option) => (
+                  {(dropdownData[dropdown.crtPreventiveActionStatus] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -639,7 +610,7 @@ export default function NewCaseForm({ onBack }: NewCaseFormProps) {
                   <SelectValue placeholder="Select responsibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsibilityOptions.map((option) => (
+                  {(dropdownData[dropdown.crtResponsibility] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>

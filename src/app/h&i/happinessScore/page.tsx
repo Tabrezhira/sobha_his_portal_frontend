@@ -9,8 +9,8 @@ import { Button } from "@/components/Button";
 import { Checkbox } from "@/components/Checkbox";
 import { CreateHappinessSurveyInput, IPatient } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
-import { useDropdownStore } from "@/store/dropdown";
 import { dropdown } from "@/data/schema";
+import { useDropdownDataQuery } from "@/hooks/useDropdownDataQuery";
 import {
 	Select,
 	SelectContent,
@@ -51,23 +51,13 @@ export default function Page() {
 	const [isDrawing, setIsDrawing] = useState(false);
 	const [searching, setSearching] = useState(false);
 	const searchTimeoutRef = useRef<NodeJS.Timeout>();
-	const { fetchDropdownData } = useDropdownStore();
-	const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
+	const { data: trLocationOptions = [] } = useDropdownDataQuery(dropdown.trLocation);
 	const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
 	const [todayCount, setTodayCount] = useState<number>(0);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const { user, token } = useAuthStore();
 	const surveyorName = user?.name || "";
-
-	useEffect(() => {
-		const loadTrLocationData = async () => {
-			const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-			const data = await fetchDropdownData(dropdown.trLocation, apiUrl);
-			setTrLocationOptions(data);
-		};
-		loadTrLocationData();
-	}, [fetchDropdownData]);
 
 	useEffect(() => {
 		const fetchTodayCount = async () => {

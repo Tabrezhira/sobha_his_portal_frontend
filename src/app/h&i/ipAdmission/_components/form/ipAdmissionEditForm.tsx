@@ -26,7 +26,7 @@ import {
 } from "@/components/Select"
 import type { Hospital } from "@/data/schema"
 import { dropdownCategories } from "@/data/schema"
-import { useDropdownStore } from "@/store/dropdown"
+import { useDropdownDataQuery } from "@/hooks/useDropdownDataQuery"
 import type { IpRepeatVisitFormManagerPart } from "@/data/h&Ischema"
 
 const emptyFollowUp = { date: "", remarks: "" }
@@ -72,27 +72,7 @@ const CategorySelect = ({
   required,
   disabled,
 }: CategorySelectProps) => {
-  const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL || ""
-  const { fetchDropdownData } = useDropdownStore()
-  const [items, setItems] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    let mounted = true
-    const loadData = async () => {
-      setLoading(true)
-      try {
-        const data = await fetchDropdownData(category, baseUrl)
-        if (mounted) setItems(data)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-    loadData()
-    return () => {
-      mounted = false
-    }
-  }, [category, baseUrl, fetchDropdownData])
+  const { data: items = [], isLoading: loading } = useDropdownDataQuery(category)
 
   return (
     <div>
@@ -132,7 +112,6 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
   ) {
     const router = useRouter()
     const { token, user } = useAuthStore()
-    const fetchCategories = useDropdownStore((state) => state.fetchCategories)
 
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
     const [form, setForm] = useState({
@@ -350,14 +329,6 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
     const updateForm = (key: keyof typeof form, value: string | boolean) => {
       setForm((prev) => ({ ...prev, [key]: value }))
     }
-
-    useEffect(() => {
-      fetchCategories(process.env.NEXT_PUBLIC_DROPDOWN_API_URL)
-    }, [fetchCategories])
-
-    useEffect(() => {
-      fetchCategories(process.env.NEXT_PUBLIC_DROPDOWN_API_URL)
-    }, [fetchCategories])
 
     const handleFollowUpChange = (
       index: number,
@@ -595,13 +566,15 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                 />
               </div>
               <div>
-                <CategorySelect
+                <Label htmlFor="hospitalName" className="font-medium">
+                  Hospital Name
+                </Label>
+                <Input
                   id="hospitalName"
-                  label="Hospital Name"
+                  className="mt-2"
                   value={form.hospitalName}
-                  onChange={(value) => updateForm("hospitalName", value)}
-                  category={dropdownCategories.externalProvider}
-                  disabled={true}
+                  onChange={(e) => updateForm("hospitalName", e.target.value)}
+                  disabled
                 />
               </div>
               <div>
@@ -732,12 +705,14 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                 />
               </div>
               <div className="col-span-2 lg:col-span-3">
-                <CategorySelect
+                <Label htmlFor="primaryDiagnosis" className="font-medium">
+                  Primary Diagnosis
+                </Label>
+                <Input
                   id="primaryDiagnosis"
-                  label="Primary Diagnosis"
+                  className="mt-2"
                   value={form.primaryDiagnosis}
-                  onChange={(value) => updateForm("primaryDiagnosis", value)}
-                  category={dropdownCategories.primaryDiagnosis}
+                  onChange={(e) => updateForm("primaryDiagnosis", e.target.value)}
                   disabled
                 />
               </div>
@@ -764,18 +739,22 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
                       className="flex gap-2 items-end"
                     >
                       <div className="flex-1">
-                        <CategorySelect
+                        {index === 0 && (
+                          <Label htmlFor={`secondaryDiagnosis-${index}`} className="font-medium">
+                            Diagnosis
+                          </Label>
+                        )}
+                        <Input
                           id={`secondaryDiagnosis-${index}`}
-                          label={index === 0 ? "Diagnosis" : ""}
+                          className={index === 0 ? "mt-2" : ""}
                           value={diagnosis}
-                          onChange={(value) =>
+                          onChange={(e) =>
                             setSecondaryDiagnoses((prev) =>
                               prev.map((item, i) =>
-                                i === index ? value : item,
+                                i === index ? e.target.value : item,
                               ),
                             )
                           }
-                          category={dropdownCategories.primaryDiagnosis}
                           disabled
                         />
                       </div>

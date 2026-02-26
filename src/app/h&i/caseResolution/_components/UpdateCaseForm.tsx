@@ -17,8 +17,8 @@ import { Textarea } from "@/components/Textarea";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@remixicon/react";
 import { ICaseResolutionTracker } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
-import { useDropdownStore } from "@/store/dropdown";
 import { dropdown, inputsearch, issueSlaMinutes } from "@/data/schema";
+import { useMultipleDropdowns } from "@/hooks/useDropdownDataQuery";
 
 interface UpdateCaseFormProps {
   caseData: ICaseResolutionTracker;
@@ -31,43 +31,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
   const [formData, setFormData] = useState<ICaseResolutionTracker>(caseData);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
 
-  const [insuranceTypeOptions, setInsuranceTypeOptions] = useState<string[]>([]);
-  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
-  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
-  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
-  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
-
-  const { fetchDropdownData } = useDropdownStore();
   const { token } = useAuthStore();
 
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-      const [
-        insuranceTypeData,
-        typeOfIssueData,
-        statusData,
-        correctiveActionStatusData,
-        preventiveActionStatusData,
-        responsibilityData
-      ] = await Promise.all([
-        fetchDropdownData(dropdown.crtInsuranceType, apiUrl),
-        fetchDropdownData(dropdown.crtTypeOfIssue, apiUrl),
-        fetchDropdownData(dropdown.crtStatus, apiUrl),
-        fetchDropdownData(dropdown.crtCorrectiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.crtPreventiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.crtResponsibility, apiUrl),
-      ]);
-      setInsuranceTypeOptions(insuranceTypeData);
-      setTypeOfIssueOptions(typeOfIssueData);
-      setStatusOptions(statusData);
-      setCorrectiveActionStatusOptions(correctiveActionStatusData);
-      setPreventiveActionStatusOptions(preventiveActionStatusData);
-      setResponsibilityOptions(responsibilityData);
-    };
-    loadDropdownData();
-  }, [fetchDropdownData]);
+  // Fetch all dropdown data using React Query
+  const dropdownNames = [
+    dropdown.crtInsuranceType,
+    dropdown.crtTypeOfIssue,
+    dropdown.crtStatus,
+    dropdown.crtCorrectiveActionStatus,
+    dropdown.crtPreventiveActionStatus,
+    dropdown.crtResponsibility,
+  ];
+
+  const { data: dropdownData } = useMultipleDropdowns(dropdownNames);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -333,7 +309,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                   <SelectValue placeholder="Insurance type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {insuranceTypeOptions.map((option: string) => (
+                  {(dropdownData[dropdown.crtInsuranceType] || []).map((option: string) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -389,7 +365,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                     <SelectValue placeholder="Issue type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {typeOfIssueOptions.map((option: string) => (
+                    {(dropdownData[dropdown.crtTypeOfIssue] || []).map((option: string) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -454,7 +430,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {statusOptions.map((option: string) => (
+                    {(dropdownData[dropdown.crtStatus] || []).map((option: string) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -504,7 +480,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {correctiveActionStatusOptions.map((option: string) => (
+                    {(dropdownData[dropdown.crtCorrectiveActionStatus] || []).map((option: string) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -541,7 +517,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {preventiveActionStatusOptions.map((option: string) => (
+                  {(dropdownData[dropdown.crtPreventiveActionStatus] || []).map((option: string) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -565,7 +541,7 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
                   <SelectValue placeholder="Select responsibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsibilityOptions.map((option: string) => (
+                  {(dropdownData[dropdown.crtResponsibility] || []).map((option: string) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>

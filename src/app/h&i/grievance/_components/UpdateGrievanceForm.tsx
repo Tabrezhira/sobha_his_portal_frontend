@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/select";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine, RiDeleteBinLine } from "@remixicon/react";
 import { IGrievance, IPatient } from "@/data/h&Ischema";
-import { useDropdownStore } from "@/store/dropdown";
 import { useAuthStore } from "@/store/auth";
 import { dropdown } from "@/data/schema";
+import { useMultipleDropdowns } from "@/hooks/useDropdownDataQuery";
 
 interface UpdateGrievanceFormProps {
   grievance: IGrievance;
@@ -30,46 +30,20 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
   const [searching, setSearching] = useState(false);
   const [notification, setNotification] = useState<{ type: string; message: string } | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  const [trLocationOptions, setTrLocationOptions] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
-  const [sourceOfGrievanceOptions, setSourceOfGrievanceOptions] = useState<string[]>([]);
-  const [typeOfIssueOptions, setTypeOfIssueOptions] = useState<string[]>([]);
-  const [correctiveActionStatusOptions, setCorrectiveActionStatusOptions] = useState<string[]>([]);
-  const [preventiveActionStatusOptions, setPreventiveActionStatusOptions] = useState<string[]>([]);
-  const [responsibilityOptions, setResponsibilityOptions] = useState<string[]>([]);
-  const { fetchDropdownData } = useDropdownStore();
   const { token } = useAuthStore();
 
-  useEffect(() => {
-    const loadDropdownData = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL;
-      const [
-        trLocationData,
-        statusData,
-        sourceOfGrievanceData,
-        typeOfIssueData,
-        correctiveActionStatusData,
-        preventiveActionStatusData,
-        responsibilityData
-      ] = await Promise.all([
-        fetchDropdownData(dropdown.trLocation, apiUrl),
-        fetchDropdownData(dropdown.gStatus, apiUrl),
-        fetchDropdownData(dropdown.gSourceOfGrievance, apiUrl),
-        fetchDropdownData(dropdown.gTypeOfIssue, apiUrl),
-        fetchDropdownData(dropdown.gCorrectiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.gPreventiveActionStatus, apiUrl),
-        fetchDropdownData(dropdown.gResponsibility, apiUrl),
-      ]);
-      setTrLocationOptions(trLocationData);
-      setStatusOptions(statusData);
-      setSourceOfGrievanceOptions(sourceOfGrievanceData);
-      setTypeOfIssueOptions(typeOfIssueData);
-      setCorrectiveActionStatusOptions(correctiveActionStatusData);
-      setPreventiveActionStatusOptions(preventiveActionStatusData);
-      setResponsibilityOptions(responsibilityData);
-    };
-    loadDropdownData();
-  }, [fetchDropdownData]);
+  // Fetch all dropdown data using React Query
+  const dropdownNames = [
+    dropdown.trLocation,
+    dropdown.gStatus,
+    dropdown.gSourceOfGrievance,
+    dropdown.gTypeOfIssue,
+    dropdown.gCorrectiveActionStatus,
+    dropdown.gPreventiveActionStatus,
+    dropdown.gResponsibility,
+  ];
+
+  const { data: dropdownData } = useMultipleDropdowns(dropdownNames);
 
   const [formData, setFormData] = useState<IGrievance>({
     ...grievance,
@@ -339,7 +313,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {trLocationOptions.map((location) => (
+                  {(dropdownData[dropdown.trLocation] || []).map((location) => (
                     <SelectItem key={location} value={location}>
                       {location}
                     </SelectItem>
@@ -377,7 +351,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                     <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sourceOfGrievanceOptions.map((option) => (
+                    {(dropdownData[dropdown.gSourceOfGrievance] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -393,7 +367,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {typeOfIssueOptions.map((option) => (
+                    {(dropdownData[dropdown.gTypeOfIssue] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -453,7 +427,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map((option) => (
+                  {(dropdownData[dropdown.gStatus] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -526,7 +500,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {correctiveActionStatusOptions.map((option) => (
+                    {(dropdownData[dropdown.gCorrectiveActionStatus] || []).map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -563,7 +537,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {preventiveActionStatusOptions.map((option) => (
+                  {(dropdownData[dropdown.gPreventiveActionStatus] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
@@ -587,7 +561,7 @@ export default function UpdateGrievanceForm({ grievance, onBack }: UpdateGrievan
                   <SelectValue placeholder="Select responsibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsibilityOptions.map((option) => (
+                  {(dropdownData[dropdown.gResponsibility] || []).map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}
                     </SelectItem>
