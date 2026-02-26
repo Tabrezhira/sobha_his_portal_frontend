@@ -89,7 +89,7 @@ export default function EmployeeSearchPage() {
                         </div>
                     ) : data?.length === 0 ? (
                         <div className="text-center py-10 text-gray-500">
-                            No employees found matching "{searchTerm}".
+                            No employees found matching &quot;{searchTerm}&quot;.
                         </div>
                     ) : (
                         <Table>
