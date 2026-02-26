@@ -193,7 +193,7 @@ const IpAdmissionEditForm = forwardRef<IpAdmissionEditFormRef, IpAdmissionEditFo
       technicianVisits: [] as { technicianFeedback?: string; physicianFeedback?: string }[],
     })
 
-    const hospitalRecordId = initialData?._id ?? initialData?.id
+    const hospitalRecordId = initialData?.hospitalCase?._id ?? initialData?.hospitalCase ?? initialData?._id ?? initialData?.id
 
     const [followUp, setFollowUp] = useState([emptyFollowUp])
     const [submitting, setSubmitting] = useState(false)

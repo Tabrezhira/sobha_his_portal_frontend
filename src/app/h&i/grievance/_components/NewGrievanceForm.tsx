@@ -6,13 +6,7 @@ import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Label } from "@/components/Label";
 import { Textarea } from "@/components/Textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ReactSelect from "react-select";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
 import { CreateGrievanceInput, GrievanceStatus, IPatient } from "@/data/h&Ischema";
 import { useAuthStore } from "@/store/auth";
@@ -22,6 +16,25 @@ import { useMultipleDropdowns } from "@/hooks/useDropdownDataQuery";
 interface NewGrievanceFormProps {
   onBack: () => void;
 }
+
+const reactSelectClassNames = {
+  control: (state: any) =>
+    `flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-transparent dark:ring-offset-gray-950 dark:focus-within:ring-gray-800 ${state.isFocused ? 'ring-2 ring-gray-400 ring-offset-2 dark:ring-gray-800 dark:ring-offset-gray-950 border-transparent' : ''
+    }`,
+  placeholder: () => "text-gray-500 dark:text-gray-400 truncate",
+  singleValue: () => "text-gray-900 dark:text-gray-50 truncate",
+  valueContainer: () => "flex flex-1 items-center gap-1 overflow-hidden",
+  input: () => "text-gray-900 dark:text-gray-50 m-0 p-0",
+  indicatorsContainer: () => "flex items-center gap-1",
+  clearIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+  dropdownIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+  menu: () => "mt-1 overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-md dark:border-gray-800 dark:bg-gray-950 z-50",
+  menuList: () => "p-1",
+  option: (state: any) =>
+    `relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${state.isFocused ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50' : ''
+    } ${state.isSelected ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50 font-medium' : ''}`,
+  noOptionsMessage: () => "text-sm text-gray-500 dark:text-gray-400 p-2",
+};
 
 export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
   const [loading, setLoading] = useState(false);
@@ -313,18 +326,19 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="trLocation">TR Location *</Label>
-              <Select value={formData.trLocation} onValueChange={(value) => setFormData({ ...formData, trLocation: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.trLocation] || []).map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className=" text-left">
+                <ReactSelect
+                  inputId="trLocation"
+                  value={formData.trLocation ? { label: formData.trLocation, value: formData.trLocation } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, trLocation: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.trLocation] || []).map((location) => ({ label: location, value: location }))}
+                  isClearable
+                  placeholder="Select location"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
 
             <div>
@@ -351,34 +365,36 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="sourceOfGrievance">Source of Grievance *</Label>
-                <Select value={formData.sourceOfGrievance} onValueChange={(value) => setFormData({ ...formData, sourceOfGrievance: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.gSourceOfGrievance] || []).map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-2 text-left">
+                  <ReactSelect
+                    inputId="sourceOfGrievance"
+                    value={formData.sourceOfGrievance ? { label: formData.sourceOfGrievance, value: formData.sourceOfGrievance } : null}
+                    onChange={(opt: any) => setFormData({ ...formData, sourceOfGrievance: opt ? opt.value : "" })}
+                    options={(dropdownData[dropdown.gSourceOfGrievance] || []).map((option) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Select source"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
 
               <div>
                 <Label htmlFor="typeOfIssue">Type of Issue *</Label>
-                <Select value={formData.typeOfIssue} onValueChange={(value) => setFormData({ ...formData, typeOfIssue: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select issue type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.gTypeOfIssue] || []).map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-2 text-left">
+                  <ReactSelect
+                    inputId="typeOfIssue"
+                    value={formData.typeOfIssue ? { label: formData.typeOfIssue, value: formData.typeOfIssue } : null}
+                    onChange={(opt: any) => setFormData({ ...formData, typeOfIssue: opt ? opt.value : "" })}
+                    options={(dropdownData[dropdown.gTypeOfIssue] || []).map((option) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Select issue type"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
             </div>
 
@@ -427,18 +443,19 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
 
             <div>
               <Label htmlFor="status">Status *</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as GrievanceStatus })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.gStatus] || []).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className=" text-left">
+                <ReactSelect
+                  inputId="status"
+                  value={formData.status ? { label: formData.status, value: formData.status } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, status: opt ? opt.value as GrievanceStatus : "" as GrievanceStatus })}
+                  options={(dropdownData[dropdown.gStatus] || []).map((option) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Select status"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
 
             <div>
@@ -500,18 +517,19 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
 
               <div>
                 <Label htmlFor="correctiveActionStatus">Corrective Action Status</Label>
-                <Select value={formData.correctiveActionStatus || ""} onValueChange={(value) => setFormData({ ...formData, correctiveActionStatus: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.gCorrectiveActionStatus] || []).map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-2 text-left">
+                  <ReactSelect
+                    inputId="correctiveActionStatus"
+                    value={formData.correctiveActionStatus ? { label: formData.correctiveActionStatus, value: formData.correctiveActionStatus } : null}
+                    onChange={(opt: any) => setFormData({ ...formData, correctiveActionStatus: opt ? opt.value : "" })}
+                    options={(dropdownData[dropdown.gCorrectiveActionStatus] || []).map((option) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Select status"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -537,18 +555,19 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
 
             <div>
               <Label htmlFor="preventiveActionStatus">Preventive Action Status</Label>
-              <Select value={formData.preventiveActionStatus || ""} onValueChange={(value) => setFormData({ ...formData, preventiveActionStatus: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.gPreventiveActionStatus] || []).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-2 text-left">
+                <ReactSelect
+                  inputId="preventiveActionStatus"
+                  value={formData.preventiveActionStatus ? { label: formData.preventiveActionStatus, value: formData.preventiveActionStatus } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, preventiveActionStatus: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.gPreventiveActionStatus] || []).map((option) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Select status"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
           </div>
         </Card>
@@ -561,18 +580,19 @@ export default function NewGrievanceForm({ onBack }: NewGrievanceFormProps) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="responsibility">Responsibility</Label>
-              <Select value={formData.responsibility || ""} onValueChange={(value) => setFormData({ ...formData, responsibility: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select responsibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.gResponsibility] || []).map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-2 text-left">
+                <ReactSelect
+                  inputId="responsibility"
+                  value={formData.responsibility ? { label: formData.responsibility, value: formData.responsibility } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, responsibility: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.gResponsibility] || []).map((option) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Select responsibility"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
 
             <div>

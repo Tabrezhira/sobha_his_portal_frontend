@@ -5,13 +5,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Label } from "@/components/Label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ReactSelect from "react-select";
 import { SuggestionInput } from "@/components/SuggestionInput";
 import { Textarea } from "@/components/Textarea";
 import { RiArrowLeftLine, RiCheckLine, RiLoaderLine } from "@remixicon/react";
@@ -24,6 +18,25 @@ interface UpdateCaseFormProps {
   caseData: ICaseResolutionTracker;
   onBack: () => void;
 }
+
+const reactSelectClassNames = {
+  control: (state: any) =>
+    `flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white focus-within:ring-2 focus-within:ring-gray-400 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-transparent dark:ring-offset-gray-950 dark:focus-within:ring-gray-800 ${state.isFocused ? 'ring-2 ring-gray-400 ring-offset-2 dark:ring-gray-800 dark:ring-offset-gray-950 border-transparent' : ''
+    }`,
+  placeholder: () => "text-gray-500 dark:text-gray-400 truncate",
+  singleValue: () => "text-gray-900 dark:text-gray-50 truncate",
+  valueContainer: () => "flex flex-1 items-center gap-1 overflow-hidden",
+  input: () => "text-gray-900 dark:text-gray-50 m-0 p-0",
+  indicatorsContainer: () => "flex items-center gap-1",
+  clearIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+  dropdownIndicator: () => "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer p-0.5",
+  menu: () => "mt-1 overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-md dark:border-gray-800 dark:bg-gray-950 z-50",
+  menuList: () => "p-1",
+  option: (state: any) =>
+    `relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 px-2 text-sm outline-none hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50 ${state.isFocused ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50' : ''
+    } ${state.isSelected ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50 font-medium' : ''}`,
+  noOptionsMessage: () => "text-sm text-gray-500 dark:text-gray-400 p-2",
+};
 
 export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps) {
   const [loading, setLoading] = useState(false);
@@ -264,18 +277,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
 
             <div>
               <Label htmlFor="insuranceType">Insurance Type</Label>
-              <Select value={formData.insuranceType || ""} onValueChange={(value) => setFormData({ ...formData, insuranceType: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Insurance type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.crtInsuranceType] || []).map((option: string) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="text-left mt-1">
+                <ReactSelect
+                  inputId="insuranceType"
+                  value={formData.insuranceType ? { label: formData.insuranceType, value: formData.insuranceType } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, insuranceType: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.crtInsuranceType] || []).map((option: string) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Insurance type"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
 
             <div>
@@ -313,25 +327,28 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="typeOfIssue">Type of Issue</Label>
-                <Select value={formData.typeOfIssue || ""} onValueChange={(value) => {
-                  const mappedSla = issueSlaMinutes[value as keyof typeof issueSlaMinutes];
-                  setFormData({
-                    ...formData,
-                    typeOfIssue: value,
-                    ...(mappedSla !== undefined ? { slaTAT: mappedSla } : {})
-                  });
-                }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Issue type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.crtTypeOfIssue] || []).map((option: string) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-left mt-1">
+                  <ReactSelect
+                    inputId="typeOfIssue"
+                    value={formData.typeOfIssue ? { label: formData.typeOfIssue, value: formData.typeOfIssue } : null}
+                    onChange={(opt: any) => {
+                      const value = opt ? opt.value : "";
+                      const mappedSla = issueSlaMinutes[value as keyof typeof issueSlaMinutes];
+                      setFormData({
+                        ...formData,
+                        typeOfIssue: value,
+                        // Reset slaTAT to undefined if mappedSla is undefined or value is empty
+                        slaTAT: mappedSla !== undefined ? mappedSla : undefined
+                      });
+                    }}
+                    options={(dropdownData[dropdown.crtTypeOfIssue] || []).map((option: string) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Issue type"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
 
               <div>
@@ -385,18 +402,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status || ""} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.crtStatus] || []).map((option: string) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-left mt-1">
+                  <ReactSelect
+                    inputId="status"
+                    value={formData.status ? { label: formData.status, value: formData.status } : null}
+                    onChange={(opt: any) => setFormData({ ...formData, status: opt ? opt.value : "" })}
+                    options={(dropdownData[dropdown.crtStatus] || []).map((option: string) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Select status"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -435,18 +453,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
 
               <div>
                 <Label htmlFor="correctiveActionStatus">Corrective Action Status</Label>
-                <Select value={formData.correctiveActionStatus || ""} onValueChange={(value) => setFormData({ ...formData, correctiveActionStatus: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(dropdownData[dropdown.crtCorrectiveActionStatus] || []).map((option: string) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-left mt-1">
+                  <ReactSelect
+                    inputId="correctiveActionStatus"
+                    value={formData.correctiveActionStatus ? { label: formData.correctiveActionStatus, value: formData.correctiveActionStatus } : null}
+                    onChange={(opt: any) => setFormData({ ...formData, correctiveActionStatus: opt ? opt.value : "" })}
+                    options={(dropdownData[dropdown.crtCorrectiveActionStatus] || []).map((option: string) => ({ label: option, value: option }))}
+                    isClearable
+                    placeholder="Select status"
+                    unstyled
+                    components={{ IndicatorSeparator: () => null }}
+                    classNames={reactSelectClassNames}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -472,18 +491,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
 
             <div>
               <Label htmlFor="preventiveActionStatus">Preventive Action Status</Label>
-              <Select value={formData.preventiveActionStatus || ""} onValueChange={(value) => setFormData({ ...formData, preventiveActionStatus: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.crtPreventiveActionStatus] || []).map((option: string) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="text-left mt-1">
+                <ReactSelect
+                  inputId="preventiveActionStatus"
+                  value={formData.preventiveActionStatus ? { label: formData.preventiveActionStatus, value: formData.preventiveActionStatus } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, preventiveActionStatus: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.crtPreventiveActionStatus] || []).map((option: string) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Select status"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
           </div>
         </Card>
@@ -496,18 +516,19 @@ export default function UpdateCaseForm({ caseData, onBack }: UpdateCaseFormProps
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="responsibility">Responsibility</Label>
-              <Select value={formData.responsibility || ""} onValueChange={(value) => setFormData({ ...formData, responsibility: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select responsibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(dropdownData[dropdown.crtResponsibility] || []).map((option: string) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="text-left mt-1">
+                <ReactSelect
+                  inputId="responsibility"
+                  value={formData.responsibility ? { label: formData.responsibility, value: formData.responsibility } : null}
+                  onChange={(opt: any) => setFormData({ ...formData, responsibility: opt ? opt.value : "" })}
+                  options={(dropdownData[dropdown.crtResponsibility] || []).map((option: string) => ({ label: option, value: option }))}
+                  isClearable
+                  placeholder="Select responsibility"
+                  unstyled
+                  components={{ IndicatorSeparator: () => null }}
+                  classNames={reactSelectClassNames}
+                />
+              </div>
             </div>
 
             <div>
