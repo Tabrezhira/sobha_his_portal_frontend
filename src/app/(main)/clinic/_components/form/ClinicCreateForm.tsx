@@ -181,7 +181,26 @@ const SuggestionInput = ({
     if (blurTimeout.current) {
       clearTimeout(blurTimeout.current)
     }
-    blurTimeout.current = setTimeout(() => setOpen(false), 150)
+    blurTimeout.current = setTimeout(() => {
+      setOpen(false)
+      // Only enforce strict suggestions if there's actually a value typed
+      // and we have items loaded to compare against
+      if (value && !loading) {
+        // Find an exact, case-insensitive match
+        const exactMatch = items.find(
+          (item) => item.toLowerCase() === value.toLowerCase()
+        )
+        if (exactMatch) {
+          // If the casing was slightly off, auto-correct it to the exact suggestion
+          if (exactMatch !== value) {
+            onChange(exactMatch)
+          }
+        } else {
+          // No match found in the suggestions; clear the invalid input
+          onChange("")
+        }
+      }
+    }, 150)
   }
 
   const handleSelect = (item: string) => {
@@ -378,6 +397,19 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
         trLocation: prev.trLocation || (user?.locationId ?? ""),
       }))
     }, [user?.locationId])
+
+    useEffect(() => {
+      if (isEditMode) return
+
+      const interval = setInterval(() => {
+        setForm((prev) => ({
+          ...prev,
+          time: getLocalTime(),
+        }))
+      }, 30000) // update every 30 seconds to stay current with minutes
+
+      return () => clearInterval(interval)
+    }, [isEditMode])
 
     useEffect(() => {
       if (!initialData) return
