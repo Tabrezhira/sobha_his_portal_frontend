@@ -153,6 +153,7 @@ type SuggestionInputProps = {
   category: string
   required?: boolean
   type?: string
+  strict?: boolean
 }
 
 const SuggestionInput = ({
@@ -163,11 +164,17 @@ const SuggestionInput = ({
   category,
   required,
   type = "text",
+  strict = true,
 }: SuggestionInputProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-  const { items, loading } = useDropdownSearch(baseUrl, category, value)
+  const [inputValue, setInputValue] = useState(value)
+  const { items, loading } = useDropdownSearch(baseUrl, category, inputValue)
   const [open, setOpen] = useState(false)
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
 
   useEffect(() => {
     return () => {
@@ -183,27 +190,33 @@ const SuggestionInput = ({
     }
     blurTimeout.current = setTimeout(() => {
       setOpen(false)
-      // Only enforce strict suggestions if there's actually a value typed
-      // and we have items loaded to compare against
-      if (value && !loading) {
-        // Find an exact, case-insensitive match
+
+      if (!strict) {
+        if (value !== inputValue) onChange(inputValue)
+        return
+      }
+
+      if (inputValue && !loading) {
         const exactMatch = items.find(
-          (item) => item.toLowerCase() === value.toLowerCase()
+          (item) => item.toLowerCase() === inputValue.toLowerCase(),
         )
         if (exactMatch) {
-          // If the casing was slightly off, auto-correct it to the exact suggestion
           if (exactMatch !== value) {
             onChange(exactMatch)
           }
+          setInputValue(exactMatch)
         } else {
-          // No match found in the suggestions; clear the invalid input
           onChange("")
+          setInputValue("")
         }
+      } else if (!inputValue) {
+        onChange("")
       }
     }, 150)
   }
 
   const handleSelect = (item: string) => {
+    setInputValue(item)
     onChange(item)
     setOpen(false)
   }
@@ -220,8 +233,11 @@ const SuggestionInput = ({
         id={id}
         type={type}
         className="mt-2"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+        value={inputValue}
+        onChange={(event) => {
+          setInputValue(event.target.value)
+          if (!open) setOpen(true)
+        }}
         onFocus={() => setOpen(true)}
         onBlur={closeWithDelay}
         required={required}
@@ -1196,7 +1212,7 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   <SelectContent>
                     <ScrollArea className="h-[200px]">
                       {getDisplayOptions(
-                        ["Open", "Closed", "Referred", "Other"],
+                        ["OPEN", "CLOSED"],
                         form.visitStatus,
                       ).map((option) => (
                         <SelectItem key={option} value={option}>

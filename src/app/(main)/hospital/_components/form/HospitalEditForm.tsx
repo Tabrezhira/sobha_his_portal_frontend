@@ -142,6 +142,7 @@ type SuggestionInputProps = {
   required?: boolean
   type?: string
   disabled?: boolean
+  strict?: boolean
 }
 
 const SuggestionInput = ({
@@ -153,20 +154,59 @@ const SuggestionInput = ({
   required,
   type = "text",
   disabled,
+  strict = true,
 }: SuggestionInputProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
-  const { items, loading } = useDropdownSearch(baseUrl, category, value)
+  const [inputValue, setInputValue] = useState(value)
+  const { items, loading } = useDropdownSearch(baseUrl, category, inputValue)
   const [open, setOpen] = useState(false)
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeout.current) {
+        clearTimeout(blurTimeout.current)
+      }
+    }
+  }, [])
 
   const closeWithDelay = () => {
     if (blurTimeout.current) {
       clearTimeout(blurTimeout.current)
     }
-    blurTimeout.current = setTimeout(() => setOpen(false), 150)
+    blurTimeout.current = setTimeout(() => {
+      setOpen(false)
+
+      if (!strict) {
+        if (value !== inputValue) onChange(inputValue)
+        return
+      }
+
+      if (inputValue && !loading) {
+        const exactMatch = items.find(
+          (item) => item.toLowerCase() === inputValue.toLowerCase(),
+        )
+        if (exactMatch) {
+          if (exactMatch !== value) {
+            onChange(exactMatch)
+          }
+          setInputValue(exactMatch)
+        } else {
+          onChange("")
+          setInputValue("")
+        }
+      } else if (!inputValue) {
+        onChange("")
+      }
+    }, 150)
   }
 
   const handleSelect = (item: string) => {
+    setInputValue(item)
     onChange(item)
     setOpen(false)
   }
@@ -183,8 +223,11 @@ const SuggestionInput = ({
         id={id}
         type={type}
         className="mt-2"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
+        value={inputValue}
+        onChange={(event) => {
+          setInputValue(event.target.value)
+          if (!open) setOpen(true)
+        }}
         onFocus={() => setOpen(true)}
         onBlur={closeWithDelay}
         required={required}
