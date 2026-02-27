@@ -82,10 +82,10 @@ export default function IsolationPage() {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-          Isolation
+          Isolation/Recovery Records
         </h1>
         <Button asChild variant="secondary">
-          <Link href="/isolation/new">New isolation record</Link>
+          <Link href="/isolation/new">New Isolation/Recovery record</Link>
         </Button>
       </div>
       <Card className="mt-4 sm:mt-6 lg:mt-10">

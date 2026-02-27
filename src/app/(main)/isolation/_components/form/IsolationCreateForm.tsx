@@ -92,6 +92,11 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
     const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
     const lastSummaryEmpNo = useRef<string | null>(null)
+    
+    // Track clinic token lookup
+    const [clinicTokenLocked, setClinicTokenLocked] = useState(false)
+    const [clinicTokenLoading, setClinicTokenLoading] = useState(false)
+    const [clinicTokenError, setClinicTokenError] = useState<string | null>(null)
     const [form, setForm] = useState({
       locationId: "",
       clinicVisitToken: "",
@@ -159,6 +164,73 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
       lastSummaryEmpNo.current = trimmed
       setSummaryEmpId(trimmed)
       setSummaryDialogOpen(true)
+    }
+
+    const handleClinicTokenLookup = async () => {
+      const token = form.clinicVisitToken.trim()
+      if (!token) {
+        setClinicTokenError("Please enter a clinic visit token")
+        return
+      }
+
+      if (token.length !== 24) {
+        setClinicTokenError("Clinic visit token must be 24 characters")
+        return
+      }
+
+      setClinicTokenError(null)
+      setClinicTokenLoading(true)
+
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+        if (!baseUrl) {
+          setClinicTokenError("API URL is not configured.")
+          return
+        }
+
+        const response = await fetch(`${baseUrl}/clinic/${token}/employee-info`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch employee details from clinic visit.")
+        }
+        const result = await response.json()
+
+        if (result.success && result.data) {
+          const { emp, name, emiratesId, insuranceId, mobileNumber, trLocation } = result.data
+          setForm((prev) => ({
+            ...prev,
+            clinicVisitId: token,
+            empNo: emp || "",
+            employeeName: name || "",
+            emiratesId: emiratesId || "",
+            insuranceId: insuranceId || "",
+            mobileNumber: mobileNumber || "",
+            trLocation: trLocation || "",
+          }))
+          setClinicTokenLocked(true)
+        } else {
+          throw new Error("Invalid response format")
+        }
+      } catch (error) {
+        setClinicTokenError("Unable to load employee details from clinic visit.")
+      } finally {
+        setClinicTokenLoading(false)
+      }
+    }
+
+    const handleClinicTokenRemove = () => {
+      setForm((prev) => ({
+        ...prev,
+        clinicVisitToken: "",
+        clinicVisitId: "",
+        empNo: "",
+        employeeName: "",
+        emiratesId: "",
+        insuranceId: "",
+        mobileNumber: "",
+        trLocation: "",
+      }))
+      setClinicTokenLocked(false)
+      setClinicTokenError(null)
     }
 
     const handleEmployeeLookup = async (empNo: string) => {
@@ -290,10 +362,10 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-              New Isolation Record
+              New Isolation/Recovery Record
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Enter isolation details and submit.
+              Enter isolation/recovery details and submit.
             </p>
           </div>
           {!hideActions && (
@@ -307,7 +379,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Isolation details
+                Isolation/Recovery details
               </h2>
               <p className="mt-1 text-sm text-gray-500">
                 Required fields are marked with *.
@@ -316,15 +388,44 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="clinicVisitToken" className="font-medium">
-                  Clinic Visit Token
+                  Clinic Visit Record ID
                 </Label>
-                <Input
-                  id="clinicVisitToken"
-                  name="clinicVisitToken"
-                  type="text"
-                  value={form.clinicVisitToken}
-                  onChange={(e) => updateForm("clinicVisitToken", e.target.value)}
-                />
+                <div className="mt-0 flex gap-2">
+                  <Input
+                    id="clinicVisitToken"
+                    name="clinicVisitToken"
+                    type="text"
+                    value={form.clinicVisitToken}
+                    disabled={clinicTokenLocked}
+                    onChange={(e) => {
+                      updateForm("clinicVisitToken", e.target.value)
+                      setClinicTokenError(null)
+                    }}
+                  />
+                  {!clinicTokenLocked ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleClinicTokenLookup}
+                      disabled={clinicTokenLoading || !form.clinicVisitToken.trim()}
+                    >
+                      {clinicTokenLoading ? "Loading..." : "Save"}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleClinicTokenRemove}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                {clinicTokenError && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {clinicTokenError}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="empNo" className="font-medium">
@@ -336,6 +437,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                     name="empNo"
                     type="text"
                     value={form.empNo}
+                    disabled={clinicTokenLocked}
                     onChange={(e) => {
                       const val = e.target.value.toUpperCase()
                       updateForm("empNo", val)
@@ -374,7 +476,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="employeeName"
                   name="employeeName"
                   type="text"
-                  disabled
+                  disabled={true}
                   value={form.employeeName}
                   onChange={(e) => updateForm("employeeName", e.target.value)}
                   required
@@ -388,7 +490,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="emiratesId"
                   name="emiratesId"
                   type="text"
-                  disabled
+                  disabled={true}
                   value={form.emiratesId}
                   onChange={(e) => updateForm("emiratesId", e.target.value)}
                   required
@@ -403,7 +505,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="insuranceId"
                   name="insuranceId"
                   type="text"
-                  disabled
+                  disabled={true}
                   value={form.insuranceId}
                   onChange={(e) => updateForm("insuranceId", e.target.value)}
                 />
@@ -416,6 +518,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                   id="mobileNumber"
                   name="mobileNumber"
                   type="text"
+                  disabled={clinicTokenLocked}
                   value={form.mobileNumber}
                   onChange={(e) => updateForm("mobileNumber", e.target.value)}
                 />
@@ -426,7 +529,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                 </Label>
                 <Select
                   value={form.trLocation}
-                  disabled
+                  disabled={true}
                   onValueChange={(value) => updateForm("trLocation", value)}
                 >
                   <SelectTrigger >
@@ -480,13 +583,13 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Isolation Information
+                Isolation/Recovery Information
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="isolatedIn" className="font-medium">
-                  Isolated In
+                  Isolation/Recovery In
                 </Label>
                 <Select
                   value={form.isolatedIn}
@@ -562,7 +665,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
             </div>
             <div>
               <Label htmlFor="isolationReason" className="font-medium">
-                Isolation Reason
+               Isolation/Recovery Reason
               </Label>
               <Textarea
                 id="isolationReason"

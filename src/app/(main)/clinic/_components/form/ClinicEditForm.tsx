@@ -1141,14 +1141,14 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                       readOnly
                       disabled
                     />
-                    <Button
+                    {/* <Button
                       type="button"
                       variant="secondary"
                       className="mt-2"
                       onClick={() => copyToClipboard(String(form.tokenNo ?? ""), "Token No")}
                     >
                       Copy
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
               )}

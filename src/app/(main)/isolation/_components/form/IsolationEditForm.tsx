@@ -253,15 +253,15 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-50">
-              Isolation Record
+              Isolation/Recovery Record
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Review and update isolation details.
+              Review and update isolation/recovery details.
             </p>
           </div>
           {!hideActions && (
             <Button asChild variant="secondary">
-              <Link href="/isolation">Back to isolation</Link>
+              <Link href="/isolation">Back to isolation/recovery</Link>
             </Button>
           )}
         </div>
@@ -270,7 +270,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Isolation details
+                   Isolation/Recovery details
               </h2>
               <p className="mt-1 text-sm text-gray-500">
                 Required fields are marked with *.
@@ -410,14 +410,14 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
           <Card className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                Isolation Information
+                Isolation/Recovery Information
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {/* ✅ FIX: key prop forces re-mount when form.isolatedIn changes */}
               <div>
                 <Label htmlFor="isolatedIn" className="font-medium">
-                  Isolated In
+                  Isolation/Recovery In
                 </Label>
                 <Select
                   key={form.isolatedIn}
@@ -494,7 +494,7 @@ const IsolationEditForm = forwardRef<IsolationEditFormRef, IsolationEditFormProp
             </div>
             <div>
               <Label htmlFor="isolationReason" className="font-medium">
-                Isolation Reason
+                Isolation/Recovery Reason
               </Label>
               <Textarea
                 id="isolationReason"

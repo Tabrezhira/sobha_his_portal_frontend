@@ -29,7 +29,7 @@ const navigation = [
   { name: "Clinic", href: siteConfig.baseLinks.clinic, icon: RiStethoscopeLine },
   { name: "Hospital", href: siteConfig.baseLinks.hospital, icon: RiHospitalLine },
   {
-    name: "Isolation",
+    name: "Isolation/Recovery ",
     href: siteConfig.baseLinks.isolation,
     icon: RiShieldCrossLine,
   },
@@ -52,7 +52,7 @@ const shortcuts = [
     icon: RiLinkM,
   },
   {
-    name: "New isolation record",
+    name: "New Isolation/Recovery record",
     href: "/isolation/new",
     icon: RiLinkM,
   },

@@ -259,6 +259,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
     const [caseCategoryOptions, setCaseCategoryOptions] = useState<string[]>([])
     const [trLocationOptions, setTrLocationOptions] = useState<string[]>([])
     const [secondaryDiagnoses, setSecondaryDiagnoses] = useState<string[]>([])
+    const [hospitalNameOptions, setHospitalNameOptions] = useState<string[]>([])
     const [form, setForm] = useState({
       locationId: "",
       clinicVisitToken: "",
@@ -459,15 +460,17 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
         if (!baseUrl) return
 
-        const [natureOfCase, caseCategory, trLocation] = await Promise.all([
+        const [natureOfCase, caseCategory, trLocation, hospitalNames] = await Promise.all([
           fetchDropdownData(dropdownCategories.natureOfCase, baseUrl),
           fetchDropdownData(dropdownCategories.caseCategory, baseUrl),
           fetchDropdownData(dropdownCategories.trLocation, baseUrl),
+          fetchDropdownData(dropdownCategories.externalProvider, baseUrl),
         ])
 
         setNatureOfCaseOptions(natureOfCase)
         setCaseCategoryOptions(caseCategory)
         setTrLocationOptions(trLocation)
+        setHospitalNameOptions(hospitalNames)
       }
 
       loadDropdownOptions()
@@ -844,7 +847,7 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <Label htmlFor="clinicVisitToken" className="font-medium">
-                  Clinic Visit Token
+                  Clinic Visit Record ID
                 </Label>
                 <div className="mt-2 flex gap-2">
                   <Input
@@ -891,13 +894,29 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 />
               </div>
               <div>
-                <SuggestionInput
-                  id="hospitalName"
-                  label="Hospital Name"
+                <Label htmlFor="hospitalName" className="font-medium">
+                  Hospital Name
+                </Label>
+                <Select
                   value={form.hospitalName}
-                  onChange={(value) => updateForm("hospitalName", value)}
-                  category={dropdownCategories.externalProvider}
-                />
+                  onValueChange={(value) => updateForm("hospitalName", value)}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select hospital name" />
+                  </SelectTrigger>
+                  <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                    <ScrollArea className="h-[200px]">
+                      {getDisplayOptions(
+                        hospitalNameOptions,
+                        form.hospitalName,
+                      ).map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="status" className="font-medium">
