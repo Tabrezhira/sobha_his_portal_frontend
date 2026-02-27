@@ -992,6 +992,15 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
       }
     }
 
+    useEffect(() => {
+      if (form.tokenNo && form.referral) {
+        const generatedCode = `${form.tokenNo}-REF`
+        setReferralDetails((prev) => 
+          prev.referralCode === generatedCode ? prev : { ...prev, referralCode: generatedCode }
+        )
+      }
+    }, [form.tokenNo, form.referral])
+
     return (
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1864,12 +1873,11 @@ const ClinicEditForm = forwardRef<ClinicEditFormRef, ClinicEditFormProps>(
                   </Label>
                   <Input
                     id="referralCode"
-
                     className="mt-2"
                     value={referralDetails.referralCode}
                     onChange={(e) => handleReferralChange("referralCode", e.target.value)}
-                    // disabled={!form.referral}
                     disabled
+                    readOnly
                   />
                 </div>
                 <div>

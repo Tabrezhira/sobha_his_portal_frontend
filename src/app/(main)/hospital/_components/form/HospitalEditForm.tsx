@@ -601,7 +601,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {/* <div>
+              <div>
                 <Label htmlFor="clinicVisitToken" className="font-medium">
                   Clinic Visit Token
                 </Label>
@@ -613,7 +613,7 @@ const HospitalEditForm = forwardRef<HospitalEditFormRef, HospitalEditFormProps>(
                     updateForm("clinicVisitToken", e.target.value)
                   }
                 />
-              </div> */}
+              </div>
               <div>
                 <Label htmlFor="dateOfAdmission" className="font-medium">
                   Date of Admission

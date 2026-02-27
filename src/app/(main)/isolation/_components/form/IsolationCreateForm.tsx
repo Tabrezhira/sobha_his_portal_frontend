@@ -1,5 +1,5 @@
 "use client"
-/* eslint-disable no-unused-vars */
+
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -95,10 +95,9 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
     
     // Track clinic token lookup
     const [clinicTokenLocked, setClinicTokenLocked] = useState(false)
-          // @ts-ignore
+
 
     const [clinicTokenLoading, setClinicTokenLoading] = useState(false)
-          // @ts-ignore
 
     const [clinicTokenError, setClinicTokenError] = useState<string | null>(null)
     const [form, setForm] = useState({
@@ -221,7 +220,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
         setClinicTokenLoading(false)
       }
     }
-      // @ts-ignore
+
 
     const handleClinicTokenRemove = () => {
       setForm((prev) => ({
@@ -392,7 +391,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {/* <div>
+              <div>
                 <Label htmlFor="clinicVisitToken" className="font-medium">
                   Clinic Visit Record ID
                 </Label>
@@ -432,7 +431,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                     {clinicTokenError}
                   </p>
                 )}
-              </div> */}
+              </div>
               <div>
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
