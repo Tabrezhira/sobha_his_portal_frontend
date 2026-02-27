@@ -1786,20 +1786,24 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               </div>
               <div>
                 <Label htmlFor="temperature" className="font-medium">
-                  Temperature
+                  Temperature (°C)
                 </Label>
-                <Input
-                  id="temperature"
-                  type="number"
-                  enableStepper={false}
-                  className="mt-2"
-                  value={form.temperature}
-                  onChange={(e) => updateForm("temperature", e.target.value)}
-                />
+                <div className="mt-2 flex items-center gap-2">
+                  <Input
+                    id="temperature"
+                    type="number"
+                    enableStepper={false}
+                    value={form.temperature}
+                    onChange={(e) => updateForm("temperature", e.target.value)}
+                  />
+                  {/* <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                    °C
+                  </span> */}
+                </div>
               </div>
               <div>
                 <Label htmlFor="bloodPressure" className="font-medium">
-                  Blood Pressure
+                  Blood Pressure (mmHg)
                 </Label>
                 <Input
                   id="bloodPressure"
@@ -1810,7 +1814,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
               </div>
               <div>
                 <Label htmlFor="heartRate" className="font-medium">
-                  Heart Rate
+                  Heart Rate (bpm)
                 </Label>
                 <Input
                   id="heartRate"
@@ -1820,6 +1824,7 @@ const ClinicCreateForm = forwardRef<ClinicCreateFormRef, ClinicCreateFormProps>(
                   value={form.heartRate}
                   onChange={(e) => updateForm("heartRate", e.target.value)}
                 />
+                
               </div>
 
               <div className="">
