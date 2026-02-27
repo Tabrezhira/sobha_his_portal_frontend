@@ -386,7 +386,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
               </p>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
+              {/* <div>
                 <Label htmlFor="clinicVisitToken" className="font-medium">
                   Clinic Visit Record ID
                 </Label>
@@ -426,7 +426,7 @@ const IsolationCreateForm = forwardRef<IsolationCreateFormRef, IsolationCreateFo
                     {clinicTokenError}
                   </p>
                 )}
-              </div>
+              </div> */}
               <div>
                 <Label htmlFor="empNo" className="font-medium">
                   Employee No *
