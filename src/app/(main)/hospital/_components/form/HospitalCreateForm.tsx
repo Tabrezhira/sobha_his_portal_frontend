@@ -775,13 +775,8 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         return
       }
 
-
-
       setSubmitting(true)
       try {
-
-
-
         let finalPatientId = patientId
 
         if (!finalPatientId && form.empNo.trim()) {
@@ -841,7 +836,11 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
 
         await api.post("/hospital", buildPayload())
 
-        await queryClient.invalidateQueries({ queryKey: ["hospital"] })
+        // Invalidate all hospital queries to ensure fresh data
+        await queryClient.invalidateQueries({ 
+          queryKey: ["hospital"],
+          refetchType: "all" 
+        })
 
         toast.success("Hospital record saved successfully.")
         if (onSaveSuccess) {
