@@ -295,6 +295,10 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
     const [employeeLookupError, setEmployeeLookupError] = useState<string | null>(null)
     const [employeeLookupLoading, setEmployeeLookupLoading] = useState(false)
     const lastFetchedEmpNo = useRef<string | null>(null)
+    const [clinicTokenLookupError, setClinicTokenLookupError] = useState<string | null>(null)
+    const [clinicTokenLookupLoading, setClinicTokenLookupLoading] = useState(false)
+    const lastFetchedClinicToken = useRef<string | null>(null)
+    const [clinicTokenLocked, setClinicTokenLocked] = useState(false)
     const [patientId, setPatientId] = useState<string | null>(null)
     const [summaryDialogOpen, setSummaryDialogOpen] = useState(false)
     const [summaryEmpId, setSummaryEmpId] = useState<string | null>(null)
@@ -332,6 +336,80 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
         trLocation: employee.trLocation || prev.trLocation,
       }))
     }, [employee])
+
+    const handleClinicTokenLookup = useCallback(async () => {
+      const token = form.clinicVisitToken?.trim()
+      if (!token) return
+
+      if (token.length !== 24) {
+        setClinicTokenLookupError("Clinic Visit Token must be 24 characters.")
+        return
+      }
+
+      if (lastFetchedClinicToken.current === token) return
+
+      const baseUrl = process.env.NEXT_PUBLIC_DROPDOWN_API_URL
+      if (!baseUrl) {
+        setClinicTokenLookupError("Dropdown API URL is not configured.")
+        return
+      }
+
+      setClinicTokenLookupError(null)
+      setClinicTokenLookupLoading(true)
+
+      try {
+        const response = await fetch(`${baseUrl}/clinic/${token}/employee-info`)
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch clinic visit employee info.")
+        }
+
+        const payload = await response.json()
+        const data = payload?.data
+
+        if (!data) {
+          throw new Error("No employee data found.")
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          empNo: data.emp || prev.empNo,
+          employeeName: data.name || prev.employeeName,
+          emiratesId: data.emiratesId || prev.emiratesId,
+          insuranceId: data.insuranceId || prev.insuranceId,
+          mobileNumber: data.mobileNumber || prev.mobileNumber,
+          trLocation: data.trLocation || prev.trLocation,
+        }))
+
+        if (data.emp) {
+          lastFetchedEmpNo.current = String(data.emp).trim().toUpperCase()
+        }
+
+        lastFetchedClinicToken.current = token
+        setClinicTokenLocked(true)
+      } catch (lookupError) {
+        setClinicTokenLookupError("Unable to load employee details from clinic visit.")
+      } finally {
+        setClinicTokenLookupLoading(false)
+      }
+    }, [form.clinicVisitToken])
+
+    const handleClinicTokenRemove = useCallback(() => {
+      setClinicTokenLookupError(null)
+      setClinicTokenLookupLoading(false)
+      setClinicTokenLocked(false)
+      lastFetchedClinicToken.current = null
+      setForm((prev) => ({
+        ...prev,
+        clinicVisitToken: "",
+        empNo: "",
+        employeeName: "",
+        emiratesId: "",
+        insuranceId: "",
+        mobileNumber: "",
+        trLocation: "",
+      }))
+    }, [])
 
     useEffect(() => {
       if (form.dateOfAdmission && form.dateOfDischarge) {
@@ -768,14 +846,35 @@ const HospitalCreateForm = forwardRef<HospitalCreateFormRef, HospitalCreateFormP
                 <Label htmlFor="clinicVisitToken" className="font-medium">
                   Clinic Visit Token
                 </Label>
-                <Input
-                  id="clinicVisitToken"
-                  className="mt-2"
-                  value={form.clinicVisitToken}
-                  onChange={(e) =>
-                    updateForm("clinicVisitToken", e.target.value)
-                  }
-                />
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    id="clinicVisitToken"
+                    className="flex-1"
+                    disabled={clinicTokenLocked}
+                    value={form.clinicVisitToken}
+                    onChange={(e) =>
+                      updateForm("clinicVisitToken", e.target.value)
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={clinicTokenLookupLoading || !form.clinicVisitToken.trim()}
+                    onClick={clinicTokenLocked ? handleClinicTokenRemove : handleClinicTokenLookup}
+                  >
+                    {clinicTokenLocked ? "Remove" : "Save"}
+                  </Button>
+                </div>
+                {clinicTokenLookupLoading && (
+                  <p className="mt-1 text-xs text-blue-600">
+                    Looking up clinic visit...
+                  </p>
+                )}
+                {clinicTokenLookupError && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {clinicTokenLookupError}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="dateOfAdmission" className="font-medium">
